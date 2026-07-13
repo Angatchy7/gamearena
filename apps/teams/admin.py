@@ -7,7 +7,7 @@ from .models import Team, TeamMember, TeamInvitation
 class TeamAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "created_by",
+        "manager",
         "is_active",
         "created_at",
     )

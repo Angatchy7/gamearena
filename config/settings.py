@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.dashboard",
     "apps.teams",
+    "apps.notifications",
+    "apps.tournaments",
 ]
 
 MIDDLEWARE = [

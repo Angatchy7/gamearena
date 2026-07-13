@@ -10,21 +10,27 @@ def create_team(*, manager, form):
     adds the manager as the first member.
     """
 
-    if Team.objects.filter(created_by=manager).exists():
-        raise ValueError("You already own a team.")
+    if Team.objects.filter(manager=manager).exists():
+        return {
+            "success": False,
+            "message": "You already manage a team.",
+        }
 
     team = form.save(commit=False)
-    team.created_by = manager
+    team.manager = manager
     team.save()
 
     TeamMember.objects.create(
         team=team,
         user=manager,
-        management_role=TeamMember.ManagementRole.MANAGER,
-        game_role=TeamMember.GameRole.PLAYER,
+        team_role=TeamMember.TeamRole.MANAGER,
     )
 
-    return team
+    return {
+        "success": True,
+        "message": "Team created successfully.",
+        "team": team,
+    }
 
 
 @transaction.atomic
@@ -37,10 +43,13 @@ def update_team(*, team, form):
     team.description = form.cleaned_data["description"]
     team.max_players = form.cleaned_data["max_players"]
 
-    # Only replace the logo if a new one was uploaded
     if form.cleaned_data.get("logo"):
         team.logo = form.cleaned_data["logo"]
 
     team.save()
 
-    return team
+    return {
+        "success": True,
+        "message": "Team updated successfully.",
+        "team": team,
+    }

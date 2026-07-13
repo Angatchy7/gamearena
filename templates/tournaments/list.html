@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}
+Tournaments
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between mb-3">
+
+        <h2>Tournaments</h2>
+
+        <a href="{% url 'tournaments:create' %}" class="btn btn-primary">
+            Create Tournament
+        </a>
+
+    </div>
+
+    {% if tournaments %}
+
+    <table class="table table-striped">
+
+        <thead>
+
+            <tr>
+
+                <th>Name</th>
+
+                <th>Game</th>
+
+                <th>Status</th>
+
+                <th></th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for tournament in tournaments %}
+
+            <tr>
+
+                <td>{{ tournament.name }}</td>
+
+                <td>{{ tournament.game }}</td>
+
+                <td>{{ tournament.get_status_display }}</td>
+
+                <td>
+
+                    <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-sm btn-outline-primary">
+                        View
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <p>No tournaments found.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

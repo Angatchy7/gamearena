@@ -18,14 +18,14 @@ class TeamCreateForm(forms.ModelForm):
             "name": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Enter team name",
+                    "placeholder": "Team Name",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
                     "class": "form-control",
                     "rows": 4,
-                    "placeholder": "Enter team description",
+                    "placeholder": "Describe your team...",
                 }
             ),
             "logo": forms.FileInput(
@@ -36,11 +36,21 @@ class TeamCreateForm(forms.ModelForm):
             "max_players": forms.NumberInput(
                 attrs={
                     "class": "form-control",
-                    "min": 1,
-                    "max": 10,
+                    "min": 2,
+                    "max": 20,
                 }
             ),
         }
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+
+        if Team.objects.filter(name__iexact=name).exists():
+            raise forms.ValidationError(
+                "A team with this name already exists."
+            )
+
+        return name
 
 
 class TeamUpdateForm(forms.ModelForm):
@@ -58,14 +68,14 @@ class TeamUpdateForm(forms.ModelForm):
             "name": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Enter team name",
+                    "placeholder": "Team Name",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
                     "class": "form-control",
                     "rows": 4,
-                    "placeholder": "Enter team description",
+                    "placeholder": "Describe your team...",
                 }
             ),
             "logo": forms.FileInput(
@@ -76,8 +86,22 @@ class TeamUpdateForm(forms.ModelForm):
             "max_players": forms.NumberInput(
                 attrs={
                     "class": "form-control",
-                    "min": 1,
-                    "max": 10,
+                    "min": 2,
+                    "max": 20,
                 }
             ),
         }
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+
+        if (
+            Team.objects.filter(name__iexact=name)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        ):
+            raise forms.ValidationError(
+                "A team with this name already exists."
+            )
+
+        return name

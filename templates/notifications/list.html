@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+Notifications
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2>Notifications</h2>
+
+    <hr>
+
+    {% for notification in notifications %}
+
+    <div class="card mb-3">
+
+        <div class="card-body">
+
+            <h5>{{ notification.title }}</h5>
+
+            <p>{{ notification.message }}</p>
+
+            <small class="text-muted">
+                {{ notification.created_at }}
+            </small>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <div class="alert alert-info">
+        You don't have any notifications.
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

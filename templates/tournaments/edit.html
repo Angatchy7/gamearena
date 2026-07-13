@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Tournament
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>Edit Tournament</h2>
+
+    <form method="post" enctype="multipart/form-data">
+
+        {% include "tournaments/_form.html" %}
+
+    </form>
+
+</div>
+
+{% endblock %}

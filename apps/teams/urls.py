@@ -4,7 +4,6 @@ from .views import (
     CreateTeamView,
     TeamDetailView,
     TeamUpdateView,
-    TeamDeleteView,
 )
 
 app_name = "teams"
@@ -28,9 +27,5 @@ urlpatterns = [
         name="edit",
     ),
 
-    path(
-        "<slug:slug>/delete/",
-        TeamDeleteView.as_view(),
-        name="delete",
-    ),
+    
 ]

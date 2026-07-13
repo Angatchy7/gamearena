@@ -36,11 +36,11 @@ class Team(models.Model):
         default=True,
     )
 
-    created_by = models.ForeignKey(
+    manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name="created_teams",
-    )
+        related_name="managed_teams",
+)
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -78,7 +78,7 @@ class TeamMember(models.Model):
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
-        related_name="member",
+        related_name="members",
     )
 
     user = models.ForeignKey(

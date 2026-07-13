@@ -1,4 +1,3 @@
-from django.db.models import manager
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -17,13 +16,10 @@ class CreateTeamView(LoginRequiredMixin, View):
 
     def get(self, request):
         form = TeamCreateForm()
-
         return render(
             request,
             self.template_name,
-            {
-                "form": form,
-            },
+            {"form": form},
         )
 
     def post(self, request):
@@ -33,36 +29,31 @@ class CreateTeamView(LoginRequiredMixin, View):
         )
 
         if form.is_valid():
-            try:
-                team = create_team(
-                    manager=request.user,
-                    form=form,
-                )
 
+            result = create_team(
+                manager=request.user,
+                form=form,
+            )
+
+            if result["success"]:
                 return redirect(
                     "teams:detail",
-                    slug=team.slug,
+                    slug=result["team"].slug,
                 )
 
-            except ValueError as e:
-                form.add_error(
-                    None,
-                    str(e),
-                )
+            form.add_error(
+                None,
+                result["message"],
+            )
 
         return render(
             request,
             self.template_name,
-            {
-                "form": form,
-            },
+            {"form": form},
         )
 
 
 class TeamDetailView(LoginRequiredMixin, View):
-    """
-    Displays a team's details.
-    """
 
     template_name = "teams/detail.html"
 
@@ -70,7 +61,7 @@ class TeamDetailView(LoginRequiredMixin, View):
 
         team = get_object_or_404(
             Team.objects.prefetch_related(
-                "memberships__user",
+                "members__user",
             ),
             slug=slug,
         )
@@ -85,9 +76,6 @@ class TeamDetailView(LoginRequiredMixin, View):
 
 
 class TeamUpdateView(LoginRequiredMixin, View):
-    """
-    Allows the manager to edit the team.
-    """
 
     template_name = "teams/edit_team.html"
 
@@ -126,14 +114,14 @@ class TeamUpdateView(LoginRequiredMixin, View):
 
         if form.is_valid():
 
-            update_team(
+            result = update_team(
                 team=team,
                 form=form,
             )
 
             return redirect(
                 "teams:detail",
-                slug=team.slug,
+                slug=result["team"].slug,
             )
 
         return render(
@@ -144,37 +132,3 @@ class TeamUpdateView(LoginRequiredMixin, View):
                 "form": form,
             },
         )
-
-
-class TeamDeleteView(LoginRequiredMixin, View):
-    """
-    Deletes a team after confirmation.
-    """
-
-    template_name = "teams/delete_team.html"
-
-    def get(self, request, slug):
-
-        team = get_object_or_404(
-            Team,
-            slug=slug,
-        )
-
-        return render(
-            request,
-            self.template_name,
-            {
-                "team": team,
-            },
-        )
-
-    def post(self, request, slug):
-
-        team = get_object_or_404(
-            Team,
-            slug=slug,
-        )
-
-        team.delete()
-
-        return redirect("dashboard:manager_dashboard")

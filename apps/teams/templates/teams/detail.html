@@ -1,128 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ team.name }} | GameArena</title>
+{% block title %}
+{{ team.name }}
+{% endblock %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+{% block content %}
 
-<body class="bg-light">
+<div class="container mt-5">
 
-    <div class="container mt-5">
+    <div class="card shadow">
 
-        <div class="card shadow">
+        <div class="card-body">
 
-            <div class="card-header bg-primary text-white">
-                <h2 class="mb-0">{{ team.name }}</h2>
-            </div>
+            {% if team.logo %}
+            <img src="{{ team.logo.url }}" class="img-fluid rounded mb-3" style="max-height:200px;">
+            {% endif %}
 
-            <div class="card-body">
+            <h2>{{ team.name }}</h2>
 
-                {% if team.logo %}
-                <div class="text-center mb-4">
-                    <img src="{{ team.logo.url }}" class="img-thumbnail" style="max-width:200px;" alt="{{ team.name }}">
-                </div>
-                {% endif %}
+            <p>
+                {{ team.description|default:"No description yet." }}
+            </p>
 
-                <div class="row">
+            <hr>
 
-                    <div class="col-md-6">
-                        <h5>Team Information</h5>
+            <h5>Team Information</h5>
 
-                        <table class="table table-bordered">
+            <table class="table">
 
-                            <tr>
-                                <th>Name</th>
-                                <td>{{ team.name }}</td>
-                            </tr>
+                <tr>
+                    <th>Manager</th>
+                    <td>{{ team.manager.username }}</td>
+                </tr>
 
-                            <tr>
-                                <th>Description</th>
-                                <td>{{ team.description }}</td>
-                            </tr>
+                <tr>
+                    <th>Maximum Players</th>
+                    <td>{{ team.max_players }}</td>
+                </tr>
 
-                            <tr>
-                                <th>Maximum Players</th>
-                                <td>{{ team.max_players }}</td>
-                            </tr>
+                <tr>
+                    <th>Created</th>
+                    <td>{{ team.created_at }}</td>
+                </tr>
 
-                            <tr>
-                                <th>Created By</th>
-                                <td>{{ team.created_by.username }}</td>
-                            </tr>
+            </table>
 
-                            <tr>
-                                <th>Created At</th>
-                                <td>{{ team.created_at }}</td>
-                            </tr>
+            <hr>
 
-                        </table>
+            <h4>Members</h4>
 
-                    </div>
+            <table class="table table-bordered">
 
-                    <div class="col-md-6">
+                <thead>
 
-                        <h5>Team Members</h5>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                    </tr>
 
-                        <table class="table table-striped">
+                </thead>
 
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Management Role</th>
-                                    <th>Game Role</th>
-                                </tr>
-                            </thead>
+                <tbody>
 
-                            <tbody>
+                    {% for member in team.members.all %}
 
-                                {% for member in team.memberships.all %}
+                    <tr>
 
-                                <tr>
-                                    <td>{{ member.user.username }}</td>
-                                    <td>{{ member.get_management_role_display }}</td>
-                                    <td>{{ member.get_game_role_display }}</td>
-                                </tr>
+                        <td>
+                            {{ member.user.username }}
+                        </td>
 
-                                {% empty %}
+                        <td>
+                            {{ member.team_role }}
+                        </td>
 
-                                <tr>
-                                    <td colspan="3" class="text-center">
-                                        No members found.
-                                    </td>
-                                </tr>
+                    </tr>
 
-                                {% endfor %}
+                    {% empty %}
 
-                            </tbody>
+                    <tr>
 
-                        </table>
+                        <td colspan="2">
+                            No members yet.
+                        </td>
 
-                    </div>
+                    </tr>
 
-                </div>
+                    {% endfor %}
 
-            </div>
+                </tbody>
 
-            <div class="card-footer d-flex gap-2">
+            </table>
 
-                <a href="{% url 'dashboard:manager_dashboard' %}" class="btn btn-secondary">
-                    Dashboard
-                </a>
+            <div class="mt-4">
 
-                <a href="{% url 'teams:edit' team.slug %}" class="btn btn-warning">
+                <a href="{% url 'teams:edit' team.slug %}" class="btn btn-primary">
                     Edit Team
                 </a>
 
-                <button class="btn btn-success" disabled>
-                    Invite Player
-                </button>
-
-                <a href="{% url 'teams:delete' team.slug %}" class="btn btn-danger ms-auto">
-                    Delete Team
+                <a href="{% url 'dashboard:home' %}" class="btn btn-secondary">
+                    Dashboard
                 </a>
 
             </div>
@@ -131,6 +108,6 @@
 
     </div>
 
-</body>
+</div>
 
-</html>
+{% endblock %}
