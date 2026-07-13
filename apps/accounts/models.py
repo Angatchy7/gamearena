@@ -4,22 +4,18 @@ from django.db import models
 
 class User(AbstractUser):
     """
-    Custom User model extending AbstractUser.
-    All default fields (username, email, first_name, last_name,
-    password, is_staff, is_active, date_joined, etc.) are inherited
-    unchanged from AbstractUser.
+    Custom user model.
     """
 
     class Role(models.TextChoices):
-        ADMIN   = 'ADMIN',   'Admin'
-        CAPTAIN = 'CAPTAIN', 'Captain'
-        PLAYER  = 'PLAYER',  'Player'
+        ADMIN = "ADMIN", "Admin"
+        USER = "USER", "User"
 
     role = models.CharField(
         max_length=10,
         choices=Role.choices,
-        default=Role.PLAYER,
+        default=Role.USER,
     )
 
     def __str__(self):
-        return f'{self.username} ({self.get_role_display()})'
+        return self.username

@@ -1,7 +1,9 @@
 from django.contrib import admin
-from .models import Team, TeamMembership
+
+from .models import Team, TeamMember, TeamInvitation
 
 
+@admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -10,27 +12,26 @@ class TeamAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    search_fields = ("name",)
-
-    list_filter = ("is_active",)
+    search_fields = (
+        "name",
+    )
 
     prepopulated_fields = {
         "slug": ("name",),
     }
 
 
-class TeamMembershipAdmin(admin.ModelAdmin):
+@admin.register(TeamMember)
+class TeamMemberAdmin(admin.ModelAdmin):
     list_display = (
         "team",
         "user",
-        "management_role",
-        "game_role",
+        "team_role",
         "is_active",
     )
 
     list_filter = (
-        "management_role",
-        "game_role",
+        "team_role",
         "is_active",
     )
 
@@ -40,5 +41,21 @@ class TeamMembershipAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Team, TeamAdmin)
-admin.site.register(TeamMembership, TeamMembershipAdmin)
+@admin.register(TeamInvitation)
+class TeamInvitationAdmin(admin.ModelAdmin):
+    list_display = (
+        "team",
+        "sender",
+        "receiver",
+        "status",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+    )
+
+    search_fields = (
+        "team__name",
+        "receiver__username",
+    )

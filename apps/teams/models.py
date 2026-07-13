@@ -28,6 +28,10 @@ class Team(models.Model):
         null=True,
     )
 
+    max_players = models.PositiveSmallIntegerField(
+        default=5,
+    )
+
     is_active = models.BooleanField(
         default=True,
     )
@@ -61,42 +65,33 @@ class Team(models.Model):
         return self.name
 
 
-class TeamMembership(models.Model):
+class TeamMember(models.Model):
     """
     Represents a user's membership in a team.
     """
 
-    class ManagementRole(models.TextChoices):
-        CAPTAIN = "CAPTAIN", "Captain"
-        PLAYER = "PLAYER", "Player"
-
-    class GameRole(models.TextChoices):
+    class TeamRole(models.TextChoices):
+        MANAGER = "MANAGER", "Manager"
         IGL = "IGL", "In-Game Leader"
         PLAYER = "PLAYER", "Player"
 
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
-        related_name="memberships",
+        related_name="member",
     )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="team_memberships",
+        related_name="teams",
     )
 
-    management_role = models.CharField(
-        max_length=10,
-        choices=ManagementRole.choices,
-        default=ManagementRole.PLAYER,
-    )
-
-    game_role = models.CharField(
-        max_length=10,
-        choices=GameRole.choices,
-        default=GameRole.PLAYER,
-    )
+    team_role = models.CharField(
+    max_length=10,
+    choices=TeamRole.choices,
+    default=TeamRole.PLAYER,
+)
 
     joined_at = models.DateTimeField(
         auto_now_add=True,
@@ -122,10 +117,56 @@ class TeamMembership(models.Model):
                 name="unique_team_member",
             ),
         ]
+    def __str__(self):
+        return (
+        f"{self.user.username} "
+        f"({self.team_role}) "
+        f"- {self.team.name}"
+    )
+
+    
+class TeamInvitation(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        ACCEPTED = "ACCEPTED", "Accepted"
+        REJECTED = "REJECTED", "Rejected"
+
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE,
+        related_name="invitations",
+    )
+
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_team_invitations",
+    )
+
+    receiver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_team_invitations",
+    )
+
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__(self):
         return (
-            f"{self.user.username} "
-            f"({self.management_role}) "
-            f"- {self.team.name}"
+            f"{self.team.name} → "
+            f"{self.receiver.username} "
+            f"({self.status})"
         )
+
+    

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ team.name }} | GameArena</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+
+        <div class="card shadow">
+
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">{{ team.name }}</h2>
+            </div>
+
+            <div class="card-body">
+
+                {% if team.logo %}
+                <div class="text-center mb-4">
+                    <img src="{{ team.logo.url }}" class="img-thumbnail" style="max-width:200px;" alt="{{ team.name }}">
+                </div>
+                {% endif %}
+
+                <div class="row">
+
+                    <div class="col-md-6">
+                        <h5>Team Information</h5>
+
+                        <table class="table table-bordered">
+
+                            <tr>
+                                <th>Name</th>
+                                <td>{{ team.name }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Description</th>
+                                <td>{{ team.description }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Maximum Players</th>
+                                <td>{{ team.max_players }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Created By</th>
+                                <td>{{ team.created_by.username }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>Created At</th>
+                                <td>{{ team.created_at }}</td>
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <h5>Team Members</h5>
+
+                        <table class="table table-striped">
+
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Management Role</th>
+                                    <th>Game Role</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for member in team.memberships.all %}
+
+                                <tr>
+                                    <td>{{ member.user.username }}</td>
+                                    <td>{{ member.get_management_role_display }}</td>
+                                    <td>{{ member.get_game_role_display }}</td>
+                                </tr>
+
+                                {% empty %}
+
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        No members found.
+                                    </td>
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer d-flex gap-2">
+
+                <a href="{% url 'dashboard:manager_dashboard' %}" class="btn btn-secondary">
+                    Dashboard
+                </a>
+
+                <a href="{% url 'teams:edit' team.slug %}" class="btn btn-warning">
+                    Edit Team
+                </a>
+
+                <button class="btn btn-success" disabled>
+                    Invite Player
+                </button>
+
+                <a href="{% url 'teams:delete' team.slug %}" class="btn btn-danger ms-auto">
+                    Delete Team
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
