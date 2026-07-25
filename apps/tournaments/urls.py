@@ -5,8 +5,14 @@ from .views import (
     TournamentDeleteView,
     TournamentDetailView,
     TournamentListView,
+    MyTournamentListView,
     TournamentUpdateView,
-)
+    TournamentRegisterView,
+    TournamentParticipantsView,
+    TournamentPublishView,
+    TournamentDashboardView,
+    CloseRegistrationView,
+)   
 
 app_name = "tournaments"
 
@@ -19,10 +25,47 @@ urlpatterns = [
     ),
 
     path(
+        "my/",
+        MyTournamentListView.as_view(),
+        name="my_list",
+    ),
+
+    path(
         "create/",
         TournamentCreateView.as_view(),
         name="create",
     ),
+
+    path(
+    "<slug:slug>/register/",
+    TournamentRegisterView.as_view(),
+    name="register",
+    ),
+
+    path(
+        "<slug:slug>/dashboard/",
+        TournamentDashboardView.as_view(),
+        name="dashboard",
+    ),
+
+    path(
+        "<slug:slug>/close-registration/",
+        CloseRegistrationView.as_view(),
+        name="close_registration",
+    ),
+
+    path(
+        "<slug:slug>/participants/",
+        TournamentParticipantsView.as_view(),
+        name="participants",
+    ),
+
+    path(
+        "<slug:slug>/publish/",
+        TournamentPublishView.as_view(),
+        name="publish",
+    ),
+
 
     path(
         "<slug:slug>/",
@@ -41,5 +84,4 @@ urlpatterns = [
         TournamentDeleteView.as_view(),
         name="delete",
     ),
-
 ]

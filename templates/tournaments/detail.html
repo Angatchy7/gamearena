@@ -212,10 +212,12 @@
 
                     <p>
 
-                        <strong>Maximum Participants</strong>
+                        <strong>Participants</strong>
 
                         <br>
 
+                        {{ tournament.registrations.count }}
+                        /
                         {{ tournament.max_participants }}
 
                     </p>
@@ -231,6 +233,60 @@
                         {{ tournament.get_visibility_display }}
 
                     </p>
+
+                </div>
+
+            </div>
+
+            <div class="card shadow-sm border-0 mt-4">
+
+                <div class="card-header">
+
+                    <h5 class="mb-0">
+
+                        Registered Teams
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    {% if tournament.registrations.count %}
+
+                    <ul class="list-group list-group-flush">
+
+                        {% for registration in tournament.registrations.all %}
+
+                        <li class="list-group-item d-flex justify-content-between">
+
+                            <span>
+
+                                {{ registration.team.name }}
+
+                            </span>
+
+                            <span class="badge bg-success">
+
+                                {{ registration.get_status_display }}
+
+                            </span>
+
+                        </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                    {% else %}
+
+                    <p class="text-muted mb-0">
+
+                        No teams registered yet.
+
+                    </p>
+
+                    {% endif %}
 
                 </div>
 
@@ -252,6 +308,32 @@
 
                     {% if request.user == tournament.organizer %}
 
+                    <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-primary">
+
+                        <i class="bi bi-grid-fill"></i>
+
+                        Organizer Dashboard
+
+                    </a>
+
+                    {% if tournament.status == tournament.Status.DRAFT %}
+
+                    <form method="post" action="{% url 'tournaments:publish' tournament.slug %}">
+
+                        {% csrf_token %}
+
+                        <button class="btn btn-success w-100">
+
+                            <i class="bi bi-upload"></i>
+
+                            Publish Tournament
+
+                        </button>
+
+                    </form>
+
+                    {% endif %}
+
                     <a href="{% url 'tournaments:edit' tournament.slug %}" class="btn btn-warning">
 
                         <i class="bi bi-pencil-square"></i>
@@ -270,13 +352,45 @@
 
                     {% else %}
 
-                    <button class="btn btn-success">
+                    {% if tournament.status == tournament.Status.REGISTRATION_OPEN %}
+
+                    <a href="{% url 'tournaments:register' tournament.slug %}" class="btn btn-success">
 
                         <i class="bi bi-check-circle"></i>
 
-                        Register
+                        Register Team
+
+                    </a>
+
+                    {% elif tournament.status == tournament.Status.REGISTRATION_CLOSED %}
+
+                    <button class="btn btn-secondary" disabled>
+
+                        <i class="bi bi-lock-fill"></i>
+
+                        Registration Closed
 
                     </button>
+
+                    {% elif tournament.status == tournament.Status.LIVE %}
+
+                    <button class="btn btn-dark" disabled>
+
+                        <i class="bi bi-controller"></i>
+
+                        Tournament Live
+
+                    </button>
+
+                    {% else %}
+
+                    <button class="btn btn-secondary" disabled>
+
+                        {{ tournament.get_status_display }}
+
+                    </button>
+
+                    {% endif %}
 
                     {% endif %}
 

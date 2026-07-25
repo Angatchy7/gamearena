@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from apps.teams.models import TeamInvitation
 
 
 class Notification(models.Model):
@@ -16,6 +17,14 @@ class Notification(models.Model):
         on_delete=models.CASCADE,
         related_name="notifications",
     )
+
+    team_invitation = models.ForeignKey(
+    TeamInvitation,
+    on_delete=models.CASCADE,
+    null=True,
+    blank=True,
+    related_name="notifications",
+)
 
     title = models.CharField(
         max_length=150,

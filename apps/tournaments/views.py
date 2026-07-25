@@ -2,6 +2,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from .permissions import require_tournament_manager
+from .forms import TournamentRegistrationForm
+from .models import TournamentRegistration
+from .services import register_team, publish_tournament
+from .models import TournamentRegistration
+from django.contrib import messages
 
 from .forms import (
     TournamentCreateForm,
@@ -12,31 +17,67 @@ from .services import (
     create_tournament,
     update_tournament,
     delete_tournament,
+    publish_tournament,
+    register_team,
+    close_registration,
 )
 
 
 class TournamentListView(LoginRequiredMixin, View):
     """
-    Displays all tournaments.
+    Browse all tournaments.
     """
 
     template_name = "tournaments/list.html"
 
     def get(self, request):
 
-        tournaments = Tournament.objects.select_related(
-            "game",
-            "organizer",
+        tournaments = (
+            Tournament.objects
+            .select_related(
+                "game",
+                "organizer",
+            )
+            .order_by("-created_at")
         )
 
         return render(
             request,
             self.template_name,
             {
+                "page_title": "Browse Tournaments",
                 "tournaments": tournaments,
             },
         )
 
+class MyTournamentListView(LoginRequiredMixin, View):
+    """
+    Shows tournaments created by the logged-in user.
+    """
+
+    template_name = "tournaments/list.html"
+
+    def get(self, request):
+
+        tournaments = (
+            Tournament.objects.filter(
+                organizer=request.user
+            )
+            .select_related(
+                "game",
+                "organizer",
+            )
+            .order_by("-created_at")
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "page_title": "My Tournaments",
+                "tournaments": tournaments,
+            },
+        )
 
 class TournamentCreateView(LoginRequiredMixin, View):
     """
@@ -110,6 +151,179 @@ class TournamentDetailView(LoginRequiredMixin, View):
             },
         )
 
+class TournamentParticipantsView(LoginRequiredMixin, View):
+    """
+    Displays all registered participants of a tournament.
+    """
+
+    template_name = "tournaments/participants.html"
+
+    def get(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+        )
+
+        registrations = (
+            TournamentRegistration.objects
+            .filter(tournament=tournament)
+            .select_related(
+                "team",
+                "registered_by",
+            )
+            .prefetch_related(
+                "team__members__user",
+            )
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "tournament": tournament,
+                "registrations": registrations,
+            },
+        )
+
+class TournamentDashboardView(LoginRequiredMixin, View):
+    """
+    Organizer dashboard for managing a tournament.
+    """
+
+    template_name = "tournaments/dashboard.html"
+
+    def get(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+            organizer=request.user,
+        )
+
+        registrations = (
+            TournamentRegistration.objects.filter(
+                tournament=tournament,
+            ).select_related("team")
+        )
+
+        participant_count = registrations.count()
+
+        registration_percentage = (
+            int(participant_count * 100 / tournament.max_participants)
+            if tournament.max_participants > 0
+            else 0
+        )
+
+        context = {
+            "tournament": tournament,
+            "registrations": registrations,
+            "participant_count": participant_count,
+            "registration_percentage": registration_percentage,
+        }
+
+        return render(
+            request,
+            self.template_name,
+            context,
+        )
+
+class CloseRegistrationView(LoginRequiredMixin, View):
+    """
+    Allows the organizer to close tournament registration.
+    """
+
+    def post(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+            organizer=request.user,
+        )
+
+        close_registration(
+            tournament=tournament,
+        )
+
+        messages.success(
+            request,
+            "Tournament registration has been closed successfully.",
+        )
+
+        return redirect(
+            "tournaments:dashboard",
+            slug=tournament.slug,
+        )
+
+        
+class TournamentRegisterView(LoginRequiredMixin, View):
+    """
+    Allows a team manager to register one of their teams
+    for a tournament.
+    """
+
+    template_name = "tournaments/register.html"
+
+    def get(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+        )
+
+        form = TournamentRegistrationForm(
+            user=request.user,
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "tournament": tournament,
+                "form": form,
+            },
+        )
+
+    def post(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+        )
+
+        form = TournamentRegistrationForm(
+            request.POST,
+            user=request.user,
+        )
+
+        if form.is_valid():
+
+            result = register_team(
+                tournament=tournament,
+                team=form.cleaned_data["team"],
+                user=request.user,
+            )
+
+            if result["success"]:
+                return redirect(
+                    "tournaments:detail",
+                    slug=tournament.slug,
+                )
+
+            form.add_error(
+                None,
+                result["message"],
+            )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "tournament": tournament,
+                "form": form,
+            },
+        )
+
 
 class TournamentUpdateView(LoginRequiredMixin, View):
     """
@@ -180,6 +394,28 @@ class TournamentUpdateView(LoginRequiredMixin, View):
                 "tournament": tournament,
                 "form": form,
             },
+        )
+
+class TournamentPublishView(LoginRequiredMixin, View):
+    """
+    Opens tournament registration.
+    """
+
+    def post(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+            organizer=request.user,
+        )
+
+        publish_tournament(
+            tournament=tournament,
+        )
+
+        return redirect(
+            "tournaments:detail",
+            slug=tournament.slug,
         )
 
 

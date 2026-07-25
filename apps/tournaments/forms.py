@@ -1,6 +1,9 @@
 from django import forms
 
 from .models import Tournament
+# pyrefly: ignore [missing-import]
+from apps.teams.models import Team
+from .models import TournamentRegistration
 
 
 class TournamentCreateForm(forms.ModelForm):
@@ -140,3 +143,23 @@ class TournamentCreateForm(forms.ModelForm):
 
 class TournamentUpdateForm(TournamentCreateForm):
     pass
+
+
+class TournamentRegistrationForm(forms.Form):
+    """
+    Allows a manager to choose one of their teams
+    to register for a tournament.
+    """
+
+    team = forms.ModelChoiceField(
+        queryset=Team.objects.none(),
+        empty_label="Select Team",
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["team"].queryset = Team.objects.filter(
+            manager=user,
+            is_active=True,
+        ).order_by("name")

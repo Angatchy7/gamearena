@@ -10,11 +10,29 @@ Tournaments
 
     <div class="d-flex justify-content-between mb-3">
 
-        <h2>Tournaments</h2>
+        <h2>{{ page_title }}</h2>
 
-        <a href="{% url 'tournaments:create' %}" class="btn btn-primary">
-            Create Tournament
-        </a>
+        <div>
+
+            <a href="{% url 'tournaments:list' %}" class="btn btn-outline-primary">
+
+                Browse
+
+            </a>
+
+            <a href="{% url 'tournaments:my_list' %}" class="btn btn-outline-success">
+
+                My Tournaments
+
+            </a>
+
+            <a href="{% url 'tournaments:create' %}" class="btn btn-primary">
+
+                Create Tournament
+
+            </a>
+
+        </div>
 
     </div>
 
@@ -27,11 +45,9 @@ Tournaments
             <tr>
 
                 <th>Name</th>
-
                 <th>Game</th>
-
+                <th>Organizer</th>
                 <th>Status</th>
-
                 <th></th>
 
             </tr>
@@ -45,10 +61,41 @@ Tournaments
             <tr>
 
                 <td>{{ tournament.name }}</td>
-
                 <td>{{ tournament.game }}</td>
+                <td>{{ tournament.organizer.username }}</td>
+                <td>
+                    {% if tournament.status == tournament.Status.DRAFT %}
 
-                <td>{{ tournament.get_status_display }}</td>
+                    <span class="badge bg-secondary">
+                        {{ tournament.get_status_display }}
+                    </span>
+
+                    {% elif tournament.status == tournament.Status.REGISTRATION_OPEN %}
+
+                    <span class="badge bg-success">
+                        {{ tournament.get_status_display }}
+                    </span>
+
+                    {% elif tournament.status == tournament.Status.REGISTRATION_CLOSED %}
+
+                    <span class="badge bg-warning text-dark">
+                        {{ tournament.get_status_display }}
+                    </span>
+
+                    {% elif tournament.status == tournament.Status.LIVE %}
+
+                    <span class="badge bg-danger">
+                        {{ tournament.get_status_display }}
+                    </span>
+
+                    {% else %}
+
+                    <span class="badge bg-dark">
+                        {{ tournament.get_status_display }}
+                    </span>
+
+                    {% endif %}
+                </td>
 
                 <td>
 

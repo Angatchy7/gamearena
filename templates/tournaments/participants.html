@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}
+Participants
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>
+
+            {{ tournament.name }}
+
+        </h2>
+
+        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-secondary">
+
+            Back
+
+        </a>
+
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+
+            <strong>
+
+                Registered Teams
+
+                ({{ registrations.count }} / {{ tournament.max_participants }})
+
+            </strong>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if registrations %}
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Team</th>
+
+                        <th>Manager</th>
+
+                        <th>Players</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for registration in registrations %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ registration.team.name }}
+
+                        </td>
+
+                        <td>
+
+                            {{ registration.team.manager.username }}
+
+                        </td>
+
+                        <td>
+
+                            {{ registration.team.members.count }}
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                {{ registration.get_status_display }}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            {% else %}
+
+            <div class="alert alert-info">
+
+                No teams have registered yet.
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

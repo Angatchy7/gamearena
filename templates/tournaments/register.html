@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+Register Team
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+
+            <h3>
+
+                Register Team
+
+            </h3>
+
+            <p class="mb-0">
+
+                {{ tournament.name }}
+
+            </p>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {{ form.as_p }}
+
+                <button type="submit" class="btn btn-success">
+
+                    Register Team
+
+                </button>
+
+                <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

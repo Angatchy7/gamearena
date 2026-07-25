@@ -1,5 +1,37 @@
-<aside>
+<div class="ga-sidebar">
 
-    Sidebar
+    <h4 class="text-center text-white mb-4">
+        🎮 GameArena
+    </h4>
 
-</aside>
+    <a href="{% url 'dashboard:home' %}">
+        <i class="bi bi-speedometer2"></i>
+        Dashboard
+    </a>
+
+    <a href="{% url 'teams:list' %}">
+        <i class="bi bi-people-fill"></i>
+        My Teams
+    </a>
+
+    <a href="{% url 'teams:create' %}">
+        <i class="bi bi-plus-circle"></i>
+        Create Team
+    </a>
+
+    <a href="{% url 'tournaments:list' %}">
+        <i class="bi bi-trophy-fill"></i>
+        Tournaments
+    </a>
+
+    <a href="{% url 'tournaments:create' %}">
+        <i class="bi bi-plus-square"></i>
+        Create Tournament
+    </a>
+
+    <a href="{% url 'notifications:list' %}">
+        <i class="bi bi-bell-fill"></i>
+        Notifications
+    </a>
+
+</div>

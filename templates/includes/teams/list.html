@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Teams
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>My Teams</h2>
+
+        <a href="{% url 'teams:create' %}" class="btn btn-primary">
+            Create Team
+        </a>
+
+    </div>
+
+    {% if teams %}
+
+    <div class="row">
+
+        {% for team in teams %}
+
+        <div class="col-md-4 mb-4">
+
+            <div class="card">
+
+                {% if team.logo %}
+                <img src="{{ team.logo.url }}" class="card-img-top" style="height:220px;object-fit:cover;">
+                {% endif %}
+
+                <div class="card-body">
+
+                    <h5>{{ team.name }}</h5>
+
+                    <p class="text-muted">
+
+                        {{ team.description|truncatewords:15 }}
+
+                    </p>
+
+                    <a href="{% url 'teams:detail' team.slug %}" class="btn btn-outline-primary">
+                        View Team
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-info">
+
+        You haven't created any teams yet.
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -2,6 +2,9 @@ from django.db import transaction
 from django.utils import timezone
 
 from .models import Tournament
+from .models import TournamentRegistration
+# pyrefly: ignore [missing-import]
+from apps.teams.models import TeamMember
 
 
 @transaction.atomic
@@ -88,10 +91,15 @@ def close_registration(*, tournament):
 
 @transaction.atomic
 def publish_tournament(*, tournament):
+    """
+    Publishes a tournament by opening registration.
+    """
 
-    tournament.status = Tournament.Status.LIVE
+    tournament.status = Tournament.Status.REGISTRATION_OPEN
 
-    tournament.save(update_fields=["status"])
+    tournament.save(
+        update_fields=["status"],
+    )
 
 
 @transaction.atomic
@@ -100,3 +108,99 @@ def cancel_tournament(*, tournament):
     tournament.status = Tournament.Status.CANCELLED
 
     tournament.save(update_fields=["status"])
+
+
+
+
+def register_team(
+    *,
+    tournament,
+    team,
+    user,
+):
+    """
+    Registers a team in a tournament.
+    """
+
+    if tournament.participation_type != tournament.ParticipationType.TEAM:
+        return {
+            "success": False,
+            "message": "This is not a team tournament.",
+        }
+
+    if tournament.status != Tournament.Status.REGISTRATION_OPEN:
+        return {
+            "success": False,
+            "message": "Tournament registration is closed.",
+        }
+
+    now = timezone.now()
+
+    if (
+        now < tournament.registration_start
+        or now > tournament.registration_end
+    ):
+        return {
+            "success": False,
+        "message": "Registration period has ended.",
+    }  
+
+    if team.manager != user:
+        return {
+            "success": False,
+            "message": "Only the team manager can register the team.",
+        }
+
+    if TournamentRegistration.objects.filter(
+        tournament=tournament,
+        team=team,
+    ).exists():
+        return {
+            "success": False,
+            "message": "Team is already registered.",
+        }
+
+
+    active_players = TeamMember.objects.filter(
+        team=team,
+        is_active=True,
+    ).count()
+
+    if not team.is_active:
+        return {
+            "success": False,
+            "message": "This team is inactive.",
+        }
+
+    if active_players < tournament.team_size:
+        return {
+            "success": False,
+            "message": (
+                f"This tournament requires "
+                f"{tournament.team_size} players.\n"
+            f"Your team currently has "
+            f"{active_players} active players."
+        ),
+    }
+
+
+    participant_count = TournamentRegistration.objects.filter(
+        tournament=tournament,
+    ).count()
+
+    if participant_count >= tournament.max_participants:
+        return {
+            "success": False,
+            "message": "Tournament is already full.",
+        }
+
+    registration = TournamentRegistration.objects.create(
+        tournament=tournament,
+        team=team,
+        registered_by=user,
+    )
+
+    return {
+        "success": True,
+        "registration": registration,
+    }

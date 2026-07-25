@@ -1,107 +1,78 @@
 from django import forms
+from django.contrib.auth import get_user_model
 
-from .models import Team
+from .models import Team, TeamInvitation
+
+User = get_user_model()
 
 
 class TeamCreateForm(forms.ModelForm):
+    """
+    Form for creating a team.
+    """
+
     class Meta:
         model = Team
 
-        fields = (
+        fields = [
             "name",
             "description",
             "logo",
             "max_players",
-        )
-
-        widgets = {
-            "name": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Team Name",
-                }
-            ),
-            "description": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 4,
-                    "placeholder": "Describe your team...",
-                }
-            ),
-            "logo": forms.FileInput(
-                attrs={
-                    "class": "form-control",
-                }
-            ),
-            "max_players": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "min": 2,
-                    "max": 20,
-                }
-            ),
-        }
-
-    def clean_name(self):
-        name = self.cleaned_data["name"].strip()
-
-        if Team.objects.filter(name__iexact=name).exists():
-            raise forms.ValidationError(
-                "A team with this name already exists."
-            )
-
-        return name
+        ]
 
 
 class TeamUpdateForm(forms.ModelForm):
+    """
+    Form for updating a team.
+    """
+
     class Meta:
         model = Team
 
-        fields = (
+        fields = [
             "name",
             "description",
             "logo",
             "max_players",
-        )
+            "is_active",
+        ]
 
-        widgets = {
-            "name": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Team Name",
-                }
-            ),
-            "description": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 4,
-                    "placeholder": "Describe your team...",
-                }
-            ),
-            "logo": forms.FileInput(
-                attrs={
-                    "class": "form-control",
-                }
-            ),
-            "max_players": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "min": 2,
-                    "max": 20,
-                }
-            ),
-        }
 
-    def clean_name(self):
-        name = self.cleaned_data["name"].strip()
+class TeamInvitationForm(forms.ModelForm):
+    """
+    Form for inviting a player to a team.
+    """
 
-        if (
-            Team.objects.filter(name__iexact=name)
-            .exclude(pk=self.instance.pk)
-            .exists()
-        ):
-            raise forms.ValidationError(
-                "A team with this name already exists."
+    receiver = forms.ModelChoiceField(
+        queryset=User.objects.none(),
+        label="Player",
+        empty_label="Select a player",
+    )
+
+    class Meta:
+        model = TeamInvitation
+
+        fields = [
+            "receiver",
+        ]
+
+    def __init__(self, *args, team=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if team:
+
+            # Users already in the team
+            member_ids = team.members.values_list(
+                "user_id",
+                flat=True,
             )
 
-        return name
+            # Exclude manager and existing members
+            self.fields["receiver"].queryset = (
+                User.objects.exclude(
+                    id__in=member_ids,
+                ).exclude(
+                    id=team.manager_id,
+                )
+            )

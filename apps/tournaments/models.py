@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+# pyrefly: ignore [missing-import]
+from apps.teams.models import Team
+from django.utils import timezone
+
 
 
 class Game(models.Model):
@@ -208,5 +212,85 @@ class Tournament(models.Model):
 
         super().save(*args, **kwargs)
 
+    @property
+    def current_status(self):
+        """
+        Returns the current tournament status based on
+        dates while respecting Draft and Cancelled.
+        """
+
+        if self.status == self.Status.DRAFT:
+            return self.Status.DRAFT
+
+        if self.status == self.Status.CANCELLED:
+            return self.Status.CANCELLED
+
+        now = timezone.now()
+
+        if now < self.registration_start:
+            return self.Status.REGISTRATION_OPEN
+
+        if self.registration_start <= now <= self.registration_end:
+            return self.Status.REGISTRATION_OPEN
+
+        if self.registration_end < now < self.start_date:
+            return self.Status.REGISTRATION_CLOSED
+
+        if self.start_date <= now <= self.end_date:
+            return self.Status.LIVE
+
+        return self.Status.COMPLETED
+
+class TournamentRegistration(models.Model):
+    """
+    A team's registration in a tournament.
+    """
+
+    class Status(models.TextChoices):
+        REGISTERED = "REGISTERED", "Registered"
+        CHECKED_IN = "CHECKED_IN", "Checked In"
+        ELIMINATED = "ELIMINATED", "Eliminated"
+        DISQUALIFIED = "DISQUALIFIED", "Disqualified"
+
+    tournament = models.ForeignKey(
+        Tournament,
+        on_delete=models.CASCADE,
+        related_name="registrations",
+    )
+
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE,
+        related_name="tournament_registrations",
+    )
+
+    registered_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.REGISTERED,
+    )
+
+    registered_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["registered_at"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "tournament",
+                    "team",
+                ],
+                name="unique_team_registration",
+            )
+        ]
+
     def __str__(self):
-        return self.name
+        return f"{self.team.name} - {self.tournament.name}"

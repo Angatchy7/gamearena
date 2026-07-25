@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+Invite Player
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4" style="max-width:600px;">
+
+    <div class="card shadow">
+
+        <div class="card-header">
+            <h3>Invite Player</h3>
+        </div>
+
+        <div class="card-body">
+
+            <h5 class="mb-3">
+                Team: {{ team.name }}
+            </h5>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {{ form.as_p }}
+
+                <button type="submit" class="btn btn-primary">
+                    Send Invitation
+                </button>
+
+                <a href="{% url 'teams:detail' team.slug %}" class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

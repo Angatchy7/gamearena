@@ -6,11 +6,23 @@ User = get_user_model()
 
 class UserRegistrationForm(UserCreationForm):
     """
-    Registration form based on the custom User model.
-    Collects: username, email, role, password, password confirmation.
-    password1 and password2 are inherited from UserCreationForm.
+    Registration form.
+    Every new user is registered as USER.
     """
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'role')
+        fields = (
+            "username",
+            "email",
+        )
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        user.role = User.Role.USER
+
+        if commit:
+            user.save()
+
+        return user
