@@ -1,7 +1,9 @@
 from django.db import transaction
 from django.utils import timezone
+import random
+import math
 
-from .models import Tournament
+from .models import Tournament, Round, Match
 from .models import TournamentRegistration
 # pyrefly: ignore [missing-import]
 from apps.teams.models import TeamMember
@@ -203,4 +205,83 @@ def register_team(
     return {
         "success": True,
         "registration": registration,
+    }
+
+@transaction.atomic
+def generate_single_elimination_bracket(*, tournament):
+    """
+    Generates a complete single-elimination bracket.
+    """
+
+    registrations = list(
+        TournamentRegistration.objects.filter(
+            tournament=tournament,
+        ).select_related("team")
+    )
+
+    if len(registrations) < 2:
+        return {
+            "success": False,
+            "message": "At least two teams are required.",
+        }
+
+    # Prevent generating twice
+    if Round.objects.filter(tournament=tournament).exists():
+        return {
+            "success": False,
+            "message": "Bracket already exists.",
+        }
+
+    random.shuffle(registrations)
+
+    teams = [r.team for r in registrations]
+
+    number_of_teams = len(teams)
+
+    total_rounds = math.ceil(math.log2(number_of_teams))
+
+    matches_in_round = math.ceil(number_of_teams / 2)
+
+    for round_number in range(1, total_rounds + 1):
+
+        round_obj = Round.objects.create(
+            tournament=tournament,
+            name=f"Round {round_number}",
+            order=round_number,
+        )
+
+        for match_number in range(1, matches_in_round + 1):
+
+            if round_number == 1:
+
+                index = (match_number - 1) * 2
+
+                team_one = (
+                    teams[index]
+                    if index < len(teams)
+                    else None
+                )
+
+                team_two = (
+                    teams[index + 1]
+                    if index + 1 < len(teams)
+                    else None
+                )
+
+            else:
+
+                team_one = None
+                team_two = None
+
+            Match.objects.create(
+                round=round_obj,
+                match_number=match_number,
+                team_one=team_one,
+                team_two=team_two,
+            )
+
+        matches_in_round = max(1, matches_in_round // 2)
+
+    return {
+        "success": True,
     }

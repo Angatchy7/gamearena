@@ -7,6 +7,8 @@ from .models import TournamentRegistration
 from .services import register_team, publish_tournament
 from .models import TournamentRegistration
 from django.contrib import messages
+# pyrefly: ignore [missing-import]
+from apps.tournaments.models import Round
 
 from .forms import (
     TournamentCreateForm,
@@ -20,6 +22,7 @@ from .services import (
     publish_tournament,
     register_team,
     close_registration,
+    generate_single_elimination_bracket,
 )
 
 
@@ -125,7 +128,43 @@ class TournamentCreateView(LoginRequiredMixin, View):
             },
         )
 
+class TournamentBracketView(LoginRequiredMixin, View):
+    """
+    Displays the tournament bracket.
+    """
 
+    template_name = "tournaments/bracket.html"
+
+    def get(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+            organizer=request.user,
+        )
+
+        rounds = (
+            Round.objects.filter(
+                tournament=tournament,
+            )
+            .prefetch_related(
+                "matches__team_one",
+                "matches__team_two",
+                "matches__winner",
+            )
+            .order_by("order")
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "tournament": tournament,
+                "rounds": rounds,
+            },
+        )
+
+        
 class TournamentDetailView(LoginRequiredMixin, View):
     """
     Displays tournament details.
@@ -188,7 +227,7 @@ class TournamentParticipantsView(LoginRequiredMixin, View):
 
 class TournamentDashboardView(LoginRequiredMixin, View):
     """
-    Organizer dashboard for managing a tournament.
+    Organizer dashboard.
     """
 
     template_name = "tournaments/dashboard.html"
@@ -207,19 +246,42 @@ class TournamentDashboardView(LoginRequiredMixin, View):
             ).select_related("team")
         )
 
+        rounds = (
+            Round.objects.filter(
+                tournament=tournament,
+            )
+            .prefetch_related(
+                "matches__team_one",
+                "matches__team_two",
+                "matches__winner",
+            )
+            .order_by("order")
+        )
+
         participant_count = registrations.count()
 
         registration_percentage = (
-            int(participant_count * 100 / tournament.max_participants)
+            int(
+                participant_count
+                * 100
+                / tournament.max_participants
+            )
             if tournament.max_participants > 0
             else 0
         )
 
         context = {
+
             "tournament": tournament,
+
             "registrations": registrations,
+
             "participant_count": participant_count,
+
             "registration_percentage": registration_percentage,
+
+            "rounds": rounds,
+
         }
 
         return render(
@@ -249,6 +311,42 @@ class CloseRegistrationView(LoginRequiredMixin, View):
             request,
             "Tournament registration has been closed successfully.",
         )
+
+        return redirect(
+            "tournaments:dashboard",
+            slug=tournament.slug,
+        )
+
+class GenerateBracketView(LoginRequiredMixin, View):
+    """
+    Generates the tournament bracket.
+    """
+
+    def post(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+            organizer=request.user,
+        )
+
+        result = generate_single_elimination_bracket(
+            tournament=tournament,
+        )
+
+        if result["success"]:
+
+            messages.success(
+                request,
+                "Bracket generated successfully.",
+            )
+
+        else:
+
+            messages.error(
+                request,
+                result["message"],
+            )
 
         return redirect(
             "tournaments:dashboard",

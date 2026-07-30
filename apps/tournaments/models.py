@@ -294,3 +294,97 @@ class TournamentRegistration(models.Model):
 
     def __str__(self):
         return f"{self.team.name} - {self.tournament.name}"
+
+class Round(models.Model):
+    """
+    Represents one round of a tournament.
+    """
+
+    tournament = models.ForeignKey(
+        Tournament,
+        on_delete=models.CASCADE,
+        related_name="rounds",
+    )
+
+    name = models.CharField(
+        max_length=50,
+    )
+
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["order"]
+        unique_together = (
+            "tournament",
+            "order",
+        )
+
+    def __str__(self):
+        return f"{self.tournament.name} - {self.name}"
+
+class Match(models.Model):
+    """
+    Represents a single match.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        LIVE = "LIVE", "Live"
+        COMPLETED = "COMPLETED", "Completed"
+
+    round = models.ForeignKey(
+        Round,
+        on_delete=models.CASCADE,
+        related_name="matches",
+    )
+
+    match_number = models.PositiveIntegerField()
+
+    team_one = models.ForeignKey(
+        "teams.Team",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="team_one_matches",
+    )
+
+    team_two = models.ForeignKey(
+        "teams.Team",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="team_two_matches",
+    )
+
+    winner = models.ForeignKey(
+        "teams.Team",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="won_matches",
+    )
+
+    team_one_score = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    team_two_score = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    class Meta:
+        ordering = [
+            "round",
+            "match_number",
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.round.name} - Match {self.match_number}"
+        )

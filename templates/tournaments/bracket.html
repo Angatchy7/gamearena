@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}
+Tournament Bracket
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>
+
+            {{ tournament.name }}
+
+        </h2>
+
+        <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-secondary">
+
+            Back to Dashboard
+
+        </a>
+
+    </div>
+
+    {% if rounds %}
+
+    {% for round in rounds %}
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-dark text-white">
+
+            <h4 class="mb-0">
+
+                {{ round.name }}
+
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                {% for match in round.matches.all %}
+
+                <div class="col-md-6 mb-4">
+
+                    <div class="card h-100">
+
+                        <div class="card-header">
+
+                            Match {{ match.match_number }}
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <h5>
+
+                                {{ match.team_one|default:"BYE" }}
+
+                            </h5>
+
+                            <div class="text-center my-3">
+
+                                <strong>VS</strong>
+
+                            </div>
+
+                            <h5>
+
+                                {{ match.team_two|default:"BYE" }}
+
+                            </h5>
+
+                            <hr>
+
+                            <span class="badge bg-secondary">
+
+                                {{ match.get_status_display }}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <p>
+
+                    No matches available.
+
+                </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+    {% else %}
+
+    <div class="alert alert-info">
+
+        Bracket has not been generated yet.
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
