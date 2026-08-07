@@ -1,0 +1,31 @@
+<div class="match">
+
+    <div class="team {% if match.winner == match.team_one %}winner{% endif %}">
+
+        <span class="team-name">
+
+            {% if match.team_one %}
+            {{ match.team_one.name }}
+            {% else %}
+            BYE
+            {% endif %}
+
+        </span>
+
+    </div>
+
+    <div class="team {% if match.winner == match.team_two %}winner{% endif %}">
+
+        <span class="team-name">
+
+            {% if match.team_two %}
+            {{ match.team_two.name }}
+            {% else %}
+            BYE
+            {% endif %}
+
+        </span>
+
+    </div>
+
+</div>

@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Search
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="mb-5">
+
+        <h2 class="fw-bold text-white">
+
+            Search Results
+
+        </h2>
+
+        {% if query %}
+
+        <p class="text-muted">
+
+            Showing results for
+
+            <strong class="text-white">
+
+                "{{ query }}"
+
+            </strong>
+
+        </p>
+
+        {% else %}
+
+        <p class="text-muted">
+
+            Enter a keyword to search tournaments, teams and games.
+
+        </p>
+
+        {% endif %}
+
+    </div>
+
+    {% if query %}
+
+    <!-- ===================== TOURNAMENTS ===================== -->
+
+    <section class="mb-5">
+
+        <h3 class="text-white fw-bold mb-4">
+
+            🏆 Tournaments
+
+        </h3>
+
+        {% if tournaments %}
+
+        <div class="row g-4">
+
+            {% for tournament in tournaments %}
+
+            <div class="col-xl-4 col-lg-6">
+
+                {% include "core/partials/tournament_card.html" %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="alert alert-dark border-secondary">
+
+            No tournaments found.
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- ===================== TEAMS ===================== -->
+
+    <section class="mb-5">
+
+        <h3 class="text-white fw-bold mb-4">
+
+            👥 Teams
+
+        </h3>
+
+        {% if teams %}
+
+        <div class="row g-4">
+
+            {% for team in teams %}
+
+            <div class="col-lg-4">
+
+                <div class="card bg-dark border-secondary h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="text-white">
+
+                            {{ team.name }}
+
+                        </h5>
+
+                        <p class="text-muted">
+
+                            {{ team.description|truncatewords:15 }}
+
+                        </p>
+
+                        <small class="text-secondary">
+
+                            Manager:
+
+                            {{ team.manager.username }}
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="alert alert-dark border-secondary">
+
+            No teams found.
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- ===================== GAMES ===================== -->
+
+    <section>
+
+        <h3 class="text-white fw-bold mb-4">
+
+            🎮 Games
+
+        </h3>
+
+        {% if games %}
+
+        <div class="row g-4">
+
+            {% for game in games %}
+
+            <div class="col-lg-3">
+
+                <div class="ga-game-card">
+
+                    <div class="ga-game-image">
+
+                        {% if game.logo %}
+
+                        <img src="{{ game.logo.url }}">
+
+                        {% else %}
+
+                        <div class="ga-game-placeholder">
+
+                            <i class="bi bi-controller"></i>
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="ga-game-body">
+
+                        <h5>
+
+                            {{ game.name }}
+
+                        </h5>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="alert alert-dark border-secondary">
+
+            No games found.
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

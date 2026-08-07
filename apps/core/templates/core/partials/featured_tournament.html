@@ -1,0 +1,101 @@
+{% if featured_tournament %}
+
+<section class="container py-5">
+
+    <div class="card border-0 shadow-lg overflow-hidden featured-card">
+
+        <div class="row g-0 align-items-center">
+
+            <div class="col-lg-5">
+
+                {% if featured_tournament.banner %}
+                <img src="{{ featured_tournament.banner.url }}" class="img-fluid w-100 featured-image">
+                {% else %}
+                <div class="featured-placeholder">
+
+                    🏆
+
+                </div>
+                {% endif %}
+
+            </div>
+
+            <div class="col-lg-7">
+
+                <div class="card-body p-5">
+
+                    <span class="badge bg-danger mb-3">
+
+                        ⭐ FEATURED TOURNAMENT
+
+                    </span>
+
+                    <h2 class="fw-bold text-white">
+
+                        {{ featured_tournament.name }}
+
+                    </h2>
+
+                    <p class="text-secondary mt-3">
+
+                        {{ featured_tournament.description|truncatewords:40 }}
+
+                    </p>
+
+                    <div class="row mt-4">
+
+                        <div class="col-md-6">
+
+                            <small class="text-secondary">
+
+                                Game
+
+                            </small>
+
+                            <h6 class="text-white">
+
+                                {{ featured_tournament.game.name }}
+
+                            </h6>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <small class="text-secondary">
+
+                                Prize Pool
+
+                            </small>
+
+                            <h6 class="text-warning">
+
+                                NPR {{ featured_tournament.prize_pool }}
+
+                            </h6>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4">
+
+                        <a href="{% url 'tournaments:detail' featured_tournament.slug %}" class="btn btn-primary">
+
+                            View Tournament
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endif %}

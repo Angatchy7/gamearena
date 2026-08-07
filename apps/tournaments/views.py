@@ -1,20 +1,19 @@
+# pyrefly: ignore [missing-import]
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from .permissions import require_tournament_manager
-from .forms import TournamentRegistrationForm
-from .models import TournamentRegistration
-from .services import register_team, publish_tournament
-from .models import TournamentRegistration
-from django.contrib import messages
 # pyrefly: ignore [missing-import]
-from apps.tournaments.models import Round
+from apps.tournaments.models import Match, Round
+from .permissions import require_tournament_manager
+from .forms import TournamentRegistrationForm, MatchResultForm
+from .models import TournamentRegistration, Tournament
+from django.contrib import messages
 
 from .forms import (
     TournamentCreateForm,
     TournamentUpdateForm,
 )
-from .models import Tournament
 from .services import (
     create_tournament,
     update_tournament,
@@ -23,10 +22,12 @@ from .services import (
     register_team,
     close_registration,
     generate_single_elimination_bracket,
+    advance_winner,
+    get_tournament_statistics,
 )
 
 
-class TournamentListView(LoginRequiredMixin, View):
+class TournamentListView(View):
     """
     Browse all tournaments.
     """
@@ -128,19 +129,18 @@ class TournamentCreateView(LoginRequiredMixin, View):
             },
         )
 
-class TournamentBracketView(LoginRequiredMixin, View):
+class TournamentBracketView(View):
     """
     Displays the tournament bracket.
     """
 
-    template_name = "tournaments/bracket.html"
+    template_name = "tournaments/brackets/fifa.html"
 
     def get(self, request, slug):
 
         tournament = get_object_or_404(
             Tournament,
             slug=slug,
-            organizer=request.user,
         )
 
         rounds = (
@@ -164,8 +164,8 @@ class TournamentBracketView(LoginRequiredMixin, View):
             },
         )
 
-        
-class TournamentDetailView(LoginRequiredMixin, View):
+
+class TournamentDetailView(View):
     """
     Displays tournament details.
     """
@@ -190,7 +190,7 @@ class TournamentDetailView(LoginRequiredMixin, View):
             },
         )
 
-class TournamentParticipantsView(LoginRequiredMixin, View):
+class TournamentParticipantsView(View):
     """
     Displays all registered participants of a tournament.
     """
@@ -227,7 +227,7 @@ class TournamentParticipantsView(LoginRequiredMixin, View):
 
 class TournamentDashboardView(LoginRequiredMixin, View):
     """
-    Organizer dashboard.
+    Organizer dashboard with complete tournament statistics.
     """
 
     template_name = "tournaments/dashboard.html"
@@ -235,60 +235,77 @@ class TournamentDashboardView(LoginRequiredMixin, View):
     def get(self, request, slug):
 
         tournament = get_object_or_404(
-            Tournament,
+            Tournament.objects.select_related(
+                "game",
+                "organizer",
+                "champion",
+            ),
             slug=slug,
             organizer=request.user,
         )
 
-        registrations = (
-            TournamentRegistration.objects.filter(
-                tournament=tournament,
-            ).select_related("team")
-        )
-
-        rounds = (
-            Round.objects.filter(
-                tournament=tournament,
-            )
-            .prefetch_related(
-                "matches__team_one",
-                "matches__team_two",
-                "matches__winner",
-            )
-            .order_by("order")
-        )
-
-        participant_count = registrations.count()
-
-        registration_percentage = (
-            int(
-                participant_count
-                * 100
-                / tournament.max_participants
-            )
-            if tournament.max_participants > 0
-            else 0
-        )
-
-        context = {
-
-            "tournament": tournament,
-
-            "registrations": registrations,
-
-            "participant_count": participant_count,
-
-            "registration_percentage": registration_percentage,
-
-            "rounds": rounds,
-
-        }
+        context = get_tournament_statistics(tournament=tournament)
 
         return render(
             request,
             self.template_name,
             context,
         )
+
+
+class TournamentStatisticsView(View):
+    """
+    Public page showing complete tournament statistics and team rankings.
+    """
+
+    template_name = "tournaments/statistics.html"
+
+    def get(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament.objects.select_related(
+                "game",
+                "organizer",
+                "champion",
+            ),
+            slug=slug,
+        )
+
+        context = get_tournament_statistics(tournament=tournament)
+
+        return render(
+            request,
+            self.template_name,
+            context,
+        )
+
+
+class TournamentLeaderboardView(View):
+    """
+    Public page displaying the dynamic tournament leaderboard.
+    """
+
+    template_name = "tournaments/leaderboard.html"
+
+    def get(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament.objects.select_related(
+                "game",
+                "organizer",
+                "champion",
+            ),
+            slug=slug,
+        )
+
+        context = get_tournament_statistics(tournament=tournament)
+
+        return render(
+            request,
+            self.template_name,
+            context,
+        )
+
 
 class CloseRegistrationView(LoginRequiredMixin, View):
     """
@@ -494,6 +511,74 @@ class TournamentUpdateView(LoginRequiredMixin, View):
             },
         )
 
+class MatchWinnerUpdateView(LoginRequiredMixin, View):
+    """
+    Allows the organizer to declare the winner of a match by submitting scores.
+    """
+
+    def post(self, request, match_id):
+
+        match = get_object_or_404(
+            Match.objects.select_related(
+                "round__tournament",
+                "team_one",
+                "team_two",
+            ),
+            id=match_id,
+            round__tournament__organizer=request.user,
+        )
+
+        form = MatchResultForm(request.POST, instance=match)
+
+        if form.is_valid():
+            match = form.save(commit=False)
+
+            if not match.team_one or not match.team_two:
+                messages.error(
+                    request,
+                    "Both teams must be present to record match scores.",
+                )
+                return redirect(
+                    "tournaments:match_detail",
+                    pk=match.pk,
+                )
+
+            if match.team_one_score > match.team_two_score:
+                match.winner = match.team_one
+            elif match.team_two_score > match.team_one_score:
+                match.winner = match.team_two
+            else:
+                messages.error(
+                    request,
+                    "Draws are not allowed. Scores must differ.",
+                )
+                return redirect(
+                    "tournaments:match_detail",
+                    pk=match.pk,
+                )
+
+            match.status = Match.Status.COMPLETED
+
+            match.save()
+
+            advance_winner(match=match)
+
+            messages.success(
+                request,
+                "Winner updated successfully.",
+            )
+
+            return redirect(
+                "tournaments:bracket",
+                slug=match.round.tournament.slug,
+            )
+
+        messages.error(request, "Invalid score values.")
+        return redirect(
+            "tournaments:match_detail",
+            pk=match.pk,
+        )
+
 class TournamentPublishView(LoginRequiredMixin, View):
     """
     Opens tournament registration.
@@ -562,4 +647,167 @@ class TournamentDeleteView(LoginRequiredMixin, View):
 
         return redirect(
             "tournaments:list",
+        )
+
+
+class MatchDetailView(LoginRequiredMixin, View):
+
+    template_name = "tournaments/match_detail.html"
+
+    def get(self, request, pk):
+
+        match = get_object_or_404(
+            Match.objects.select_related(
+                "round__tournament",
+                "team_one",
+                "team_two",
+                "winner",
+            ),
+            pk=pk,
+        )
+
+        tournament = match.round.tournament
+        form = MatchResultForm(instance=match)
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "match": match,
+                "tournament": tournament,
+                "form": form,
+                "can_edit": request.user == tournament.organizer,
+            },
+        )
+
+    def post(self, request, pk):
+
+        match = get_object_or_404(
+            Match.objects.select_related(
+                "round__tournament",
+                "team_one",
+                "team_two",
+            ),
+            pk=pk,
+        )
+
+        tournament = match.round.tournament
+
+        if tournament.organizer != request.user:
+            raise PermissionDenied
+
+        form = MatchResultForm(
+            request.POST,
+            instance=match,
+        )
+
+        if form.is_valid():
+
+            match = form.save(commit=False)
+
+            if not match.team_one or not match.team_two:
+                form.add_error(
+                    None,
+                    "Both teams must be present to record match scores.",
+                )
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "match": match,
+                        "tournament": tournament,
+                        "form": form,
+                        "can_edit": True,
+                    },
+                )
+
+            if match.team_one_score > match.team_two_score:
+
+                match.winner = match.team_one
+
+            elif match.team_two_score > match.team_one_score:
+
+                match.winner = match.team_two
+
+            else:
+
+                form.add_error(
+                    None,
+                    "Tie scores are not allowed.",
+                )
+
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "match": match,
+                        "tournament": tournament,
+                        "form": form,
+                        "can_edit": True,
+                    },
+                )
+
+            match.status = Match.Status.COMPLETED
+
+            match.save()
+
+            advance_winner(
+                match=match,
+            )
+
+            messages.success(
+                request,
+                "Match completed successfully.",
+            )
+
+            return redirect(
+                "tournaments:bracket",
+                slug=match.round.tournament.slug,
+            )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "match": match,
+                "tournament": tournament,
+                "form": form,
+                "can_edit": True,
+            },
+        )
+
+
+class TournamentMatchesView(View):
+    """
+    Displays all matches for a tournament grouped by round.
+    """
+
+    template_name = "tournaments/matches.html"
+
+    def get(self, request, slug):
+
+        tournament = get_object_or_404(
+            Tournament,
+            slug=slug,
+        )
+
+        rounds = (
+            Round.objects.filter(
+                tournament=tournament,
+            )
+            .prefetch_related(
+                "matches__team_one",
+                "matches__team_two",
+                "matches__winner",
+            )
+            .order_by("order")
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "tournament": tournament,
+                "rounds": rounds,
+            },
         )

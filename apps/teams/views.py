@@ -5,7 +5,7 @@ from django.views.generic import ListView
 
 from .forms import TeamCreateForm, TeamUpdateForm, TeamInvitationForm
 from .models import Team
-from .services import create_team, update_team, send_team_invitation
+from .services import create_team, update_team, send_team_invitation, get_team_profile_data
 
 
 class CreateTeamView(LoginRequiredMixin, View):
@@ -75,25 +75,26 @@ class TeamListView(LoginRequiredMixin, ListView):
             .order_by("-created_at")
         )
 
-class TeamDetailView(LoginRequiredMixin, View):
+class TeamDetailView(View):
+    """
+    Public team profile view showing statistics, active roster, tournaments, and recent matches.
+    """
 
     template_name = "teams/detail.html"
 
     def get(self, request, slug):
 
         team = get_object_or_404(
-            Team.objects.prefetch_related(
-                "members__user",
-            ),
+            Team.objects.select_related("manager"),
             slug=slug,
         )
+
+        context = get_team_profile_data(team=team)
 
         return render(
             request,
             self.template_name,
-            {
-                "team": team,
-            },
+            context,
         )
 
 

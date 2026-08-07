@@ -149,3 +149,108 @@ def reject_team_invitation(invitation):
     ).update(
         is_read=True,
     )
+
+
+from django.db.models import Q
+from apps.tournaments.models import TournamentRegistration, Match, Tournament
+
+
+def get_team_profile_data(*, team):
+    """
+    Computes complete profile statistics, roster, tournaments, and recent matches for a team.
+    """
+
+    members = (
+        TeamMember.objects.filter(
+            team=team,
+            is_active=True,
+        )
+        .select_related("user")
+        .order_by("joined_at")
+    )
+
+    captain = team.manager
+
+    registrations = (
+        TournamentRegistration.objects.filter(
+            team=team,
+        )
+        .select_related("tournament", "tournament__game")
+        .order_by("-registered_at")
+    )
+
+    active_tournaments = [
+        reg.tournament
+        for reg in registrations
+        if reg.tournament.status
+        in [
+            Tournament.Status.REGISTRATION_OPEN,
+            Tournament.Status.REGISTRATION_CLOSED,
+            Tournament.Status.LIVE,
+            Tournament.Status.DRAFT,
+        ]
+    ]
+
+    tournament_history = [
+        reg.tournament
+        for reg in registrations
+        if reg.tournament.status == Tournament.Status.COMPLETED
+    ]
+
+    all_team_matches = list(
+        Match.objects.filter(Q(team_one=team) | Q(team_two=team))
+        .select_related("round__tournament", "team_one", "team_two", "winner")
+        .order_by("-id")
+    )
+
+    completed_matches = [
+        m for m in all_team_matches if m.status == Match.Status.COMPLETED
+    ]
+
+    wins = sum(1 for m in completed_matches if m.winner == team)
+    losses = sum(1 for m in completed_matches if m.winner and m.winner != team)
+    matches_played = len(completed_matches)
+
+    win_rate = (
+        round((wins / matches_played) * 100, 1)
+        if matches_played > 0
+        else 0.0
+    )
+
+    processed_recent_matches = []
+    for match in all_team_matches[:10]:
+        is_team_one = match.team_one == team
+        opponent = match.team_two if is_team_one else match.team_one
+        team_score = (
+            match.team_one_score if is_team_one else match.team_two_score
+        )
+        opponent_score = (
+            match.team_two_score if is_team_one else match.team_one_score
+        )
+        is_winner = (match.winner == team) if match.winner else False
+
+        processed_recent_matches.append(
+            {
+                "match": match,
+                "tournament": match.round.tournament,
+                "round": match.round,
+                "opponent": opponent,
+                "team_score": team_score,
+                "opponent_score": opponent_score,
+                "is_winner": is_winner,
+                "is_completed": (match.status == Match.Status.COMPLETED),
+            }
+        )
+
+    return {
+        "team": team,
+        "captain": captain,
+        "members": members,
+        "active_tournaments": active_tournaments,
+        "tournament_history": tournament_history,
+        "wins": wins,
+        "losses": losses,
+        "matches_played": matches_played,
+        "win_rate": win_rate,
+        "recent_matches": processed_recent_matches,
+    }

@@ -1,10 +1,8 @@
 from datetime import timezone
 from django import forms
-
-from .models import Tournament
 # pyrefly: ignore [missing-import]
 from apps.teams.models import Team
-from .models import TournamentRegistration
+from .models import Match, Tournament, TournamentRegistration
 
 
 class TournamentCreateForm(forms.ModelForm):
@@ -244,3 +242,27 @@ class TournamentRegistrationForm(forms.Form):
             manager=user,
             is_active=True,
         ).order_by("name")
+
+
+class MatchResultForm(forms.ModelForm):
+
+    class Meta:
+        model = Match
+        fields = (
+            "team_one_score",
+            "team_two_score",
+        )
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        self.fields["team_one_score"].widget.attrs.update({
+            "class": "form-control text-center",
+            "min": 0,
+        })
+
+        self.fields["team_two_score"].widget.attrs.update({
+            "class": "form-control text-center",
+            "min": 0,
+        })

@@ -1,32 +1,40 @@
 {% extends "base.html" %}
 
 {% block title %}
-Tournaments
+Browse Tournaments
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid">
 
-    <div class="d-flex justify-content-between mb-3">
+    <!-- ================= HEADER ================= -->
 
-        <h2>{{ page_title }}</h2>
+    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap">
 
         <div>
 
-            <a href="{% url 'tournaments:list' %}" class="btn btn-outline-primary">
+            <h1 class="fw-bold mb-2">
+                🏆 {{ page_title }}
+            </h1>
 
-                Browse
+            <p class="text-muted mb-0">
+                Explore tournaments, register your team and compete.
+            </p>
 
-            </a>
+        </div>
 
-            <a href="{% url 'tournaments:my_list' %}" class="btn btn-outline-success">
+        <div class="mt-3 mt-lg-0">
+
+            <a href="{% url 'tournaments:my_list' %}" class="btn btn-outline-light me-2">
 
                 My Tournaments
 
             </a>
 
             <a href="{% url 'tournaments:create' %}" class="btn btn-primary">
+
+                <i class="bi bi-plus-circle me-2"></i>
 
                 Create Tournament
 
@@ -36,88 +44,169 @@ Tournaments
 
     </div>
 
-    {% if tournaments %}
+    <!-- ================= SEARCH ================= -->
 
-    <table class="table table-striped">
+    <div class="card border-0 shadow-sm mb-5">
 
-        <thead>
+        <div class="card-body">
 
-            <tr>
+            <div class="row">
 
-                <th>Name</th>
-                <th>Game</th>
-                <th>Organizer</th>
-                <th>Status</th>
-                <th></th>
+                <div class="col-lg-8">
 
-            </tr>
+                    <input class="form-control form-control-lg" type="text" placeholder="Search tournaments...">
 
-        </thead>
+                </div>
 
-        <tbody>
+                <div class="col-lg-4 mt-3 mt-lg-0">
 
-            {% for tournament in tournaments %}
+                    <select class="form-select form-select-lg">
 
-            <tr>
+                        <option>All Games</option>
 
-                <td>{{ tournament.name }}</td>
-                <td>{{ tournament.game }}</td>
-                <td>{{ tournament.organizer.username }}</td>
-                <td>
-                    {% if tournament.status == tournament.Status.DRAFT %}
+                    </select>
 
-                    <span class="badge bg-secondary">
-                        {{ tournament.get_status_display }}
-                    </span>
+                </div>
 
-                    {% elif tournament.status == tournament.Status.REGISTRATION_OPEN %}
+            </div>
 
-                    <span class="badge bg-success">
-                        {{ tournament.get_status_display }}
-                    </span>
+        </div>
 
-                    {% elif tournament.status == tournament.Status.REGISTRATION_CLOSED %}
+    </div>
 
-                    <span class="badge bg-warning text-dark">
-                        {{ tournament.get_status_display }}
-                    </span>
+    <!-- ================= TOURNAMENTS ================= -->
 
-                    {% elif tournament.status == tournament.Status.LIVE %}
+    <div class="row">
 
-                    <span class="badge bg-danger">
-                        {{ tournament.get_status_display }}
-                    </span>
+        {% for tournament in tournaments %}
 
-                    {% else %}
+        <div class="col-md-6 col-xl-4 mb-4">
 
-                    <span class="badge bg-dark">
-                        {{ tournament.get_status_display }}
-                    </span>
+            <div class="card h-100 border-0 shadow-sm tournament-card">
 
-                    {% endif %}
-                </td>
+                <div class="card-body">
 
-                <td>
+                    <!-- Game -->
 
-                    <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-sm btn-outline-primary">
-                        View
+                    <small class="text-primary fw-semibold">
+
+                        {{ tournament.game }}
+
+                    </small>
+
+                    <h4 class="fw-bold mt-2">
+
+                        {{ tournament.name }}
+
+                    </h4>
+
+                    <div class="my-3">
+
+                        {% if tournament.status == tournament.Status.DRAFT %}
+
+                        <span class="badge bg-secondary px-3 py-2">
+                            Draft
+                        </span>
+
+                        {% elif tournament.status == tournament.Status.REGISTRATION_OPEN %}
+
+                        <span class="badge bg-success px-3 py-2">
+                            Registration Open
+                        </span>
+
+                        {% elif tournament.status == tournament.Status.REGISTRATION_CLOSED %}
+
+                        <span class="badge bg-warning text-dark px-3 py-2">
+                            Registration Closed
+                        </span>
+
+                        {% elif tournament.status == tournament.Status.LIVE %}
+
+                        <span class="badge bg-danger px-3 py-2">
+                            🔴 Live
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge bg-dark px-3 py-2">
+
+                            {{ tournament.get_status_display }}
+
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <div class="text-muted small">
+
+                            Organizer
+
+                        </div>
+
+                        <strong>
+
+                            {{ tournament.organizer.username }}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <div class="card-footer bg-transparent border-0">
+
+                    <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-primary w-100">
+
+                        View Tournament
+
                     </a>
 
-                </td>
+                </div>
 
-            </tr>
+            </div>
 
-            {% endfor %}
+        </div>
 
-        </tbody>
+        {% empty %}
 
-    </table>
+        <div class="col-12">
 
-    {% else %}
+            <div class="card border-0 shadow-sm">
 
-    <p>No tournaments found.</p>
+                <div class="card-body text-center py-5">
 
-    {% endif %}
+                    <i class="bi bi-trophy display-3 text-secondary"></i>
+
+                    <h3 class="mt-4">
+
+                        No tournaments found
+
+                    </h3>
+
+                    <p class="text-muted">
+
+                        Create the first tournament and start competing.
+
+                    </p>
+
+                    <a href="{% url 'tournaments:create' %}" class="btn btn-primary">
+
+                        Create Tournament
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
 
 </div>
 

@@ -189,6 +189,14 @@ class Tournament(models.Model):
         default=Status.DRAFT,
     )
 
+    champion = models.ForeignKey(
+        Team,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="championships_won",
+    )
+
     visibility = models.CharField(
         max_length=20,
         choices=Visibility.choices,
@@ -301,9 +309,9 @@ class Round(models.Model):
     """
 
     tournament = models.ForeignKey(
-        Tournament,
-        on_delete=models.CASCADE,
-        related_name="rounds",
+    Tournament,
+    on_delete=models.CASCADE,
+    related_name="rounds",
     )
 
     name = models.CharField(
@@ -333,9 +341,9 @@ class Match(models.Model):
         COMPLETED = "COMPLETED", "Completed"
 
     round = models.ForeignKey(
-        Round,
-        on_delete=models.CASCADE,
-        related_name="matches",
+    Round,
+    on_delete=models.CASCADE,
+    related_name="matches",
     )
 
     match_number = models.PositiveIntegerField()

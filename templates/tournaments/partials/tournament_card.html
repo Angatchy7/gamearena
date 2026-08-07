@@ -1,0 +1,152 @@
+<div class="card ga-tournament-card h-100">
+
+    <div class="ga-card-banner">
+
+        {% if tournament.banner %}
+
+        <img src="{{ tournament.banner.url }}" alt="{{ tournament.name }}">
+
+        {% else %}
+
+        <div class="ga-card-placeholder">
+
+            <i class="bi bi-controller"></i>
+
+        </div>
+
+        {% endif %}
+
+        <div class="ga-card-overlay">
+
+            <span class="badge bg-primary">
+
+                {{ tournament.game.name }}
+
+            </span>
+
+            {% if tournament.status == tournament.Status.REGISTRATION_OPEN %}
+
+            <span class="badge bg-success">
+
+                OPEN
+
+            </span>
+
+            {% elif tournament.status == tournament.Status.LIVE %}
+
+            <span class="badge bg-danger">
+
+                LIVE
+
+            </span>
+
+            {% elif tournament.status == tournament.Status.COMPLETED %}
+
+            <span class="badge bg-secondary">
+
+                COMPLETED
+
+            </span>
+
+            {% else %}
+
+            <span class="badge bg-warning text-dark">
+
+                {{ tournament.get_status_display }}
+
+            </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="card-body">
+
+        <h5>
+
+            {{ tournament.name }}
+
+        </h5>
+
+        <p class="ga-description">
+
+            {{ tournament.description|truncatewords:10 }}
+
+        </p>
+
+        <div class="ga-progress-label">
+
+            <span>
+
+                Teams Registered
+
+            </span>
+
+            <span>
+
+                {{ tournament.registrations.count }}/{{ tournament.max_participants }}
+
+            </span>
+
+        </div>
+
+        <div class="progress ga-progress">
+
+            <div class="progress-bar"
+                style="width:{% widthratio tournament.registrations.count tournament.max_participants 100 %}%">
+
+            </div>
+
+        </div>
+
+        <div class="ga-card-stats">
+
+            <div class="ga-stat">
+
+                <small>Prize</small>
+
+                <strong>
+
+                    NPR {{ tournament.prize_pool }}
+
+                </strong>
+
+            </div>
+
+            <div class="ga-stat">
+
+                <small>Organizer</small>
+
+                <strong>
+
+                    {{ tournament.organizer.username }}
+
+                </strong>
+
+            </div>
+
+            <div class="ga-stat">
+
+                <small>Teams</small>
+
+                <strong>
+
+                    {{ tournament.registrations.count }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn ga-view-btn w-100">
+
+            View Tournament
+
+        </a>
+
+    </div>
+
+</div>

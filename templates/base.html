@@ -53,6 +53,8 @@
 
     {% include "includes/navbar.html" %}
 
+    {% if user.is_authenticated %}
+
     <div class="app-container">
 
         {% include "includes/sidebar.html" %}
@@ -61,13 +63,22 @@
 
             {% include "includes/messages.html" %}
 
-            {% block content %}
+            {% else %}
 
-            {% endblock %}
+            <main class="container mt-4">
 
-        </main>
+                {% include "includes/messages.html" %}
 
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+
+            </main>
+
+            {% if user.is_authenticated %}
     </div>
+    {% endif %}
 
     {% include "includes/footer.html" %}
 
@@ -75,10 +86,10 @@
 
     <script src="{% static 'js/main.js' %}"></script>
 
+    <script src="{% static 'js/search.js' %}"></script>
+
     {% block extra_js %}
-
     {% endblock %}
-
 </body>
 
 </html>

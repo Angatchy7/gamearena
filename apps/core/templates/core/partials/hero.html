@@ -1,0 +1,154 @@
+<section class="hero-section">
+
+    <div class="container">
+
+        <div class="row align-items-center g-5">
+
+            <!-- Left -->
+
+            <div class="col-lg-6">
+
+                <span class="hero-tag">
+
+                    🎮 Nepal's Premier Esports Platform
+
+                </span>
+
+                <h1 class="hero-title mt-4">
+
+                    Compete.<br>
+
+                    Organize.<br>
+
+                    Become a Champion.
+
+                </h1>
+
+                <p class="hero-text mt-4">
+
+                    Join competitive tournaments, create your own events,
+                    manage teams, generate brackets automatically and
+                    experience esports like never before.
+
+                </p>
+
+                <div class="d-flex flex-wrap gap-3 mt-5">
+
+                    <a href="{% url 'tournaments:list' %}" class="btn btn-primary btn-lg px-4">
+
+                        <i class="bi bi-trophy-fill me-2"></i>
+
+                        Browse Tournaments
+
+                    </a>
+
+                    {% if user.is_authenticated %}
+
+                    <a href="{% url 'tournaments:create' %}" class="btn btn-outline-light btn-lg px-4">
+
+                        <i class="bi bi-plus-circle-fill me-2"></i>
+
+                        Create Tournament
+
+                    </a>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- Stats -->
+
+                <div class="hero-stats mt-5">
+
+                    <div class="hero-stat">
+
+                        <h3>
+
+                            {{ tournament_count|default:"0" }}
+
+                        </h3>
+
+                        <span>
+
+                            Tournaments
+
+                        </span>
+
+                    </div>
+
+                    <div class="hero-stat">
+
+                        <h3>
+
+                            {{ game_count|default:"0" }}
+
+                        </h3>
+
+                        <span>
+
+                            Games
+
+                        </span>
+
+                    </div>
+
+                    <div class="hero-stat">
+
+                        <h3>
+
+                            {{ team_count|default:"0" }}
+
+                        </h3>
+
+                        <span>
+
+                            Teams
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Right -->
+
+            <div class="col-lg-6">
+
+                <div class="hero-image-wrapper">
+
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1400" class="hero-image"
+                        alt="GameArena">
+
+                    <div class="hero-floating-card">
+
+                        <small class="text-success">
+
+                            ● LIVE NOW
+
+                        </small>
+
+                        <h6 class="mt-2 mb-1">
+
+                            PUBG Summer Championship
+
+                        </h6>
+
+                        <small>
+
+                            16 Teams Competing
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

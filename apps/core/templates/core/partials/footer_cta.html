@@ -1,0 +1,37 @@
+<section class="container py-5">
+
+    <div class="card border-0 shadow-lg text-center p-5 footer-cta">
+
+        <h2 class="text-white mb-3">
+
+            Ready to host your next tournament?
+
+        </h2>
+
+        <p class="text-secondary">
+
+            Create your own esports tournament in minutes.
+
+        </p>
+
+        {% if user.is_authenticated %}
+
+        <a href="{% url 'tournaments:create' %}" class="btn btn-primary btn-lg">
+
+            Create Tournament
+
+        </a>
+
+        {% else %}
+
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">
+
+            Join GameArena
+
+        </a>
+
+        {% endif %}
+
+    </div>
+
+</section>

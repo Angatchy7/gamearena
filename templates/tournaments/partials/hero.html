@@ -1,0 +1,63 @@
+<section class="hero-section">
+
+    <div class="container">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-6">
+
+                <span class="hero-tag">
+                    🎮 Nepal's Esports Tournament Platform
+                </span>
+
+                <h1 class="hero-title mt-3">
+
+                    Compete.<br>
+
+                    Organize.<br>
+
+                    Win.
+
+                </h1>
+
+                <p class="hero-text mt-4">
+
+                    Create tournaments, register your team,
+                    generate brackets automatically,
+                    and compete like professionals.
+
+                </p>
+
+                <div class="mt-4">
+
+                    <a href="{% url 'tournaments:list' %}" class="btn btn-primary btn-lg">
+
+                        Browse Tournaments
+
+                    </a>
+
+                    {% if user.is_authenticated %}
+
+                    <a href="{% url 'tournaments:create' %}" class="btn btn-outline-light btn-lg ms-3">
+
+                        Create Tournament
+
+                    </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 text-center">
+
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=900" class="hero-image">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

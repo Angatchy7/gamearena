@@ -1,0 +1,23 @@
+<section class="container py-5">
+
+    <h2 class="fw-bold text-white mb-4">
+
+        🆕 Latest Tournaments
+
+    </h2>
+
+    <div class="row g-4">
+
+        {% for tournament in latest_tournaments %}
+
+        <div class="col-lg-4">
+
+            {% include "core/partials/tournament_card.html" with tournament=tournament %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>

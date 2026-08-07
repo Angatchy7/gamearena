@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from .views import RegisterView
+from .views import RegisterView, PlayerProfileView
 
 app_name = 'accounts'
 
@@ -20,5 +20,10 @@ urlpatterns = [
         'register/',
         RegisterView.as_view(),
         name='register',
+    ),
+    path(
+        'profile/<str:username>/',
+        PlayerProfileView.as_view(),
+        name='profile',
     ),
 ]

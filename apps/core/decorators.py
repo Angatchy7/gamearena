@@ -2,6 +2,7 @@ from functools import wraps
 
 from django.core.exceptions import PermissionDenied
 
+# pyrefly: ignore [missing-import]
 from apps.accounts.models import User
 
 

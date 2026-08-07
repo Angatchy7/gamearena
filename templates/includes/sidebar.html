@@ -1,37 +1,125 @@
-<div class="ga-sidebar">
+<div class="ga-sidebar d-flex flex-column">
 
-    <h4 class="text-center text-white mb-4">
-        🎮 GameArena
-    </h4>
+    <!-- Logo -->
+    <div class="sidebar-header text-center mb-4">
 
-    <a href="{% url 'dashboard:home' %}">
-        <i class="bi bi-speedometer2"></i>
-        Dashboard
-    </a>
+        <div class="sidebar-logo mx-auto mb-3">
+            <i class="bi bi-controller"></i>
+        </div>
 
-    <a href="{% url 'teams:list' %}">
-        <i class="bi bi-people-fill"></i>
-        My Teams
-    </a>
+        <h4 class="text-white fw-bold mb-0">
+            GameArena
+        </h4>
 
-    <a href="{% url 'teams:create' %}">
-        <i class="bi bi-plus-circle"></i>
-        Create Team
-    </a>
+        <small class="text-secondary">
+            Esports Platform
+        </small>
 
-    <a href="{% url 'tournaments:list' %}">
-        <i class="bi bi-trophy-fill"></i>
-        Tournaments
-    </a>
+    </div>
 
-    <a href="{% url 'tournaments:create' %}">
-        <i class="bi bi-plus-square"></i>
-        Create Tournament
-    </a>
+    <!-- Navigation -->
+    <div class="sidebar-menu flex-grow-1">
 
-    <a href="{% url 'notifications:list' %}">
-        <i class="bi bi-bell-fill"></i>
-        Notifications
-    </a>
+        <!-- HOME -->
+        <small class="menu-title">
+            HOME
+        </small>
+
+        <a href="{% url 'core:home' %}" class="sidebar-link active">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Home</span>
+        </a>
+
+        <hr>
+
+        <!-- ARENA -->
+        <small class="menu-title">
+            ⚡ ARENA
+        </small>
+
+        <a href="{% url 'tournaments:create' %}" class="sidebar-link sidebar-action">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Create Tournament</span>
+        </a>
+
+        <a href="{% url 'teams:create' %}" class="sidebar-link sidebar-action">
+            <i class="bi bi-people-fill"></i>
+            <span>Create Team</span>
+        </a>
+
+        <hr>
+
+        <!-- TOURNAMENTS -->
+        <small class="menu-title">
+            TOURNAMENTS
+        </small>
+
+        <a href="{% url 'tournaments:list' %}" class="sidebar-link">
+            <i class="bi bi-trophy-fill"></i>
+            <span>Discover</span>
+        </a>
+
+        <a href="{% url 'tournaments:my_list' %}" class="sidebar-link">
+            <i class="bi bi-grid-fill"></i>
+            <span>My Tournaments</span>
+        </a>
+
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-calendar-event-fill"></i>
+            <span>Calendar</span>
+        </a>
+
+        <hr>
+
+        <!-- TEAMS -->
+        <small class="menu-title">
+            TEAMS
+        </small>
+
+        <a href="{% url 'teams:list' %}" class="sidebar-link">
+            <i class="bi bi-people-fill"></i>
+            <span>My Teams</span>
+        </a>
+
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-envelope-fill"></i>
+            <span>Invitations</span>
+        </a>
+
+        <hr>
+
+        <!-- GAMES -->
+        <small class="menu-title">
+            GAMES
+        </small>
+
+        <a href="{% url 'tournaments:list' %}" class="sidebar-link">
+            <i class="bi bi-controller"></i>
+            <span>Browse Games</span>
+        </a>
+
+        <hr>
+
+        <!-- PLATFORM -->
+        <small class="menu-title">
+            PLATFORM
+        </small>
+
+        <a href="{% url 'dashboard:home' %}" class="sidebar-link">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'notifications:list' %}" class="sidebar-link">
+            <i class="bi bi-bell-fill"></i>
+            <span>Notifications</span>
+        </a>
+
+        <a href="#" class="sidebar-link">
+            <i class="bi bi-gear-fill"></i>
+            <span>Settings</span>
+        </a>
+
+    </div>
 
 </div>

@@ -1,5 +1,6 @@
+# pyrefly: ignore [missing-import]
 from apps.accounts.models import User
 
 ADMIN = User.Role.ADMIN
-CAPTAIN = User.Role.CAPTAIN
+MANAGER = User.Role.MANAGER
 PLAYER = User.Role.PLAYER

@@ -1,0 +1,41 @@
+<section class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2 class="fw-bold text-white">
+            🔥 Live Tournaments
+        </h2>
+
+        <a href="{% url 'tournaments:list' %}" class="text-decoration-none">
+            View All →
+        </a>
+
+    </div>
+
+    <div class="row g-4">
+
+        {% for tournament in live_tournaments %}
+
+        <div class="col-lg-4">
+
+            {% include "core/partials/tournament_card.html" with tournament=tournament %}
+
+        </div>
+
+        {% empty %}
+
+        <div class="col-12">
+
+            <div class="alert alert-secondary">
+
+                No live tournaments.
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>

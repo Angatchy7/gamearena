@@ -14,6 +14,11 @@ from .views import (
     CloseRegistrationView,
     GenerateBracketView,
     TournamentBracketView,
+    MatchWinnerUpdateView,
+    MatchDetailView,
+    TournamentMatchesView,
+    TournamentStatisticsView,
+    TournamentLeaderboardView,
 )   
 
 app_name = "tournaments"
@@ -39,9 +44,9 @@ urlpatterns = [
     ),
 
     path(
-    "<slug:slug>/register/",
-    TournamentRegisterView.as_view(),
-    name="register",
+        "<slug:slug>/register/",
+        TournamentRegisterView.as_view(),
+        name="register",
     ),
 
     path(
@@ -75,9 +80,39 @@ urlpatterns = [
     ),
 
     path(
+        "match/<int:match_id>/update/",
+        MatchWinnerUpdateView.as_view(),
+        name="match_winner_update",
+    ),
+
+    path(
+        "<slug:slug>/matches/",
+        TournamentMatchesView.as_view(),
+        name="matches",
+    ),
+
+    path(
+        "match/<int:pk>/",
+        MatchDetailView.as_view(),
+        name="match_detail",
+    ),
+
+    path(
         "<slug:slug>/bracket/",
         TournamentBracketView.as_view(),
         name="bracket",
+    ),
+
+    path(
+        "<slug:slug>/statistics/",
+        TournamentStatisticsView.as_view(),
+        name="statistics",
+    ),
+
+    path(
+        "<slug:slug>/leaderboard/",
+        TournamentLeaderboardView.as_view(),
+        name="leaderboard",
     ),
 
 

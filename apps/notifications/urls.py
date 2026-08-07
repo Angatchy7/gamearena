@@ -4,6 +4,8 @@ from .views import (
     NotificationListView,
     AcceptInvitationView,
     RejectInvitationView,
+    MarkAsReadView,
+    MarkAllAsReadView,
 )
 
 app_name = "notifications"
@@ -13,6 +15,18 @@ urlpatterns = [
         "",
         NotificationListView.as_view(),
         name="list",
+    ),
+
+    path(
+        "<int:pk>/read/",
+        MarkAsReadView.as_view(),
+        name="mark_as_read",
+    ),
+
+    path(
+        "read-all/",
+        MarkAllAsReadView.as_view(),
+        name="mark_all_read",
     ),
 
     path(

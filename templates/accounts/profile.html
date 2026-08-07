@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ player.username }} - Player Profile
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 py-2">
+
+    <!-- Player Header Banner -->
+    <div class="card bg-dark text-white border-0 shadow-lg mb-4 overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--border) !important;">
+        <div class="card-body p-4 p-lg-5">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center shadow-sm" style="width: 100px; height: 100px; font-size: 34px; background: linear-gradient(135deg, #2563eb, #3b82f6); border: 3px solid rgba(255,255,255,0.1);">
+                        {{ player.username|slice:":2"|upper }}
+                    </div>
+                </div>
+                <div class="col mt-3 mt-md-0">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="badge bg-primary px-3 py-1.5 fs-7">
+                            <i class="bi bi-person-fill me-1"></i> Player Profile
+                        </span>
+                        <span class="badge bg-secondary px-3 py-1.5 fs-7">
+                            <i class="bi bi-shield-check me-1"></i> {{ player.role }}
+                        </span>
+                    </div>
+                    <h1 class="fw-bold text-white mb-2 display-6">
+                        {{ player.username }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-calendar-check me-1"></i> Member since {{ player.date_joined|date:"d M Y" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Performance Stats Cards (4 Cards) -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 bg-dark text-white p-2" style="background: #1e293b !important; border-radius: 14px;">
+                <div class="card-body text-center p-3">
+                    <div class="text-muted small text-uppercase fw-bold mb-1">
+                        <i class="bi bi-controller text-primary me-1"></i> Matches Played
+                    </div>
+                    <h2 class="fw-bold mb-0 text-primary">{{ matches_played }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 bg-dark text-white p-2" style="background: #1e293b !important; border-radius: 14px;">
+                <div class="card-body text-center p-3">
+                    <div class="text-muted small text-uppercase fw-bold mb-1">
+                        <i class="bi bi-trophy-fill text-success me-1"></i> Victories
+                    </div>
+                    <h2 class="fw-bold mb-0 text-success">{{ wins }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 bg-dark text-white p-2" style="background: #1e293b !important; border-radius: 14px;">
+                <div class="card-body text-center p-3">
+                    <div class="text-muted small text-uppercase fw-bold mb-1">
+                        <i class="bi bi-x-circle-fill text-danger me-1"></i> Defeats
+                    </div>
+                    <h2 class="fw-bold mb-0 text-danger">{{ losses }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 bg-dark text-white p-2" style="background: #1e293b !important; border-radius: 14px;">
+                <div class="card-body text-center p-3">
+                    <div class="text-muted small text-uppercase fw-bold mb-1">
+                        <i class="bi bi-percent text-info me-1"></i> Win Rate
+                    </div>
+                    <h2 class="fw-bold mb-0 text-info">{{ win_rate }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievements Section -->
+    {% if achievements %}
+    <h4 class="fw-bold mb-3 text-white">
+        <i class="bi bi-award-fill text-warning me-2"></i> Player Achievements
+    </h4>
+    <div class="row g-3 mb-4">
+        {% for ach in achievements %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm border-0 bg-dark text-white h-100 p-3" style="background: #1e293b !important; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08) !important;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="fs-1 px-2 py-1 rounded" style="background: rgba(255,255,255,0.05);">
+                        {{ ach.icon }}
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h6 class="fw-bold text-white mb-0">{{ ach.title }}</h6>
+                        </div>
+                        <small class="text-muted d-block">{{ ach.description }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+
+        <!-- Left Column: Current Teams & Recent Matches -->
+        <div class="col-lg-8">
+            
+            <!-- SECTION 1: Current Teams -->
+            <h4 class="fw-bold mb-3 text-white">
+                <i class="bi bi-people-fill text-primary me-2"></i> Current Teams
+            </h4>
+            <div class="card shadow-sm border-0 bg-dark text-white mb-4" style="background: #1e293b !important; border-radius: 16px;">
+                <div class="card-body p-3 p-md-4">
+                    {% if memberships %}
+                        <div class="row g-3">
+                            {% for m in memberships %}
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 rounded d-flex align-items-center justify-content-between" style="background: #111827; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; font-size: 14px; background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                                            {{ m.team.name|slice:":2"|upper }}
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold text-white mb-1">{{ m.team.name }}</h6>
+                                            <span class="badge bg-dark text-info border border-info px-2.5 py-0.5 fs-8">
+                                                {{ m.get_team_role_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'teams:detail' m.team.slug %}" class="btn btn-outline-primary btn-sm px-3 py-1.5">
+                                        View
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-people display-6 mb-2 d-block opacity-50"></i>
+                            <span>Not currently a member of any team.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- SECTION 2: Recent Matches -->
+            <h4 class="fw-bold mb-3 text-white">
+                <i class="bi bi-controller text-warning me-2"></i> Recent Matches
+            </h4>
+            <div class="card shadow-sm border-0 bg-dark text-white mb-4" style="background: #1e293b !important; border-radius: 16px;">
+                <div class="card-body p-3 p-md-4">
+                    {% if recent_matches %}
+                        <div class="d-flex flex-column gap-2.5">
+                            {% for item in recent_matches %}
+                            <div class="p-3 rounded" style="background: #111827; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="row align-items-center g-2">
+                                    <div class="col-12 col-md-4">
+                                        <div class="small text-muted text-uppercase fw-semibold">{{ item.tournament.name }}</div>
+                                        <div class="small text-white-50">{{ item.user_team.name }}</div>
+                                    </div>
+                                    <div class="col-12 col-md-5 text-md-center">
+                                        <div class="d-flex align-items-center justify-content-md-center gap-2">
+                                            <span class="fw-bold text-white fs-6">{{ item.user_team.name }}</span>
+                                            <span class="badge {% if item.is_completed %}{% if item.is_winner %}bg-success text-white{% else %}bg-danger text-white{% endif %}{% else %}bg-secondary text-white{% endif %} fs-6 px-3 py-1">
+                                                {{ item.user_score }} - {{ item.opponent_score }}
+                                            </span>
+                                            <span class="fw-semibold text-white-50 fs-6">
+                                                {% if item.opponent %}{{ item.opponent.name }}{% else %}BYE{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-3 text-md-end">
+                                        {% if item.is_completed %}
+                                            {% if item.is_winner %}
+                                                <span class="badge bg-success bg-opacity-20 text-success border border-success px-3 py-1.5">WIN</span>
+                                            {% else %}
+                                                <span class="badge bg-danger bg-opacity-20 text-danger border border-danger px-3 py-1.5">LOSS</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary bg-opacity-20 text-secondary border border-secondary px-3 py-1.5">SCHEDULED</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <span>No match records found.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Tournament History & Profile Info -->
+        <div class="col-lg-4">
+            
+            <!-- Tournament History -->
+            <h4 class="fw-bold mb-3 text-white">
+                <i class="bi bi-clock-history text-info me-2"></i> Tournament History
+            </h4>
+            <div class="card shadow-sm border-0 bg-dark text-white mb-4" style="background: #1e293b !important; border-radius: 16px;">
+                <div class="card-body p-3 p-md-4">
+                    {% if tournament_history %}
+                        <div class="d-flex flex-column gap-2.5">
+                            {% for item in tournament_history %}
+                            <div class="p-3 rounded d-flex justify-content-between align-items-center" style="background: #111827; border: 1px solid rgba(255,255,255,0.05);">
+                                <div>
+                                    <span class="badge bg-secondary px-2 py-0.5 fs-8 mb-1">{{ item.tournament.game.name }}</span>
+                                    <h6 class="fw-bold text-white mb-1">{{ item.tournament.name }}</h6>
+                                    <small class="text-muted">Played with {{ item.team.name }}</small>
+                                </div>
+                                <a href="{% url 'tournaments:detail' item.tournament.slug %}" class="btn btn-outline-secondary btn-sm px-2.5 py-1">
+                                    View
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <span>No tournament history recorded.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Profile Info Card -->
+            <div class="card shadow-sm border-0 bg-dark text-white" style="background: #1e293b !important; border-radius: 16px;">
+                <div class="card-header bg-transparent border-secondary py-3 px-4">
+                    <h5 class="mb-0 fw-bold text-white">Player Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                        <span class="text-muted">Username</span>
+                        <span class="fw-semibold text-white">{{ player.username }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                        <span class="text-muted">Role</span>
+                        <span class="fw-semibold text-white">{{ player.role }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted">Joined</span>
+                        <span class="fw-semibold text-white">{{ player.date_joined|date:"d M Y" }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

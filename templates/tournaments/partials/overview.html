@@ -1,0 +1,115 @@
+<!-- Tournament Overview Card -->
+<div class="card border-0 shadow-sm mb-4 text-white" style="background: #1e293b; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08) !important;">
+    <div class="card-body p-4">
+        <h4 class="fw-bold text-white mb-3 fs-5">
+            <i class="bi bi-info-circle-fill text-primary me-2"></i> Tournament Overview
+        </h4>
+
+        {% if tournament.description %}
+            <p class="text-white-50 fs-6 mb-4" style="line-height: 1.6;">
+                {{ tournament.description }}
+            </p>
+        {% else %}
+            <p class="text-muted italic mb-4">
+                No description provided for this tournament.
+            </p>
+        {% endif %}
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-calendar-event fs-5 text-primary me-2"></i>
+                        <span class="text-muted small text-uppercase fw-semibold">Registration Deadline</span>
+                    </div>
+                    <strong class="text-white fs-6 ms-4 d-block">{{ tournament.registration_end|date:"d M Y, H:i" }}</strong>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-play-circle fs-5 text-success me-2"></i>
+                        <span class="text-muted small text-uppercase fw-semibold">Tournament Starts</span>
+                    </div>
+                    <strong class="text-white fs-6 ms-4 d-block">{{ tournament.start_date|date:"d M Y, H:i" }}</strong>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-trophy fs-5 text-warning me-2"></i>
+                        <span class="text-muted small text-uppercase fw-semibold">Prize Pool</span>
+                    </div>
+                    <strong class="text-success fs-6 ms-4 d-block">NPR {{ tournament.prize_pool }}</strong>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-people fs-5 text-info me-2"></i>
+                        <span class="text-muted small text-uppercase fw-semibold">Participating Teams</span>
+                    </div>
+                    <strong class="text-white fs-6 ms-4 d-block">{{ tournament.registrations.count }} / {{ tournament.max_participants }} Teams</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tournament Hub Navigation -->
+<div class="card border-0 shadow-sm text-white" style="background: #1e293b; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08) !important;">
+    <div class="card-body p-4">
+        <h4 class="fw-bold text-white mb-4 fs-5">
+            <i class="bi bi-grid-fill text-warning me-2"></i> Tournament Hub
+        </h4>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <a href="{% url 'tournaments:participants' tournament.slug %}" class="btn btn-outline-primary w-100 py-3 text-center rounded-3">
+                    <i class="bi bi-people-fill fs-3 d-block mb-1"></i>
+                    <span class="fw-bold">Participants</span>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="{% url 'tournaments:bracket' tournament.slug %}" class="btn btn-outline-success w-100 py-3 text-center rounded-3">
+                    <i class="bi bi-diagram-3-fill fs-3 d-block mb-1"></i>
+                    <span class="fw-bold">Bracket</span>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="{% url 'tournaments:matches' tournament.slug %}" class="btn btn-outline-warning w-100 py-3 text-center rounded-3">
+                    <i class="bi bi-controller fs-3 d-block mb-1"></i>
+                    <span class="fw-bold">Matches</span>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="{% url 'tournaments:statistics' tournament.slug %}" class="btn btn-outline-info w-100 py-3 text-center rounded-3">
+                    <i class="bi bi-bar-chart-line-fill fs-3 d-block mb-1"></i>
+                    <span class="fw-bold">Statistics</span>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="{% url 'tournaments:leaderboard' tournament.slug %}" class="btn btn-outline-light w-100 py-3 text-center rounded-3">
+                    <i class="bi bi-trophy-fill text-warning fs-3 d-block mb-1"></i>
+                    <span class="fw-bold">Leaderboard</span>
+                </a>
+            </div>
+
+            {% if request.user == tournament.organizer %}
+                <div class="col-md-6">
+                    <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-warning w-100 py-3 text-center rounded-3 fw-bold">
+                        <i class="bi bi-speedometer2 fs-3 d-block mb-1"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

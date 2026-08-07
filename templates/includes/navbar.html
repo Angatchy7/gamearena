@@ -1,74 +1,221 @@
 {% load static %}
 
-<nav class="navbar navbar-expand-lg ga-navbar">
+<nav class="navbar navbar-expand-lg ga-navbar shadow-sm">
 
     <div class="container-fluid">
 
-        <a class="navbar-brand fw-bold text-white" href="{% url 'dashboard:home' %}">
-            🎮 GameArena
+        <!-- Logo -->
+
+        <a class="navbar-brand d-flex align-items-center fw-bold text-white" href="{% url 'core:home' %}">
+
+            <div class="logo-circle me-2">
+
+                <i class="bi bi-controller"></i>
+
+            </div>
+
+            <span>GameArena</span>
+
         </a>
 
-        <form class="d-none d-lg-flex w-50">
+        <!-- Mobile Toggle -->
 
-            <input class="form-control" type="search" placeholder="Search teams, tournaments...">
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarContent">
 
-        </form>
+            <i class="bi bi-list text-white fs-2"></i>
 
-        <ul class="navbar-nav ms-auto align-items-center">
+        </button>
 
-            <li class="nav-item me-3">
+        <div class="collapse navbar-collapse" id="navbarContent">
 
-                <a class="nav-link text-white" href="{% url 'notifications:list' %}">
+            {% if user.is_authenticated %}
 
-                    <i class="bi bi-bell fs-5"></i>
+            <!-- SEARCH -->
 
-                </a>
+            <div class="mx-auto search-wrapper">
 
-            </li>
+                <form method="get" action="{% url 'core:search' %}">
 
-            <li class="nav-item dropdown">
+                    <div class="input-group">
 
-                <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
+                        <span class="input-group-text">
 
-                    {{ request.user.username }}
+                            <i class="bi bi-search"></i>
 
-                </a>
+                        </span>
 
-                <ul class="dropdown-menu dropdown-menu-end">
+                        <input id="search-input" class="form-control" type="search" name="q" value="{{ request.GET.q }}"
+                            placeholder="Search tournaments, teams, games..." autocomplete="off">
 
-                    <li>
+                    </div>
 
-                        <a class="dropdown-item" href="#">
-                            Profile
-                        </a>
+                </form>
 
-                    </li>
+                <!-- LIVE SEARCH RESULTS -->
 
-                    <li>
+                <div id="search-results" class="search-results-dropdown d-none">
 
-                        <hr class="dropdown-divider">
+                </div>
 
-                    </li>
+            </div>
 
-                    <li>
+            {% endif %}
 
-                        <form method="post" action="{% url 'accounts:logout' %}">
+            <ul class="navbar-nav ms-auto align-items-center">
 
-                            {% csrf_token %}
+                {% if user.is_authenticated %}
 
-                            <button type="submit" class="dropdown-item">
-                                Logout
-                            </button>
+                <!-- Notification -->
 
-                        </form>
+                <li class="nav-item me-3">
 
-                    </li>
+                    <a href="{% url 'notifications:list' %}" class="nav-icon position-relative">
 
-                </ul>
+                        <i class="bi bi-bell-fill"></i>
 
-            </li>
+                        <span class="notification-dot"></span>
 
-        </ul>
+                    </a>
+
+                </li>
+
+                <!-- Profile -->
+
+                <li class="nav-item dropdown">
+
+                    <a class="nav-link dropdown-toggle d-flex align-items-center profile-btn" href="#" role="button"
+                        data-bs-toggle="dropdown">
+
+                        <div class="profile-avatar">
+
+                            {{ user.username|first|upper }}
+
+                        </div>
+
+                        <div class="profile-info d-none d-lg-block">
+
+                            <div class="profile-name">
+
+                                {{ user.username }}
+
+                            </div>
+
+                            <small>
+
+                                Player
+
+                            </small>
+
+                        </div>
+
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end profile-menu shadow-lg border-0">
+
+                        <li class="dropdown-header">
+
+                            <strong>
+
+                                {{ user.username }}
+
+                            </strong>
+
+                            <br>
+
+                            <small class="text-muted">
+
+                                {{ user.email }}
+
+                            </small>
+
+                        </li>
+
+                        <li>
+
+                            <hr class="dropdown-divider">
+
+                        </li>
+
+                        <li>
+
+                            <a class="dropdown-item" href="#">
+
+                                <i class="bi bi-person-circle me-2"></i>
+
+                                My Profile
+
+                            </a>
+
+                        </li>
+
+                        <li>
+
+                            <a class="dropdown-item" href="#">
+
+                                <i class="bi bi-gear me-2"></i>
+
+                                Settings
+
+                            </a>
+
+                        </li>
+
+                        <li>
+
+                            <hr class="dropdown-divider">
+
+                        </li>
+
+                        <li>
+
+                            <form method="post" action="{% url 'accounts:logout' %}">
+
+                                {% csrf_token %}
+
+                                <button type="submit" class="dropdown-item text-danger">
+
+                                    <i class="bi bi-box-arrow-right me-2"></i>
+
+                                    Logout
+
+                                </button>
+
+                            </form>
+
+                        </li>
+
+                    </ul>
+
+                </li>
+
+                {% else %}
+
+                <li class="nav-item">
+
+                    <a class="nav-link text-white" href="{% url 'accounts:login' %}">
+
+                        Login
+
+                    </a>
+
+                </li>
+
+                <li class="nav-item ms-2">
+
+                    <a class="btn btn-primary rounded-pill px-4" href="{% url 'accounts:register' %}">
+
+                        Register
+
+                    </a>
+
+                </li>
+
+                {% endif %}
+
+            </ul>
+
+        </div>
 
     </div>
 

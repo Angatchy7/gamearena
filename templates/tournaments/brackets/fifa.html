@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+{{ tournament.name }} - Tournament Bracket
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/fifa_bracket.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bracket-page-container">
+
+    <!-- Top Navigation Header -->
+    <div class="bracket-top-nav">
+        <div class="tournament-info">
+            <h1 class="tournament-title">
+                <span class="trophy-emoji">🏆</span> {{ tournament.name }}
+            </h1>
+            <div class="tournament-meta">
+                <span class="game-name"><i class="bi bi-controller me-1"></i>{{ tournament.game.name }}</span>
+                <span class="meta-separator">•</span>
+                <span class="tournament-status-badge status-{{ tournament.status|lower }}">
+                    {{ tournament.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="nav-actions">
+            <a href="{% url 'tournaments:matches' tournament.slug %}" class="btn btn-esports-outline">
+                <i class="bi bi-controller me-1"></i> Matches
+            </a>
+            <a href="{% url 'tournaments:statistics' tournament.slug %}" class="btn btn-esports-outline">
+                <i class="bi bi-bar-chart-line me-1"></i> Statistics
+            </a>
+            <a href="{% url 'tournaments:leaderboard' tournament.slug %}" class="btn btn-esports-outline">
+                <i class="bi bi-trophy me-1"></i> Leaderboard
+            </a>
+            {% if request.user == tournament.organizer %}
+            <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-esports">
+                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            </a>
+            {% else %}
+            <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-esports">
+                <i class="bi bi-arrow-left me-1"></i> Details
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Bracket Tree -->
+    <div class="bracket-scroll-container">
+        <div class="tournament-tree">
+            {% for round_obj in rounds %}
+            <div class="tree-round">
+                
+                <div class="tree-round-header">
+                    <h3 class="round-title">{{ round_obj.name }}</h3>
+                </div>
+
+                <div class="tree-matches">
+                    {% for match in round_obj.matches.all %}
+                    <div class="tree-match-wrapper">
+                        <a href="{% url 'tournaments:match_detail' match.pk %}" 
+                           class="tree-match-card {% if match.status == 'COMPLETED' %}status-completed{% elif match.status == 'LIVE' %}status-live{% else %}status-pending{% endif %}">
+                            
+                            <!-- Card Top Bar: Match # and Status -->
+                            <div class="match-card-header">
+                                <span class="match-number">Match #{{ match.match_number }}</span>
+                                <span class="match-status">
+                                    {% if match.status == "COMPLETED" %}
+                                        <span class="badge-completed"><i class="bi bi-check-circle-fill me-1"></i>Finished</span>
+                                    {% elif match.status == "LIVE" %}
+                                        <span class="badge-live">🔴 Live</span>
+                                    {% else %}
+                                        <span class="badge-pending">Upcoming</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- Team One Row -->
+                            <div class="team-row {% if match.status == 'COMPLETED' and match.winner and match.winner == match.team_one %}is-winner{% endif %}">
+                                <div class="team-info">
+                                    {% if match.team_one %}
+                                        <div class="team-avatar">{{ match.team_one.name|first|upper }}</div>
+                                        <span class="team-name">{{ match.team_one.name }}</span>
+                                    {% else %}
+                                        <div class="team-avatar text-muted">?</div>
+                                        <span class="team-placeholder">BYE / TBD</span>
+                                    {% endif %}
+                                </div>
+                                <div class="team-score">
+                                    {{ match.team_one_score }}
+                                </div>
+                            </div>
+
+                            <!-- Team Two Row -->
+                            <div class="team-row {% if match.status == 'COMPLETED' and match.winner and match.winner == match.team_two %}is-winner{% endif %}">
+                                <div class="team-info">
+                                    {% if match.team_two %}
+                                        <div class="team-avatar">{{ match.team_two.name|first|upper }}</div>
+                                        <span class="team-name">{{ match.team_two.name }}</span>
+                                    {% else %}
+                                        <div class="team-avatar text-muted">?</div>
+                                        <span class="team-placeholder">BYE / TBD</span>
+                                    {% endif %}
+                                </div>
+                                <div class="team-score">
+                                    {{ match.team_two_score }}
+                                </div>
+                            </div>
+
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="empty-round-notice">
+                        No matches scheduled
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+            {% endfor %}
+
+            <!-- Champion Column (Far Right) -->
+            <div class="tree-round champion-column">
+                <div class="tree-round-header">
+                    <h3 class="round-title champion-round-title">🏆 Champion</h3>
+                </div>
+                <div class="tree-matches">
+                    <div class="champion-card-wrapper">
+                        {% if tournament.champion %}
+                        <div class="champion-card">
+                            <div class="champion-crown">👑</div>
+                            <div class="champion-trophy">🏆</div>
+                            <div class="champion-label">TOURNAMENT WINNER</div>
+                            <div class="champion-name">{{ tournament.champion.name }}</div>
+                        </div>
+                        {% else %}
+                        <div class="champion-card is-pending-champion">
+                            <div class="champion-trophy opacity-40">🏆</div>
+                            <div class="champion-label">TOURNAMENT WINNER</div>
+                            <div class="champion-name text-placeholder">Undecided</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

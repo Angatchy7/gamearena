@@ -207,10 +207,11 @@ def register_team(
         "registration": registration,
     }
 
+
 @transaction.atomic
 def generate_single_elimination_bracket(*, tournament):
     """
-    Generates a complete single-elimination bracket.
+    Generates the complete single elimination bracket.
     """
 
     registrations = list(
@@ -236,52 +237,279 @@ def generate_single_elimination_bracket(*, tournament):
 
     teams = [r.team for r in registrations]
 
-    number_of_teams = len(teams)
+    total_teams = len(teams)
 
-    total_rounds = math.ceil(math.log2(number_of_teams))
+    bracket_size = 1
+    while bracket_size < total_teams:
+        bracket_size *= 2
 
-    matches_in_round = math.ceil(number_of_teams / 2)
+    byes = bracket_size - total_teams
 
-    for round_number in range(1, total_rounds + 1):
+    # Add BYEs
+    teams.extend([None] * byes)
+
+    total_rounds = int(math.log2(bracket_size))
+
+    rounds = []
+
+    # -------------------------
+    # Create every round
+    # -------------------------
+
+    for r in range(total_rounds):
 
         round_obj = Round.objects.create(
             tournament=tournament,
-            name=f"Round {round_number}",
-            order=round_number,
+            name=f"Round {r + 1}",
+            order=r + 1,
         )
 
-        for match_number in range(1, matches_in_round + 1):
+        rounds.append(round_obj)
 
-            if round_number == 1:
+        matches = bracket_size // (2 ** (r + 1))
 
-                index = (match_number - 1) * 2
-
-                team_one = (
-                    teams[index]
-                    if index < len(teams)
-                    else None
-                )
-
-                team_two = (
-                    teams[index + 1]
-                    if index + 1 < len(teams)
-                    else None
-                )
-
-            else:
-
-                team_one = None
-                team_two = None
+        for m in range(matches):
 
             Match.objects.create(
                 round=round_obj,
-                match_number=match_number,
-                team_one=team_one,
-                team_two=team_two,
+                match_number=m + 1,
             )
 
-        matches_in_round = max(1, matches_in_round // 2)
+    # -------------------------
+    # Fill first round
+    # -------------------------
+
+    first_round = rounds[0]
+
+    matches = Match.objects.filter(
+        round=first_round,
+    ).order_by("match_number")
+
+    index = 0
+
+    for match in matches:
+
+        match.team_one = teams[index]
+        match.team_two = teams[index + 1]
+
+        # -------- AUTO BYE --------
+
+        if match.team_one and match.team_two is None:
+
+            match.winner = match.team_one
+            match.status = Match.Status.COMPLETED
+
+        elif match.team_two and match.team_one is None:
+
+            match.winner = match.team_two
+            match.status = Match.Status.COMPLETED
+
+        match.save()
+
+        if match.winner:
+            advance_winner(match=match)
+
+        index += 2
 
     return {
         "success": True,
     }
+
+@transaction.atomic
+def advance_winner(*, match):
+    """
+    Advances the winner to the next round.
+    Declares champion when the final match is completed.
+    """
+
+    if match.winner is None:
+        return
+
+    tournament = match.round.tournament
+    current_round = match.round
+
+    next_round = Round.objects.filter(
+        tournament=tournament,
+        order=current_round.order + 1,
+    ).first()
+
+    # Final round
+    if next_round is None:
+
+        tournament.champion = match.winner
+        tournament.status = Tournament.Status.COMPLETED
+
+        tournament.save(
+            update_fields=[
+                "champion",
+                "status",
+            ]
+        )
+
+        return
+
+    next_match_number = math.ceil(
+        match.match_number / 2
+    )
+
+    next_match = Match.objects.get(
+        round=next_round,
+        match_number=next_match_number,
+    )
+
+    if match.match_number % 2 == 1:
+        next_match.team_one = match.winner
+    else:
+        next_match.team_two = match.winner
+
+    next_match.save(
+        update_fields=[
+            "team_one",
+            "team_two",
+        ]
+    )
+
+
+def get_tournament_statistics(*, tournament):
+    """
+    Calculates summary, performance metrics, and team rankings for a tournament.
+    """
+
+    registrations = (
+        TournamentRegistration.objects.filter(
+            tournament=tournament,
+        ).select_related("team")
+    )
+
+    rounds = (
+        Round.objects.filter(
+            tournament=tournament,
+        )
+        .prefetch_related(
+            "matches__team_one",
+            "matches__team_two",
+            "matches__winner",
+        )
+        .order_by("order")
+    )
+
+    all_matches = list(
+        Match.objects.filter(
+            round__tournament=tournament,
+        )
+        .select_related(
+            "round",
+            "team_one",
+            "team_two",
+            "winner",
+        )
+        .order_by("round__order", "match_number")
+    )
+
+    participant_count = registrations.count()
+    total_matches_count = len(all_matches)
+
+    completed_matches = [
+        m for m in all_matches if m.status == Match.Status.COMPLETED
+    ]
+    completed_matches_count = len(completed_matches)
+    remaining_matches_count = total_matches_count - completed_matches_count
+
+    completion_percentage = (
+        int((completed_matches_count / total_matches_count) * 100)
+        if total_matches_count > 0
+        else 0
+    )
+
+    registration_percentage = (
+        int((participant_count / tournament.max_participants) * 100)
+        if tournament.max_participants > 0
+        else 0
+    )
+
+    # Performance Statistics
+    total_goals = sum(
+        m.team_one_score + m.team_two_score for m in completed_matches
+    )
+    avg_goals = (
+        round(total_goals / completed_matches_count, 2)
+        if completed_matches_count > 0
+        else 0
+    )
+
+    highest_scoring_match = None
+    if completed_matches:
+        highest_scoring_match = max(
+            completed_matches,
+            key=lambda m: m.team_one_score + m.team_two_score,
+        )
+
+    first_completed_match = completed_matches[0] if completed_matches else None
+    last_completed_match = completed_matches[-1] if completed_matches else None
+
+    # Team Rankings
+    team_stats = {}
+    for reg in registrations:
+        team_stats[reg.team.id] = {
+            "team": reg.team,
+            "wins": 0,
+            "losses": 0,
+            "matches_played": 0,
+            "goals_scored": 0,
+            "goals_conceded": 0,
+            "goal_difference": 0,
+        }
+
+    for match in completed_matches:
+        if match.team_one and match.team_one.id in team_stats:
+            st = team_stats[match.team_one.id]
+            st["matches_played"] += 1
+            st["goals_scored"] += match.team_one_score
+            st["goals_conceded"] += match.team_two_score
+            if match.winner == match.team_one:
+                st["wins"] += 1
+            else:
+                st["losses"] += 1
+
+        if match.team_two and match.team_two.id in team_stats:
+            st = team_stats[match.team_two.id]
+            st["matches_played"] += 1
+            st["goals_scored"] += match.team_two_score
+            st["goals_conceded"] += match.team_one_score
+            if match.winner == match.team_two:
+                st["wins"] += 1
+            else:
+                st["losses"] += 1
+
+    for st in team_stats.values():
+        st["goal_difference"] = st["goals_scored"] - st["goals_conceded"]
+        st["points"] = st["wins"] * 3
+        st["win_rate"] = (
+            round((st["wins"] / st["matches_played"]) * 100, 1)
+            if st["matches_played"] > 0
+            else 0.0
+        )
+
+    team_rankings = sorted(
+        team_stats.values(),
+        key=lambda x: (x["points"], x["wins"], x["win_rate"], x["goal_difference"]),
+        reverse=True,
+    )
+
+    return {
+        "tournament": tournament,
+        "registrations": registrations,
+        "participant_count": participant_count,
+        "registration_percentage": registration_percentage,
+        "rounds": rounds,
+        "total_matches_count": total_matches_count,
+        "completed_matches_count": completed_matches_count,
+        "remaining_matches_count": remaining_matches_count,
+        "completion_percentage": completion_percentage,
+        "total_goals": total_goals,
+        "avg_goals": avg_goals,
+        "highest_scoring_match": highest_scoring_match,
+        "first_completed_match": first_completed_match,
+        "last_completed_match": last_completed_match,
+        "team_rankings": team_rankings,
+    }

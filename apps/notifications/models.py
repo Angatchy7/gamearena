@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+# pyrefly: ignore [missing-import]
 from apps.teams.models import TeamInvitation
 
 
@@ -19,12 +20,12 @@ class Notification(models.Model):
     )
 
     team_invitation = models.ForeignKey(
-    TeamInvitation,
-    on_delete=models.CASCADE,
-    null=True,
-    blank=True,
-    related_name="notifications",
-)
+        TeamInvitation,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
 
     title = models.CharField(
         max_length=150,

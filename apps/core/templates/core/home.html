@@ -1,13 +1,31 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
 GameArena
 {% endblock %}
 
-{% block content %}
-<h1>Welcome to GameArena Tournament Management System</h1>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
 
-<p>
-    This is the homepage.
-</p>
+{% block content %}
+
+{% include "core/partials/hero.html" %}
+
+{% include "core/partials/featured_tournament.html" %}
+
+{% include "core/partials/live_tournaments.html" %}
+
+{% include "core/partials/registration_open.html" %}
+
+{% include "core/partials/games.html" %}
+
+{% include "core/partials/stats.html" %}
+
+{% include "core/partials/latest_tournaments.html" %}
+
+{% include "core/partials/footer_cta.html" %}
+
 {% endblock %}

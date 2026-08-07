@@ -24,3 +24,24 @@ class RegisterView(View):
             form.save()
             return redirect('accounts:login')
         return render(request, self.template_name, {'form': form})
+
+
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+from .services import get_player_profile
+
+User = get_user_model()
+
+
+class PlayerProfileView(View):
+    """
+    Public player profile view displaying user info, teams, matches, stats, and achievements.
+    """
+
+    template_name = "accounts/profile.html"
+
+    def get(self, request, username):
+        user = get_object_or_404(User, username=username)
+        context = get_player_profile(user=user)
+        return render(request, self.template_name, context)
+

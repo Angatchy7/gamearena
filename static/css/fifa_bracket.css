@@ -1,0 +1,567 @@
+/* ==========================================================================
+   FIFA / Challonge / Start.gg Esports Tournament Bracket CSS
+   Scoped strictly under .bracket-page-container to prevent global style leak
+   ========================================================================== */
+
+.bracket-page-container {
+    --bracket-bg: #0b0e17;
+    --card-bg: #151d30;
+    --card-border: #2a3855;
+    --card-hover-border: #38bdf8;
+    --header-bg: #0f172a;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --winner-green: #22c55e;
+    --winner-bg: linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.05) 100%);
+    --connector-color: #3b4764;
+    --gold-accent: #f59e0b;
+
+    background-color: var(--bracket-bg);
+    color: var(--text-main);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    padding: 1.5rem 2rem;
+    min-height: calc(100vh - 60px);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bracket-page-container * {
+    box-sizing: border-box;
+}
+
+/* --- Top Navigation Bar --- */
+.bracket-page-container .bracket-top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(21, 29, 48, 0.85);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1.25rem 1.75rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.bracket-page-container .tournament-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bracket-page-container .trophy-emoji {
+    font-size: 1.8rem;
+}
+
+.bracket-page-container .tournament-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.bracket-page-container .game-name {
+    font-weight: 600;
+    color: #38bdf8;
+}
+
+.bracket-page-container .meta-separator {
+    color: var(--card-border);
+}
+
+.bracket-page-container .tournament-status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #1e293b;
+    color: var(--text-muted);
+}
+
+.bracket-page-container .status-live {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid #ef4444;
+}
+
+.bracket-page-container .status-completed {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid #22c55e;
+}
+
+.bracket-page-container .nav-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.bracket-page-container .btn-esports {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.bracket-page-container .btn-esports:hover {
+    background: #2563eb;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.bracket-page-container .btn-esports-outline {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--card-border);
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.bracket-page-container .btn-esports-outline:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #38bdf8;
+    color: #38bdf8;
+}
+
+/* --- Bracket Scroll Area --- */
+.bracket-page-container .bracket-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 1rem 0 3rem 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bracket-page-container .bracket-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.bracket-page-container .bracket-scroll-container::-webkit-scrollbar-track {
+    background: var(--bracket-bg);
+}
+
+.bracket-page-container .bracket-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--card-border);
+    border-radius: 4px;
+}
+
+.bracket-page-container .bracket-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #38bdf8;
+}
+
+/* --- Tournament Tree Grid/Flex --- */
+.bracket-page-container .tournament-tree {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 80px;
+    min-width: max-content;
+    padding: 10px 40px;
+}
+
+/* --- Tree Round Column --- */
+.bracket-page-container .tree-round {
+    display: flex;
+    flex-direction: column;
+    width: 270px;
+    position: relative;
+}
+
+.bracket-page-container .tree-round-header {
+    text-align: center;
+    background: rgba(21, 29, 48, 0.9);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.bracket-page-container .round-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.bracket-page-container .tree-matches {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex-grow: 1;
+    position: relative;
+}
+
+/* --- Match Wrapper & Cards --- */
+.bracket-page-container .tree-match-wrapper {
+    position: relative;
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: center;
+}
+
+.bracket-page-container .tree-match-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    position: relative;
+    z-index: 2;
+}
+
+.bracket-page-container .tree-match-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--card-hover-border);
+    box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+    z-index: 5;
+}
+
+/* Card Header */
+.bracket-page-container .match-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--card-border);
+    font-size: 0.75rem;
+}
+
+.bracket-page-container .match-number {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.bracket-page-container .badge-completed {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+.bracket-page-container .badge-live {
+    color: #ef4444;
+    font-weight: 700;
+    animation: pulse-live 1.5s infinite;
+}
+
+.bracket-page-container .badge-pending {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+@keyframes pulse-live {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
+/* Team Row */
+.bracket-page-container .team-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+.bracket-page-container .team-row:last-child {
+    border-bottom: none;
+}
+
+.bracket-page-container .team-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.bracket-page-container .team-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+
+.bracket-page-container .team-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 170px;
+}
+
+.bracket-page-container .team-placeholder {
+    color: #64748b;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+.bracket-page-container .team-score {
+    background: var(--header-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    min-width: 28px;
+    text-align: center;
+}
+
+/* Winner Highlighting */
+.bracket-page-container .team-row.is-winner {
+    background: var(--winner-bg);
+    border-left: 4px solid var(--winner-green);
+}
+
+.bracket-page-container .team-row.is-winner .team-name {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+.bracket-page-container .team-row.is-winner .team-score {
+    background: #166534;
+    border-color: var(--winner-green);
+    color: #ffffff;
+}
+
+/* --- Connecting Lines via CSS --- */
+
+/* Left horizontal line into match card (rounds 2+) */
+.bracket-page-container .tree-round:not(:first-child) .tree-match-wrapper::before {
+    content: "";
+    position: absolute;
+    left: -40px;
+    top: 50%;
+    width: 40px;
+    height: 2px;
+    background: var(--connector-color);
+    z-index: 1;
+}
+
+/* Right connector for Odd matches (Top of pair) */
+.bracket-page-container .tree-round:not(.champion-column) .tree-match-wrapper:nth-child(odd)::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    width: 40px;
+    height: 50%;
+    border-right: 2px solid var(--connector-color);
+    border-top: 2px solid var(--connector-color);
+    border-top-right-radius: 6px;
+    z-index: 1;
+}
+
+/* Right connector for Even matches (Bottom of pair) */
+.bracket-page-container .tree-round:not(.champion-column) .tree-match-wrapper:nth-child(even)::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    bottom: 50%;
+    width: 40px;
+    height: 50%;
+    border-right: 2px solid var(--connector-color);
+    border-bottom: 2px solid var(--connector-color);
+    border-bottom-right-radius: 6px;
+    z-index: 1;
+}
+
+/* Single match in round (e.g., Final round before Champion) */
+.bracket-page-container .tree-round:not(.champion-column) .tree-match-wrapper:only-child::after {
+    height: 2px;
+    border: none;
+    background: var(--connector-color);
+    border-radius: 0;
+    bottom: auto;
+    top: 50%;
+}
+
+/* --- Champion Column --- */
+.bracket-page-container .champion-round-title {
+    color: var(--gold-accent);
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
+.bracket-page-container .champion-card-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto 0;
+    width: 100%;
+}
+
+.bracket-page-container .champion-column .champion-card-wrapper::before {
+    content: "";
+    position: absolute;
+    left: -40px;
+    top: 50%;
+    width: 40px;
+    height: 2px;
+    background: var(--gold-accent);
+    z-index: 1;
+}
+
+.bracket-page-container .champion-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 24px 20px;
+    background: linear-gradient(135deg, #1e1b4b 0%, #31103f 50%, #451a03 100%);
+    border: 2px solid var(--gold-accent);
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(245, 158, 11, 0.1);
+    position: relative;
+}
+
+.bracket-page-container .champion-crown {
+    font-size: 1.5rem;
+    margin-bottom: -6px;
+}
+
+.bracket-page-container .champion-trophy {
+    font-size: 3rem;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+}
+
+.bracket-page-container .champion-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--gold-accent);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+
+.bracket-page-container .champion-name {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 220px;
+}
+
+.bracket-page-container .is-pending-champion {
+    background: var(--card-bg);
+    border: 2px dashed var(--card-border);
+    box-shadow: none;
+}
+
+.bracket-page-container .text-placeholder {
+    color: #64748b;
+    font-style: italic;
+    font-weight: 600;
+}
+
+.bracket-page-container .opacity-40 {
+    opacity: 0.4;
+}
+
+.bracket-page-container .empty-round-notice {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px dashed var(--card-border);
+}
+
+/* --- Responsive Adjustments for Tablet & Mobile --- */
+@media (max-width: 992px) {
+    .bracket-page-container .bracket-top-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .bracket-page-container .tournament-tree {
+        gap: 60px;
+        padding: 10px 20px;
+    }
+    
+    .bracket-page-container .tree-round {
+        width: 240px;
+    }
+
+    .bracket-page-container .tree-round:not(.champion-column) .tree-match-wrapper:nth-child(odd)::after,
+    .bracket-page-container .tree-round:not(.champion-column) .tree-match-wrapper:nth-child(even)::after {
+        right: -30px;
+        width: 30px;
+    }
+
+    .bracket-page-container .tree-round:not(:first-child) .tree-match-wrapper::before {
+        left: -30px;
+        width: 30px;
+    }
+
+    .bracket-page-container .champion-column .champion-card-wrapper::before {
+        left: -30px;
+        width: 30px;
+    }
+}
+
+@media (max-width: 576px) {
+    .bracket-page-container {
+        padding: 1rem 0.75rem;
+    }
+
+    .bracket-page-container .tournament-title {
+        font-size: 1.35rem;
+    }
+
+    .bracket-page-container .nav-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .bracket-page-container .btn-esports,
+    .bracket-page-container .btn-esports-outline {
+        flex: 1;
+        justify-content: center;
+    }
+}

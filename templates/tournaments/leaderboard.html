@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}
+Leaderboard - {{ tournament.name }}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 py-2">
+
+    <!-- Header Section -->
+    <div class="card bg-dark text-white border-0 shadow-lg mb-4 overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--border) !important;">
+        <div class="card-body p-4 p-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mb-3 mb-lg-0">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="badge bg-primary px-3 py-2 fs-7 fw-semibold text-uppercase">
+                            {{ tournament.get_status_display }}
+                        </span>
+                        <span class="badge bg-secondary px-3 py-2 fs-7 fw-semibold">
+                            <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
+                        </span>
+                    </div>
+                    <h1 class="fw-bold text-white mb-2 display-6">
+                        🏅 {{ tournament.name }} — Leaderboard
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Official standings ranked dynamically by points, wins, win rate, and goal difference.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="d-flex flex-wrap gap-2 justify-lg-content-end">
+                        <a href="{% url 'tournaments:matches' tournament.slug %}" class="btn btn-outline-light px-3 py-2">
+                            <i class="bi bi-controller me-1"></i> Matches
+                        </a>
+                        <a href="{% url 'tournaments:bracket' tournament.slug %}" class="btn btn-outline-light px-3 py-2">
+                            <i class="bi bi-diagram-3 me-1"></i> Bracket
+                        </a>
+                        <a href="{% url 'tournaments:statistics' tournament.slug %}" class="btn btn-outline-info px-3 py-2">
+                            <i class="bi bi-bar-chart-line me-1"></i> Statistics
+                        </a>
+                        {% if request.user == tournament.organizer %}
+                        <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-primary px-3 py-2">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                        {% else %}
+                        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-outline-light px-3 py-2">
+                            <i class="bi bi-arrow-left me-1"></i> Details
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tie-breaker Info Bar -->
+    <div class="alert alert-dark border-secondary bg-dark text-white shadow-sm d-flex align-items-center justify-content-between mb-4 p-3 flex-wrap gap-2" style="background: #111827 !important; border-radius: 12px;">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle-fill text-info fs-5"></i>
+            <span class="fw-semibold text-white">Ranking Criteria:</span>
+            <span class="text-muted small">1. Points (3 pts / win) &bull; 2. Total Wins &bull; 3. Win Rate % &bull; 4. Goal Difference</span>
+        </div>
+        <span class="badge bg-secondary px-3 py-1.5 fs-7">
+            {{ participant_count }} Team{{ participant_count|pluralize }} Registered
+        </span>
+    </div>
+
+    <!-- Leaderboard Table Card -->
+    <div class="card shadow-sm border-0 text-white mb-4" style="background: #1e293b; border-radius: 16px;">
+        <div class="card-header bg-transparent text-white border-secondary py-3 px-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-trophy-fill text-warning fs-4"></i>
+                <h4 class="mb-0 fw-bold text-white">Tournament Standings</h4>
+            </div>
+            <span class="text-muted small">Updated dynamically from completed matches</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle" style="background: transparent;">
+                    <thead class="text-muted small text-uppercase border-secondary">
+                        <tr>
+                            <th class="ps-4 py-3 text-center" style="width: 80px;">Rank</th>
+                            <th class="py-3">Team</th>
+                            <th class="text-center py-3">Wins</th>
+                            <th class="text-center py-3">Losses</th>
+                            <th class="text-center py-3">Matches Played</th>
+                            <th class="text-center py-3">Win Rate</th>
+                            <th class="text-center py-3 pe-4">Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rank in team_rankings %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <!-- Rank -->
+                            <td class="ps-4 text-center fw-bold">
+                                {% if forloop.counter == 1 %}
+                                    <span class="badge bg-warning text-dark px-3 py-2 fs-6">🥇 1</span>
+                                {% elif forloop.counter == 2 %}
+                                    <span class="badge bg-secondary text-white px-3 py-2 fs-6">🥈 2</span>
+                                {% elif forloop.counter == 3 %}
+                                    <span class="badge bg-danger text-white px-3 py-2 fs-6">🥉 3</span>
+                                {% else %}
+                                    <span class="badge bg-dark text-muted border border-secondary px-3 py-1.5 fs-7">#{{ forloop.counter }}</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Team -->
+                            <td class="fw-bold text-white">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; font-size: 14px; background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                                        {{ rank.team.name|slice:":2"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fs-6 text-white">{{ rank.team.name }}</div>
+                                        <small class="text-muted fw-normal">Manager: {{ rank.team.manager.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Wins -->
+                            <td class="text-center text-success fw-bold fs-6">
+                                {{ rank.wins }}
+                            </td>
+
+                            <!-- Losses -->
+                            <td class="text-center text-danger fs-6">
+                                {{ rank.losses }}
+                            </td>
+
+                            <!-- Matches Played -->
+                            <td class="text-center text-white-50 fs-6">
+                                {{ rank.matches_played }}
+                            </td>
+
+                            <!-- Win Rate -->
+                            <td class="text-center fs-6">
+                                <span class="badge {% if rank.win_rate >= 50 %}bg-success bg-opacity-20 text-success border border-success{% else %}bg-secondary bg-opacity-20 text-secondary border border-secondary{% endif %} px-3 py-1.5">
+                                    {{ rank.win_rate }}%
+                                </span>
+                            </td>
+
+                            <!-- Points -->
+                            <td class="text-center pe-4 font-monospace fw-bold text-warning fs-5">
+                                {{ rank.points }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-trophy text-muted display-5 d-block mb-3"></i>
+                                <h5 class="fw-bold text-white">No Standings Available</h5>
+                                <p class="mb-0 text-muted">No teams have registered or matches completed yet.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

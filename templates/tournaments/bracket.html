@@ -1,122 +1,116 @@
 {% extends "base.html" %}
 
-{% block title %}
-Tournament Bracket
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/bracket.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<div class="container">
+<div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-4">
+        {{ tournament.name }}
+    </h2>
 
-        <h2>
+    <div class="bracket-container">
 
-            {{ tournament.name }}
+        {% for round in rounds %}
 
-        </h2>
+        <div class="round-column">
 
-        <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-secondary">
-
-            Back to Dashboard
-
-        </a>
-
-    </div>
-
-    {% if rounds %}
-
-    {% for round in rounds %}
-
-    <div class="card shadow-sm mb-4">
-
-        <div class="card-header bg-dark text-white">
-
-            <h4 class="mb-0">
+            <h4 class="round-title">
 
                 {{ round.name }}
 
             </h4>
 
-        </div>
+            {% for match in round.matches.all %}
 
-        <div class="card-body">
+            <div class="match-card">
 
-            <div class="row">
+                {% if match.status == match.Status.PENDING and request.user == tournament.organizer %}
 
-                {% for match in round.matches.all %}
+                <form method="post" action="{% url 'tournaments:match_winner_update' match.id %}">
 
-                <div class="col-md-6 mb-4">
+                    {% csrf_token %}
 
-                    <div class="card h-100">
+                    {% if match.team_one %}
 
-                        <div class="card-header">
+                    <button type="submit" name="winner" value="{{ match.team_one.id }}" class="team w-100">
 
-                            Match {{ match.match_number }}
+                        {{ match.team_one.name }}
 
-                        </div>
+                    </button>
 
-                        <div class="card-body">
+                    {% else %}
 
-                            <h5>
+                    <div class="team">
 
-                                {{ match.team_one|default:"BYE" }}
-
-                            </h5>
-
-                            <div class="text-center my-3">
-
-                                <strong>VS</strong>
-
-                            </div>
-
-                            <h5>
-
-                                {{ match.team_two|default:"BYE" }}
-
-                            </h5>
-
-                            <hr>
-
-                            <span class="badge bg-secondary">
-
-                                {{ match.get_status_display }}
-
-                            </span>
-
-                        </div>
+                        BYE
 
                     </div>
 
+                    {% endif %}
+
+                    <div class="vs">
+
+                        VS
+
+                    </div>
+
+                    {% if match.team_two %}
+
+                    <button type="submit" name="winner" value="{{ match.team_two.id }}" class="team w-100">
+
+                        {{ match.team_two.name }}
+
+                    </button>
+
+                    {% else %}
+
+                    <div class="team">
+
+                        BYE
+
+                    </div>
+
+                    {% endif %}
+
+                </form>
+
+                {% else %}
+
+                <div class="team {% if match.winner == match.team_one %}winner{% endif %}">
+                    {{ match.team_one|default:"BYE" }}
                 </div>
 
-                {% empty %}
+                <div class="vs">
+                    VS
+                </div>
 
-                <p>
+                <div class="team {% if match.winner == match.team_two %}winner{% endif %}">
+                    {{ match.team_two|default:"BYE" }}
+                </div>
 
-                    No matches available.
+                {% endif %}
 
-                </p>
+                <div class="match-status">
 
-                {% endfor %}
+                    {{ match.get_status_display }}
+
+                </div>
 
             </div>
 
+            {% endfor %}
+
         </div>
 
-    </div>
-
-    {% endfor %}
-
-    {% else %}
-
-    <div class="alert alert-info">
-
-        Bracket has not been generated yet.
+        {% endfor %}
 
     </div>
-
-    {% endif %}
 
 </div>
 

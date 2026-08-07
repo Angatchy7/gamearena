@@ -1,0 +1,531 @@
+/* =====================================================
+   GAMEARENA RECTANGULAR TOURNAMENT CARD
+===================================================== */
+
+.ga-tournament-card {
+
+    background: #1b2435;
+
+    border-radius: 18px;
+
+    border: 1px solid rgba(255, 255, 255, .06);
+
+    overflow: hidden;
+
+    transition: .3s;
+
+    color: white;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .25);
+
+}
+
+.ga-tournament-card:hover {
+
+    transform: translateY(-6px);
+
+    border-color: #2563eb;
+
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .40);
+
+}
+
+.ga-card-banner {
+
+    position: relative;
+
+    height: 120px;
+
+    overflow: hidden;
+
+    background: #24344d;
+
+}
+
+.ga-card-banner img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: .35s;
+
+}
+
+.ga-tournament-card:hover .ga-card-banner img {
+
+    transform: scale(1.05);
+
+}
+
+.ga-card-placeholder {
+
+    width: 100%;
+
+    height: 100%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    font-size: 58px;
+
+    color: #3b82f6;
+
+    background: linear-gradient(135deg, #24344d, #1b2435);
+
+}
+
+.ga-card-overlay {
+
+    position: absolute;
+
+    top: 12px;
+
+    left: 12px;
+
+    right: 12px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+}
+
+.ga-card-overlay .badge {
+
+    padding: 6px 12px;
+
+    border-radius: 8px;
+
+    font-size: .72rem;
+
+}
+
+.ga-tournament-card .card-body {
+
+    padding: 16px;
+
+}
+
+.ga-tournament-card h5 {
+
+    font-size: 1.15rem;
+
+    font-weight: 700;
+
+    margin-bottom: 6px;
+
+}
+
+.ga-description {
+
+    color: #94a3b8;
+
+    font-size: .88rem;
+
+    line-height: 1.5;
+
+    margin-bottom: 14px;
+
+}
+
+.ga-progress-label {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    color: #cbd5e1;
+
+    font-size: .82rem;
+
+    margin-bottom: 6px;
+
+}
+
+.ga-progress {
+
+    height: 8px;
+
+    background: #334155;
+
+    border-radius: 30px;
+
+}
+
+.ga-progress .progress-bar {
+
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+
+}
+
+.ga-card-stats {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin: 16px 0;
+
+    padding: 12px 0;
+
+    border-top: 1px solid rgba(255, 255, 255, .06);
+
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+
+}
+
+.ga-stat {
+
+    display: flex;
+
+    flex-direction: column;
+
+    text-align: center;
+
+}
+
+.ga-stat small {
+
+    color: #94a3b8;
+
+    font-size: .75rem;
+
+}
+
+.ga-stat strong {
+
+    font-size: .92rem;
+
+    color: white;
+
+}
+
+.ga-view-btn {
+
+    margin-top: auto;
+
+    border: none;
+
+    border-radius: 12px;
+
+    padding: 10px;
+
+    font-weight: 600;
+
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+
+}
+
+.ga-view-btn:hover {
+
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+
+}
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero-section {
+
+    padding: 90px 0 70px;
+
+}
+
+.hero-title {
+
+    font-size: 4.2rem;
+
+    font-weight: 800;
+
+    line-height: 1.05;
+
+    color: #fff;
+
+}
+
+.hero-text {
+
+    max-width: 560px;
+
+    color: #94a3b8;
+
+    font-size: 1.1rem;
+
+    line-height: 1.8;
+
+}
+
+.hero-tag {
+
+    display: inline-block;
+
+    padding: 8px 18px;
+
+    border-radius: 40px;
+
+    background: rgba(37, 99, 235, .15);
+
+    color: #60a5fa;
+
+    font-weight: 600;
+
+    border: 1px solid rgba(96, 165, 250, .3);
+
+}
+
+.hero-image-wrapper {
+
+    position: relative;
+
+}
+
+.hero-image {
+
+    width: 100%;
+
+    border-radius: 24px;
+
+    object-fit: cover;
+
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
+
+}
+
+.hero-floating-card {
+
+    position: absolute;
+
+    bottom: 25px;
+
+    left: -35px;
+
+    width: 250px;
+
+    background: #1b2435;
+
+    border-radius: 18px;
+
+    padding: 18px;
+
+    border: 1px solid rgba(255, 255, 255, .08);
+
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+
+}
+
+.hero-floating-card h6 {
+
+    color: white;
+
+    font-weight: 700;
+
+}
+
+.hero-floating-card small {
+
+    color: #cbd5e1;
+
+}
+
+.hero-stats {
+
+    display: flex;
+
+    gap: 40px;
+
+}
+
+.hero-stat h3 {
+
+    color: #3b82f6;
+
+    font-size: 2rem;
+
+    font-weight: 800;
+
+    margin-bottom: 4px;
+
+}
+
+.hero-stat span {
+
+    color: #94a3b8;
+
+    font-size: .92rem;
+
+}
+
+@media(max-width:992px) {
+
+    .hero-title {
+
+        font-size: 2.8rem;
+
+    }
+
+    .hero-floating-card {
+
+        position: static;
+
+        margin-top: 20px;
+
+        width: 100%;
+
+    }
+
+    .hero-stats {
+
+        justify-content: space-between;
+
+    }
+
+}
+
+/* =====================================================
+   GAMES
+===================================================== */
+
+.ga-game-card {
+
+    background: #1b2435;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, .06);
+
+    transition: .35s;
+
+    height: 100%;
+
+}
+
+.ga-game-card:hover {
+
+    transform: translateY(-8px);
+
+    border-color: #2563eb;
+
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .40);
+
+}
+
+.ga-game-image {
+
+    height: 180px;
+
+    overflow: hidden;
+
+    background: #24344d;
+
+}
+
+.ga-game-image img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: .4s;
+
+}
+
+.ga-game-card:hover img {
+
+    transform: scale(1.08);
+
+}
+
+.ga-game-placeholder {
+
+    width: 100%;
+
+    height: 100%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    font-size: 70px;
+
+    color: #3b82f6;
+
+    background: linear-gradient(135deg, #24344d, #1b2435);
+
+}
+
+.ga-game-body {
+
+    padding: 20px;
+
+}
+
+.ga-game-body h5 {
+
+    color: white;
+
+    font-weight: 700;
+
+    margin-bottom: 8px;
+
+}
+
+.ga-game-body p {
+
+    color: #94a3b8;
+
+    font-size: .9rem;
+
+    min-height: 45px;
+
+}
+
+.ga-game-stats {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-top: 18px;
+
+    padding-top: 16px;
+
+    border-top: 1px solid rgba(255, 255, 255, .06);
+
+}
+
+.ga-game-stats div {
+
+    text-align: center;
+
+}
+
+.ga-game-stats strong {
+
+    display: block;
+
+    color: white;
+
+    font-size: 1rem;
+
+}
+
+.ga-game-stats small {
+
+    color: #94a3b8;
+
+}

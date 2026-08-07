@@ -1,0 +1,115 @@
+<section class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold text-white mb-1">
+
+                🎮 Browse Games
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Explore tournaments by your favorite games.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        {% for game in games %}
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="ga-game-card">
+
+                <div class="ga-game-image">
+
+                    {% if game.logo %}
+
+                    <img src="{{ game.logo.url }}" alt="{{ game.name }}">
+
+                    {% else %}
+
+                    <div class="ga-game-placeholder">
+
+                        <i class="bi bi-controller"></i>
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="ga-game-body">
+
+                    <h5>
+
+                        {{ game.name }}
+
+                    </h5>
+
+                    <p>
+
+                        Competitive tournaments available on GameArena.
+
+                    </p>
+
+                    <div class="ga-game-stats">
+
+                        <div>
+
+                            <strong>
+
+                                {{ game.total_tournaments }}
+
+                            </strong>
+
+                            <small>
+
+                                Tournaments
+
+                            </small>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+
+                                Multiplayer
+
+                            </strong>
+
+                            <small>
+
+                                Mode
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <a href="#" class="btn btn-primary w-100 mt-3">
+
+                        Explore Game
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>

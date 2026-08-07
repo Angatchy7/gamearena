@@ -1,0 +1,15 @@
+<div class="round">
+
+    <h3 class="round-title">
+
+        {{ round.name }}
+
+    </h3>
+
+    {% for match in round.matches.all %}
+
+    {% include "tournaments/components/match.html" %}
+
+    {% endfor %}
+
+</div>
