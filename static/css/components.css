@@ -1,59 +1,932 @@
+/* ==========================================================================
+   GAMEARENA COMPONENT DESIGN SYSTEM (Buttons, Cards, Badges, Tables, Shadows)
+   ========================================================================== */
+
+/* --- Card System --- */
+/*=========================================================
+  GAMEARENA PREMIUM CARD SYSTEM
+=========================================================*/
+
 .card {
+    position: relative;
 
-    background: #1e293b;
+    background:
+        linear-gradient(180deg,
+            #26354d 0%,
+            #1f2b40 100%);
 
-    color: #f8fafc;
-
-    border: none;
+    border: 1px solid rgba(255, 255, 255, .08);
 
     border-radius: 18px;
 
-    transition: .25s;
+    overflow: hidden;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, .28);
+
+    transition:
+        all .28s ease;
+}
+
+.card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 4px;
+
+    background:
+        linear-gradient(90deg,
+            #2563eb,
+            #38bdf8);
+
+    opacity: .85;
 }
 
 .card:hover {
 
-    transform: translateY(-4px);
+    transform:
+        translateY(-6px);
 
-    box-shadow: 0 12px 24px rgba(0, 0, 0, .35);
+    border-color:
+        rgba(56, 189, 248, .35);
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .45);
 }
 
 .card-header {
 
-    background: #273549;
+    background: transparent;
 
-    border: none;
+    border-bottom:
+        1px solid rgba(255, 255, 255, .06);
 
-    font-weight: 600;
+    padding: 1.3rem 1.5rem;
+
+    font-weight: 700;
+
+    font-size: 1rem;
 }
 
-.table {
+.card-body {
 
-    color: white;
+    padding: 1.5rem;
 }
 
-.badge {
+.card-footer {
 
-    padding: 8px 12px;
+    background: transparent;
 
-    border-radius: 20px;
+    border-top:
+        1px solid rgba(255, 255, 255, .06);
+
+    padding: 1rem 1.5rem;
 }
 
+/* --- Button System --- */
 .btn {
-
-    border-radius: 10px;
-
+    font-family: var(--ga-font);
     font-weight: 600;
+    border-radius: var(--ga-radius-md);
+    padding: 0.55rem 1.25rem;
+    font-size: 0.9rem;
+    transition: var(--ga-transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.btn:active {
+    transform: translateY(0);
 }
 
 .btn-primary {
-
-    background: #2563eb;
-
-    border: none;
+    background-color: var(--ga-primary);
+    border-color: var(--ga-primary);
+    color: white;
 }
 
 .btn-primary:hover {
+    background-color: var(--ga-primary-hover);
+    border-color: var(--ga-primary-hover);
+    box-shadow: var(--ga-shadow-glow);
+}
 
-    background: #1d4ed8;
+.btn-success {
+    background-color: var(--ga-success);
+    border-color: var(--ga-success);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: var(--ga-success-hover);
+    border-color: var(--ga-success-hover);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+}
+
+.btn-danger {
+    background-color: var(--ga-danger);
+    border-color: var(--ga-danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: var(--ga-danger-hover);
+    border-color: var(--ga-danger-hover);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.35);
+}
+
+.btn-warning {
+    background-color: var(--ga-warning);
+    border-color: var(--ga-warning);
+    color: #0f172a;
+}
+
+.btn-warning:hover {
+    background-color: #d97706;
+    border-color: #d97706;
+    color: white;
+}
+
+.btn-outline-light {
+    border-color: var(--ga-border-strong);
+    color: var(--ga-text-main);
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: white;
+    color: white;
+}
+
+.btn-outline-primary {
+    border-color: var(--ga-primary);
+    color: var(--ga-primary-light);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--ga-primary);
+    border-color: var(--ga-primary);
+    color: white;
+}
+
+.btn-outline-secondary {
+    border-color: var(--ga-border-strong);
+    color: var(--ga-text-muted);
+}
+
+.btn-outline-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--ga-accent-cyan);
+    color: var(--ga-accent-cyan);
+}
+
+/* --- Badge System --- */
+.badge {
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--ga-radius-pill);
+    font-size: 0.78rem;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.badge-primary {
+    background-color: rgba(37, 99, 235, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(37, 99, 235, 0.4);
+}
+
+.badge-success {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-warning {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.badge-danger {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* --- Table System --- */
+.table-dark {
+    --bs-table-bg: #1e293b;
+    --bs-table-hover-bg: #273549;
+    color: var(--ga-text-main);
+    border-color: var(--ga-border);
+}
+
+.table-dark th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ga-text-muted);
+    font-weight: 700;
+}
+
+/* --- Utility Classes --- */
+.shadow-glow {
+    box-shadow: var(--ga-shadow-glow) !important;
+}
+
+.transition-all {
+    transition: var(--ga-transition-normal) !important;
+}
+
+.rounded-card {
+    border-radius: var(--ga-radius-lg) !important;
+}
+
+@keyframes pulse-badge {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(0.96);
+    }
+}
+
+.animate-pulse {
+    animation: pulse-badge 2s infinite ease-in-out;
+}
+
+.backdrop-blur {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.fw-extrabold {
+    font-weight: 800 !important;
+}
+
+.text-shadow-sm {
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* ==========================================================================
+   GAMEARENA COMPONENT SYSTEM
+   Phase 1 — Page Headers, Stats & Tournament Cards
+   ========================================================================== */
+
+
+/* ==========================================================================
+   PAGE HEADER
+   ========================================================================== */
+
+.ga-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 0.25rem 0;
+}
+
+.ga-page-title {
+    margin: 0;
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+    color: var(--ga-text-main);
+}
+
+.ga-page-subtitle {
+    margin: 0.4rem 0 0;
+    color: var(--ga-text-muted);
+    font-size: 0.92rem;
+}
+
+@media (max-width: 576px) {
+    .ga-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+
+/* ==========================================================================
+   SECTION HEADER
+   ========================================================================== */
+
+.ga-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.ga-section-header h4 {
+    margin: 0;
+    color: var(--ga-text-main);
+    font-size: 1.1rem;
+    font-weight: 750;
+    letter-spacing: -0.015em;
+}
+
+.ga-section-header small {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--ga-text-muted);
+}
+
+@media (max-width: 576px) {
+    .ga-section-header {
+        align-items: flex-start;
+    }
+
+    .ga-section-header .btn {
+        flex-shrink: 0;
+    }
+}
+
+
+/* ==========================================================================
+   STAT CARD
+   ========================================================================== */
+
+.ga-stat-card {
+    position: relative;
+    height: 100%;
+    padding: 1.35rem;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(38, 53, 77, 0.98),
+            rgba(27, 39, 56, 0.98)
+        );
+
+    border: 1px solid var(--ga-border);
+    border-radius: var(--ga-radius-lg);
+
+    box-shadow: var(--ga-shadow-sm);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.ga-stat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--ga-primary),
+            var(--ga-accent-cyan)
+        );
+
+    opacity: 0.9;
+}
+
+.ga-stat-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--ga-border-hover);
+    box-shadow: var(--ga-shadow-md);
+}
+
+.ga-stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.ga-stat-top small {
+    color: var(--ga-text-muted);
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ga-stat-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: rgba(37, 99, 235, 0.14);
+    border: 1px solid rgba(59, 130, 246, 0.18);
+
+    color: var(--ga-primary-light);
+    font-size: 1.05rem;
+}
+
+.ga-stat-card h2 {
+    margin: 1rem 0 0.15rem;
+
+    font-size: 2rem;
+    line-height: 1;
+
+    font-weight: 800;
+    letter-spacing: -0.04em;
+
+    color: var(--ga-text-main);
+}
+
+.ga-stat-card > span {
+    color: var(--ga-text-muted);
+    font-size: 0.78rem;
+}
+
+
+/* ==========================================================================
+   TOURNAMENT CARD
+   ========================================================================== */
+
+.ga-tournament-card {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+
+    padding: 1.35rem;
+
+    background:
+        linear-gradient(
+            155deg,
+            #26354d 0%,
+            #1f2b40 55%,
+            #182337 100%
+        );
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.25);
+
+    transition:
+        transform 0.28s ease,
+        border-color 0.28s ease,
+        box-shadow 0.28s ease;
+}
+
+.ga-tournament-card::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 3px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--ga-primary),
+            var(--ga-accent-cyan)
+        );
+}
+
+.ga-tournament-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    top: -100px;
+    right: -80px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(56, 189, 248, 0.12),
+            transparent 70%
+        );
+
+    pointer-events: none;
+}
+
+.ga-tournament-card:hover {
+    transform: translateY(-7px);
+
+    border-color:
+        rgba(56, 189, 248, 0.35);
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, 0.42),
+        0 0 25px rgba(37, 99, 235, 0.08);
+}
+
+.ga-card-top {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 0.75rem;
+}
+
+.ga-game-pill {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.32rem 0.7rem;
+
+    background:
+        rgba(37, 99, 235, 0.16);
+
+    border:
+        1px solid rgba(59, 130, 246, 0.3);
+
+    border-radius: var(--ga-radius-pill);
+
+    color: #93c5fd;
+
+    font-size: 0.7rem;
+    font-weight: 750;
+
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+.ga-tournament-card h5 {
+    position: relative;
+    z-index: 1;
+
+    margin: 1rem 0 0.45rem;
+
+    color: var(--ga-text-main);
+
+    font-size: 1.08rem;
+    line-height: 1.3;
+
+    font-weight: 750;
+
+    letter-spacing: -0.015em;
+}
+
+.ga-tournament-card > p {
+    position: relative;
+    z-index: 1;
+
+    min-height: 2.8rem;
+
+    margin: 0;
+
+    color: var(--ga-text-muted);
+
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+.ga-divider {
+    width: 100%;
+    height: 1px;
+
+    margin: 1rem 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.09),
+            transparent
+        );
+}
+
+.ga-tournament-card .row {
+    position: relative;
+    z-index: 1;
+}
+
+.ga-tournament-card .row small {
+    display: block;
+
+    margin-bottom: 0.3rem;
+
+    color: var(--ga-text-subtle);
+
+    font-size: 0.68rem;
+    font-weight: 650;
+
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.ga-tournament-card .row strong {
+    display: block;
+
+    color: var(--ga-text-main);
+
+    font-size: 0.9rem;
+    font-weight: 750;
+}
+
+.ga-tournament-card .row .col:first-child strong {
+    color: #34d399;
+}
+
+.ga-tournament-card .progress {
+    position: relative;
+    z-index: 1;
+
+    height: 6px;
+
+    overflow: hidden;
+
+    margin-top: 1rem;
+
+    background:
+        rgba(255, 255, 255, 0.07);
+
+    border-radius: var(--ga-radius-pill);
+}
+
+.ga-tournament-card .progress-bar {
+    background:
+        linear-gradient(
+            90deg,
+            var(--ga-primary),
+            var(--ga-accent-cyan)
+        );
+
+    border-radius: inherit;
+
+    transition:
+        width 0.6s ease;
+}
+
+.ga-tournament-card .btn {
+    position: relative;
+    z-index: 1;
+
+    min-height: 42px;
+
+    font-size: 0.82rem;
+}
+
+
+/* ==========================================================================
+   TOURNAMENT STATUS
+   ========================================================================== */
+
+.ga-status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 25px;
+
+    padding: 0.25rem 0.65rem;
+
+    border-radius: var(--ga-radius-pill);
+
+    background:
+        rgba(148, 163, 184, 0.1);
+
+    border:
+        1px solid rgba(148, 163, 184, 0.18);
+
+    color: var(--ga-text-muted);
+
+    font-size: 0.67rem;
+    font-weight: 750;
+
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+
+/* ==========================================================================
+   TOURNAMENT STATUS COLOR HELPERS
+   ========================================================================== */
+
+.ga-status-open {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #34d399;
+}
+
+.ga-status-live {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+.ga-status-completed {
+    background: rgba(148, 163, 184, 0.1);
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #cbd5e1;
+}
+
+
+/* ==========================================================================
+   GENERIC PREMIUM CARD
+   ========================================================================== */
+
+.ga-card {
+    position: relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(38, 53, 77, 0.96),
+            rgba(27, 39, 56, 0.96)
+        );
+
+    border:
+        1px solid var(--ga-border);
+
+    border-radius:
+        var(--ga-radius-lg);
+
+    box-shadow:
+        var(--ga-shadow-sm);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.ga-card-hover:hover {
+    transform: translateY(-5px);
+
+    border-color:
+        var(--ga-border-hover);
+
+    box-shadow:
+        var(--ga-shadow-md);
+}
+
+
+/* ==========================================================================
+   AVATAR
+   ========================================================================== */
+
+.ga-avatar {
+    width: 42px;
+    height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--ga-primary),
+            var(--ga-accent-purple)
+        );
+
+    border:
+        2px solid rgba(255, 255, 255, 0.12);
+
+    color: white;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    box-shadow:
+        0 5px 18px rgba(37, 99, 235, 0.25);
+}
+
+.ga-avatar-lg {
+    width: 64px;
+    height: 64px;
+
+    font-size: 1.35rem;
+}
+
+.ga-avatar-xl {
+    width: 96px;
+    height: 96px;
+
+    font-size: 2rem;
+
+    border-width: 3px;
+}
+
+
+/* ==========================================================================
+   COMMON LABEL
+   ========================================================================== */
+
+.ga-label {
+    display: block;
+
+    margin-bottom: 0.35rem;
+
+    color: var(--ga-text-subtle);
+
+    font-size: 0.68rem;
+    font-weight: 750;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.07em;
+}
+
+
+/* ==========================================================================
+   RESPONSIVE TOURNAMENT GRID
+   ========================================================================== */
+
+.ga-tournament-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 1.25rem;
+}
+
+@media (max-width: 1100px) {
+    .ga-tournament-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .ga-tournament-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ==========================================================================
+   ACCESSIBILITY
+   ========================================================================== */
+
+.ga-tournament-card a:focus-visible,
+.ga-stat-card a:focus-visible,
+.ga-page-header a:focus-visible {
+    outline:
+        2px solid var(--ga-accent-cyan);
+
+    outline-offset: 3px;
+}
+
+
+/* ==========================================================================
+   REDUCED MOTION
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ga-tournament-card,
+    .ga-stat-card,
+    .ga-card {
+        transition: none;
+    }
+
+    .ga-tournament-card:hover,
+    .ga-stat-card:hover,
+    .ga-card-hover:hover {
+        transform: none;
+    }
 }

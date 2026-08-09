@@ -1,0 +1,23 @@
+<div class="ga-empty-state text-center py-5 px-3">
+
+    {% if icon %}
+    <div class="empty-icon mb-3">
+        <i class="{{ icon }} display-4 text-cyan"></i>
+    </div>
+    {% endif %}
+
+    <h4 class="fw-bold mb-2" style="color: #f8fafc;">
+        {{ title }}
+    </h4>
+
+    <p class="mb-4 max-w-md mx-auto" style="color: #cbd5e1;">
+        {{ description }}
+    </p>
+
+    {% if button_url %}
+    <a href="{{ button_url }}" class="btn btn-primary px-4 py-2 fw-bold" style="border-radius: 12px;">
+        {{ button_text }}
+    </a>
+    {% endif %}
+
+</div>

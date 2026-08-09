@@ -76,93 +76,97 @@ Browse Tournaments
 
     <!-- ================= TOURNAMENTS ================= -->
 
-    <div class="row">
+    <div class="row g-4">
 
         {% for tournament in tournaments %}
 
-        <div class="col-md-6 col-xl-4 mb-4">
+        <div class="col-md-6 col-xl-4">
 
-            <div class="card h-100 border-0 shadow-sm tournament-card">
+            <div class="card h-100 border-0 shadow-sm" style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
 
-                <div class="card-body">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
 
-                    <!-- Game -->
+                    <div>
+                        <!-- Game & Status Top Row -->
+                        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
 
-                    <small class="text-primary fw-semibold">
+                            <span class="badge px-3 py-1.5 fs-7 text-uppercase fw-bold" style="background: rgba(37, 99, 235, 0.2); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.4);">
+                                <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
+                            </span>
 
-                        {{ tournament.game }}
+                            {% if tournament.status == tournament.Status.DRAFT %}
 
-                    </small>
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
+                                Draft
+                            </span>
 
-                    <h4 class="fw-bold mt-2">
+                            {% elif tournament.status == tournament.Status.REGISTRATION_OPEN %}
 
-                        {{ tournament.name }}
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35);">
+                                Registration Open
+                            </span>
 
-                    </h4>
+                            {% elif tournament.status == tournament.Status.REGISTRATION_CLOSED %}
 
-                    <div class="my-3">
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);">
+                                Registration Closed
+                            </span>
 
-                        {% if tournament.status == tournament.Status.DRAFT %}
+                            {% elif tournament.status == tournament.Status.LIVE %}
 
-                        <span class="badge bg-secondary px-3 py-2">
-                            Draft
-                        </span>
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
+                                🔴 Live
+                            </span>
 
-                        {% elif tournament.status == tournament.Status.REGISTRATION_OPEN %}
+                            {% else %}
 
-                        <span class="badge bg-success px-3 py-2">
-                            Registration Open
-                        </span>
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
 
-                        {% elif tournament.status == tournament.Status.REGISTRATION_CLOSED %}
+                                {{ tournament.get_status_display }}
 
-                        <span class="badge bg-warning text-dark px-3 py-2">
-                            Registration Closed
-                        </span>
+                            </span>
 
-                        {% elif tournament.status == tournament.Status.LIVE %}
-
-                        <span class="badge bg-danger px-3 py-2">
-                            🔴 Live
-                        </span>
-
-                        {% else %}
-
-                        <span class="badge bg-dark px-3 py-2">
-
-                            {{ tournament.get_status_display }}
-
-                        </span>
-
-                        {% endif %}
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <div class="text-muted small">
-
-                            Organizer
+                            {% endif %}
 
                         </div>
 
-                        <strong>
+                        <!-- Tournament Title -->
+                        <h4 class="fw-bold mb-2" style="color: #f8fafc; font-size: 1.2rem;">
 
-                            {{ tournament.organizer.username }}
+                            {{ tournament.name }}
 
-                        </strong>
+                        </h4>
 
+                        <!-- Description if available -->
+                        {% if tournament.description %}
+                        <p style="color: #94a3b8; font-size: 0.85rem;" class="mb-3">
+                            {{ tournament.description|truncatewords:15 }}
+                        </p>
+                        {% endif %}
+
+                        <!-- Metadata Row -->
+                        <div class="row g-2 py-3 border-top border-bottom my-3" style="border-color: rgba(148, 163, 184, 0.15) !important;">
+                            <div class="col-6">
+                                <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Organizer</small>
+                                <strong style="color: #f8fafc;" class="fs-7"><i class="bi bi-person-circle me-1"></i> {{ tournament.organizer.username }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Prize Pool</small>
+                                <strong style="color: #22c55e;" class="fs-7">NPR {{ tournament.prize_pool }}</strong>
+                            </div>
+                        </div>
                     </div>
 
-                </div>
+                    <!-- Card Footer CTA -->
+                    <div class="pt-2">
 
-                <div class="card-footer bg-transparent border-0">
+                        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-primary w-100 py-2.5 fw-bold" style="border-radius: 12px;">
 
-                    <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-primary w-100">
+                            View Tournament
 
-                        View Tournament
+                        </a>
 
-                    </a>
+                    </div>
 
                 </div>
 
@@ -174,27 +178,27 @@ Browse Tournaments
 
         <div class="col-12">
 
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
 
                 <div class="card-body text-center py-5">
 
-                    <i class="bi bi-trophy display-3 text-secondary"></i>
+                    <i class="bi bi-trophy display-3 text-cyan mb-3 d-block"></i>
 
-                    <h3 class="mt-4">
+                    <h3 class="fw-bold" style="color: #f8fafc;">
 
-                        No tournaments found
+                        No Tournaments Found
 
                     </h3>
 
-                    <p class="text-muted">
+                    <p style="color: #cbd5e1;" class="mb-4">
 
-                        Create the first tournament and start competing.
+                        Host the first tournament and bring players together.
 
                     </p>
 
-                    <a href="{% url 'tournaments:create' %}" class="btn btn-primary">
+                    <a href="{% url 'tournaments:create' %}" class="btn btn-primary px-4 py-2.5 fw-bold" style="border-radius: 12px;">
 
-                        Create Tournament
+                        <i class="bi bi-plus-lg me-1"></i> Create Tournament
 
                     </a>
 
@@ -210,4 +214,4 @@ Browse Tournaments
 
 </div>
 
-{% endblock %}
+{% endblock %}

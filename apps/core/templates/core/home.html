@@ -28,4 +28,117 @@ GameArena
 
 {% include "core/partials/footer_cta.html" %}
 
+<!-- =========================================================
+     AUTH MODAL (INLINE LOGIN & REGISTER)
+     ========================================================= -->
+<div id="ga-auth-backdrop" class="auth-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
+
+    <!-- LOGIN PANEL -->
+    <div id="ga-login-panel" class="auth-modal auth-panel" style="display: none;">
+        <div class="auth-modal-header">
+            <div class="auth-modal-brand">
+                <div class="auth-modal-brand-icon">
+                    <i class="bi bi-controller"></i>
+                </div>
+                <span class="auth-modal-brand-name">GAMEARENA</span>
+            </div>
+            <button type="button" class="auth-modal-close" data-auth-close aria-label="Close modal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="auth-modal-body">
+            <h2 class="auth-modal-title">Welcome back</h2>
+            <p class="auth-modal-subtitle">Sign in to continue to your GameArena account.</p>
+
+            <form method="post" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+
+                <div class="auth-form-group">
+                    <label class="auth-form-label" for="login-username">Username</label>
+                    <input type="text" name="username" id="login-username" class="auth-form-input"
+                        placeholder="Enter your username" required autocomplete="username">
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-form-label" for="login-password">Password</label>
+                    <input type="password" name="password" id="login-password" class="auth-form-input"
+                        placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="auth-submit-btn">
+                    SIGN IN
+                </button>
+            </form>
+        </div>
+
+        <div class="auth-modal-footer">
+            Don't have an account?
+            <button type="button" class="auth-modal-switch" data-auth-switch="register">
+                Create one
+            </button>
+        </div>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div id="ga-register-panel" class="auth-modal auth-panel" style="display: none;">
+        <div class="auth-modal-header">
+            <div class="auth-modal-brand">
+                <div class="auth-modal-brand-icon">
+                    <i class="bi bi-controller"></i>
+                </div>
+                <span class="auth-modal-brand-name">GAMEARENA</span>
+            </div>
+            <button type="button" class="auth-modal-close" data-auth-close aria-label="Close modal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="auth-modal-body">
+            <h2 class="auth-modal-title">Create your account</h2>
+            <p class="auth-modal-subtitle">Join tournaments and compete with players.</p>
+
+            <form method="post" action="{% url 'accounts:register' %}">
+                {% csrf_token %}
+
+                <div class="auth-form-group">
+                    <label class="auth-form-label" for="reg-username">Username</label>
+                    <input type="text" name="username" id="reg-username" class="auth-form-input"
+                        placeholder="Choose a username" required autocomplete="username">
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-form-label" for="reg-email">Email</label>
+                    <input type="email" name="email" id="reg-email" class="auth-form-input"
+                        placeholder="Enter your email" required autocomplete="email">
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-form-label" for="reg-password1">Password</label>
+                    <input type="password" name="password1" id="reg-password1" class="auth-form-input"
+                        placeholder="Create a password" required autocomplete="new-password">
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-form-label" for="reg-password2">Confirm Password</label>
+                    <input type="password" name="password2" id="reg-password2" class="auth-form-input"
+                        placeholder="Confirm your password" required autocomplete="new-password">
+                </div>
+
+                <button type="submit" class="auth-submit-btn">
+                    CREATE ACCOUNT
+                </button>
+            </form>
+        </div>
+
+        <div class="auth-modal-footer">
+            Already have an account?
+            <button type="button" class="auth-modal-switch" data-auth-switch="login">
+                Sign in
+            </button>
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}

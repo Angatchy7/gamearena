@@ -1,18 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Register</title>
-</head>
-<body>
-  <h1>Register</h1>
+{% extends "base.html" %}
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create Account</button>
-  </form>
+{% block title %}Register - GameArena{% endblock %}
 
-  <p>Already have an account? <a href="{% url 'accounts:login' %}">Log In</a></p>
-</body>
-</html>
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg p-4" style="background: linear-gradient(160deg, #162133, #1a2840); border-radius: 20px;">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary text-white p-3 mb-3">
+                            <i class="bi bi-controller fs-3"></i>
+                        </div>
+                        <h2 class="fw-bold text-white mb-1">Create your account</h2>
+                        <p class="text-secondary small">Join tournaments and compete with players</p>
+                    </div>
+
+                    {% if form.errors %}
+                    <div class="alert alert-danger border-0 rounded-3 small">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <p class="mb-1"><strong>{{ field.label }}:</strong> {{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label text-secondary small fw-bold text-uppercase">Username</label>
+                            <input type="text" name="username" id="id_username" class="form-control" placeholder="Choose a username" required autofocus value="{{ form.username.value|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label text-secondary small fw-bold text-uppercase">Email</label>
+                            <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter your email" required value="{{ form.email.value|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label text-secondary small fw-bold text-uppercase">Password</label>
+                            <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Create a password" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="id_password2" class="form-label text-secondary small fw-bold text-uppercase">Confirm Password</label>
+                            <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirm password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold rounded-3">
+                            CREATE ACCOUNT
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-10 small text-secondary">
+                        Already have an account? <a href="{% url 'accounts:login' %}" class="text-info fw-bold text-decoration-none">Sign in</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

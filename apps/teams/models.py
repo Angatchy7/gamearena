@@ -64,6 +64,12 @@ class Team(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def active_member_count(self):
+        if hasattr(self, "_active_member_count"):
+            return self._active_member_count
+        return self.members.filter(is_active=True).count()
+
 
 class TeamMember(models.Model):
     """

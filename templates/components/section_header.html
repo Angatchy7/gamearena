@@ -1,0 +1,23 @@
+<div class="ga-section-header">
+
+    <div>
+
+        <h4>{{ title }}</h4>
+
+        {% if subtitle %}
+        <small class="text-muted">
+            {{ subtitle }}
+        </small>
+        {% endif %}
+
+    </div>
+
+    {% if button_url %}
+    <a href="{{ button_url }}" class="btn btn-outline-light btn-sm">
+
+        {{ button_text }}
+
+    </a>
+    {% endif %}
+
+</div>

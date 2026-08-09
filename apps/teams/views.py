@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import ListView
@@ -69,6 +70,9 @@ class TeamListView(LoginRequiredMixin, ListView):
             Team.objects.filter(
                 members__user=self.request.user,
                 members__is_active=True,
+            )
+            .annotate(
+                _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
             )
             .prefetch_related("members__user")
             .distinct()

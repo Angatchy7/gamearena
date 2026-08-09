@@ -191,6 +191,30 @@
 
                 {% else %}
 
+                {% if request.resolver_match.url_name == 'home' %}
+
+                <li class="nav-item">
+
+                    <a class="nav-link text-white" href="{% url 'accounts:login' %}" data-auth-modal="login">
+
+                        Login
+
+                    </a>
+
+                </li>
+
+                <li class="nav-item ms-2">
+
+                    <a class="btn btn-primary rounded-pill px-4" href="{% url 'accounts:register' %}" data-auth-modal="register">
+
+                        Register
+
+                    </a>
+
+                </li>
+
+                {% else %}
+
                 <li class="nav-item">
 
                     <a class="nav-link text-white" href="{% url 'accounts:login' %}">
@@ -210,6 +234,8 @@
                     </a>
 
                 </li>
+
+                {% endif %}
 
                 {% endif %}
 

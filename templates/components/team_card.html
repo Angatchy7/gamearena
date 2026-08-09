@@ -1,0 +1,31 @@
+<div class="ga-team-card">
+
+    <div class="ga-team-avatar">
+
+        {{ team.name|first }}
+
+    </div>
+
+    <h5>
+
+        {{ team.name }}
+
+    </h5>
+
+    <small>
+
+        {{ team.active_member_count }} Members
+
+    </small>
+
+    <div class="mt-3">
+
+        <span class="badge badge-primary">
+
+            {{ team.manager.username }}
+
+        </span>
+
+    </div>
+
+</div>

@@ -2,13 +2,22 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 # pyrefly: ignore [missing-import]
+
 from apps.core.decorators import admin_required
+
 # pyrefly: ignore [missing-import]
+
 from apps.tournaments.models import Tournament, TournamentRegistration
+
 # pyrefly: ignore [missing-import]
+
 from apps.teams.models import Team, TeamMember
+
 # pyrefly: ignore [missing-import]
+
 from apps.notifications.models import Notification
+
+from django.db.models import Count, Q
 
 
 @login_required
@@ -18,10 +27,17 @@ def dashboard_home(request):
     """
     user = request.user
 
-    # User's teams
-    managed_teams = Team.objects.filter(manager=user, is_active=True)
-    joined_memberships = TeamMember.objects.filter(user=user, is_active=True).select_related("team")
-    user_teams = list(set([m.team for m in joined_memberships] + list(managed_teams)))
+    # User's teams annotated with active member count
+    managed_teams = Team.objects.filter(manager=user, is_active=True).annotate(
+        _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
+    )
+    user_team_qs = Team.objects.filter(
+        Q(manager=user) | Q(members__user=user, members__is_active=True),
+        is_active=True
+    ).distinct().annotate(
+        _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
+    ).order_by("name")
+    user_teams = list(user_team_qs)
 
     # User's organized tournaments
     organized_tournaments = Tournament.objects.filter(organizer=user).select_related("game").order_by("-created_at")
@@ -66,4 +82,4 @@ def admin_dashboard(request):
     """
     Website administrator dashboard.
     """
-    return render(request, "dashboard/admin.html")
+    return render(request, "dashboard/admin.html")  
