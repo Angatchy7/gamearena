@@ -7,8 +7,9 @@ from django.views import View
 from apps.tournaments.models import Match, Round
 from .permissions import require_tournament_manager
 from .forms import TournamentRegistrationForm, MatchResultForm
-from .models import TournamentRegistration, Tournament
+from .models import TournamentRegistration, Tournament, Game
 from django.contrib import messages
+from django.db.models import Q, Count
 
 from .forms import (
     TournamentCreateForm,
@@ -36,14 +37,28 @@ class TournamentListView(View):
 
     def get(self, request):
 
+        query = request.GET.get("q", "").strip()
+        game_slug = request.GET.get("game", "").strip()
+
         tournaments = (
             Tournament.objects
             .select_related(
                 "game",
                 "organizer",
             )
+            .annotate(registered_count=Count("registrations", distinct=True))
             .order_by("-created_at")
         )
+
+        if query:
+            tournaments = tournaments.filter(
+                Q(name__icontains=query)
+                | Q(description__icontains=query)
+                | Q(game__name__icontains=query)
+            )
+
+        if game_slug:
+            tournaments = tournaments.filter(game__slug=game_slug)
 
         return render(
             request,
@@ -51,6 +66,9 @@ class TournamentListView(View):
             {
                 "page_title": "Browse Tournaments",
                 "tournaments": tournaments,
+                "games": Game.objects.filter(is_active=True).order_by("name"),
+                "search_query": query,
+                "selected_game": game_slug,
             },
         )
 
@@ -63,6 +81,9 @@ class MyTournamentListView(LoginRequiredMixin, View):
 
     def get(self, request):
 
+        query = request.GET.get("q", "").strip()
+        game_slug = request.GET.get("game", "").strip()
+
         tournaments = (
             Tournament.objects.filter(
                 organizer=request.user
@@ -71,8 +92,19 @@ class MyTournamentListView(LoginRequiredMixin, View):
                 "game",
                 "organizer",
             )
+            .annotate(registered_count=Count("registrations", distinct=True))
             .order_by("-created_at")
         )
+
+        if query:
+            tournaments = tournaments.filter(
+                Q(name__icontains=query)
+                | Q(description__icontains=query)
+                | Q(game__name__icontains=query)
+            )
+
+        if game_slug:
+            tournaments = tournaments.filter(game__slug=game_slug)
 
         return render(
             request,
@@ -80,6 +112,9 @@ class MyTournamentListView(LoginRequiredMixin, View):
             {
                 "page_title": "My Tournaments",
                 "tournaments": tournaments,
+                "games": Game.objects.filter(is_active=True).order_by("name"),
+                "search_query": query,
+                "selected_game": game_slug,
             },
         )
 

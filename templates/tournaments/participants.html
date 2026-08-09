@@ -1,121 +1,76 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}
-Participants
+{% block title %}{{ tournament.name }} — Registered Teams{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tournament.css' %}">
 {% endblock %}
 
 {% block content %}
-
-<div class="container mt-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h2>
-
-            {{ tournament.name }}
-
-        </h2>
-
-        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-secondary">
-
-            Back
-
+<div class="participants-shell py-2">
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
+        <div>
+            <div class="eyebrow text-cyan mb-1"><i class="bi bi-people-fill me-1"></i> Tournament Participants</div>
+            <h1 class="h2 fw-bold mb-1">{{ tournament.name }}</h1>
+            <p class="text-secondary mb-0">Teams registered for this competition.</p>
+        </div>
+        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-outline-light px-4">
+            <i class="bi bi-arrow-left me-1"></i> Back
         </a>
-
     </div>
 
-    <div class="card shadow-sm">
-
-        <div class="card-header">
-
-            <strong>
-
-                Registered Teams
-
-                ({{ registrations.count }} / {{ tournament.max_participants }})
-
-            </strong>
-
+    <section class="participants-card">
+        <div class="participants-card-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <span><i class="bi bi-shield-check me-2 text-cyan"></i>Registered Teams</span>
+            <span class="participant-count"><i class="bi bi-people"></i> {{ registrations|length }} / {{ tournament.max_participants }}</span>
         </div>
 
-        <div class="card-body">
-
-            {% if registrations %}
-
-            <table class="table table-hover">
-
+        {% if registrations %}
+        <div class="participants-table-wrap">
+            <table class="participants-table">
                 <thead>
-
                     <tr>
-
                         <th>Team</th>
-
                         <th>Manager</th>
-
                         <th>Players</th>
-
                         <th>Status</th>
-
                     </tr>
-
                 </thead>
-
                 <tbody>
-
                     {% for registration in registrations %}
-
                     <tr>
-
                         <td>
-
-                            {{ registration.team.name }}
-
+                            <div class="participant-team">
+                                {% if registration.team.logo %}
+                                    <img src="{{ registration.team.logo.url }}" alt="{{ registration.team.name }}" class="participant-avatar" style="object-fit:cover;">
+                                {% else %}
+                                    <span class="participant-avatar">{{ registration.team.name|slice:":2"|upper }}</span>
+                                {% endif %}
+                                <span>{{ registration.team.name }}</span>
+                            </div>
                         </td>
-
+                        <td class="participant-manager">
+                            <i class="bi bi-person-circle me-1 text-cyan"></i>{{ registration.team.manager.username }}
+                        </td>
                         <td>
-
-                            {{ registration.team.manager.username }}
-
+                            <span class="participant-count"><i class="bi bi-people-fill"></i>{{ registration.team.active_member_count }}</span>
                         </td>
-
                         <td>
-
-                            {{ registration.team.members.count }}
-
+                            <span class="participant-status">{{ registration.get_status_display }}</span>
                         </td>
-
-                        <td>
-
-                            <span class="badge bg-success">
-
-                                {{ registration.get_status_display }}
-
-                            </span>
-
-                        </td>
-
                     </tr>
-
                     {% endfor %}
-
                 </tbody>
-
             </table>
-
-            {% else %}
-
-            <div class="alert alert-info">
-
-                No teams have registered yet.
-
-            </div>
-
-            {% endif %}
-
         </div>
-
-    </div>
-
+        {% else %}
+        <div class="dashboard-empty">
+            <div class="empty-icon"><i class="bi bi-people"></i></div>
+            <h3>No teams registered yet</h3>
+            <p>Registered teams will appear here once they join this tournament.</p>
+        </div>
+        {% endif %}
+    </section>
 </div>
-
-{% endblock %}€
+{% endblock %}

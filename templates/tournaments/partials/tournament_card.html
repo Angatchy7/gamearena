@@ -1,24 +1,24 @@
-<div class="card ga-tournament-card h-100">
+<div class="card ga-tournament-card h-100 border-0 shadow-sm" style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
 
-    <div class="ga-card-banner">
+    <div class="ga-card-banner position-relative overflow-hidden" style="border-radius: 18px 18px 0 0; height: 140px; background: linear-gradient(135deg, #0f172a, #1e1b4b);">
 
         {% if tournament.banner %}
 
-        <img src="{{ tournament.banner.url }}" alt="{{ tournament.name }}">
+        <img src="{{ tournament.banner.url }}" alt="{{ tournament.name }}" class="w-100 h-100" style="object-fit: cover;">
 
         {% else %}
 
-        <div class="ga-card-placeholder">
+        <div class="ga-card-placeholder d-flex align-items-center justify-content-center h-100 text-white-50">
 
-            <i class="bi bi-controller"></i>
+            <i class="bi bi-controller display-4 text-cyan opacity-50"></i>
 
         </div>
 
         {% endif %}
 
-        <div class="ga-card-overlay">
+        <div class="ga-card-overlay position-absolute top-0 start-0 w-100 p-3 d-flex justify-content-between align-items-start">
 
-            <span class="badge bg-primary">
+            <span class="badge px-3 py-1.5 fs-8" style="background: rgba(37, 99, 235, 0.9); color: #ffffff; border-radius: 20px;">
 
                 {{ tournament.game.name }}
 
@@ -26,7 +26,7 @@
 
             {% if tournament.status == tournament.Status.REGISTRATION_OPEN %}
 
-            <span class="badge bg-success">
+            <span class="badge px-3 py-1.5 fs-8" style="background: rgba(34, 197, 94, 0.9); color: #ffffff; border-radius: 20px;">
 
                 OPEN
 
@@ -34,7 +34,7 @@
 
             {% elif tournament.status == tournament.Status.LIVE %}
 
-            <span class="badge bg-danger">
+            <span class="badge px-3 py-1.5 fs-8" style="background: rgba(239, 68, 68, 0.9); color: #ffffff; border-radius: 20px;">
 
                 LIVE
 
@@ -42,7 +42,7 @@
 
             {% elif tournament.status == tournament.Status.COMPLETED %}
 
-            <span class="badge bg-secondary">
+            <span class="badge px-3 py-1.5 fs-8" style="background: rgba(148, 163, 184, 0.3); color: #cbd5e1; border-radius: 20px;">
 
                 COMPLETED
 
@@ -50,7 +50,7 @@
 
             {% else %}
 
-            <span class="badge bg-warning text-dark">
+            <span class="badge px-3 py-1.5 fs-8" style="background: rgba(245, 158, 11, 0.9); color: #0b1324; border-radius: 20px;">
 
                 {{ tournament.get_status_display }}
 
@@ -62,86 +62,87 @@
 
     </div>
 
-    <div class="card-body">
+    <div class="card-body p-4 d-flex flex-column justify-content-between">
 
-        <h5>
+        <div>
+            <h5 class="fw-bold mb-2" style="color: #f8fafc; font-size: 1.15rem;">
 
-            {{ tournament.name }}
+                {{ tournament.name }}
 
-        </h5>
+            </h5>
 
-        <p class="ga-description">
+            <p class="ga-description mb-3" style="color: #cbd5e1; font-size: 0.88rem;">
 
-            {{ tournament.description|truncatewords:10 }}
+                {{ tournament.description|truncatewords:10 }}
 
-        </p>
+            </p>
 
-        <div class="ga-progress-label">
+            <div class="ga-progress-label d-flex justify-content-between align-items-center mb-1 fs-8 fw-semibold" style="color: #cbd5e1;">
 
-            <span>
+                <span>
 
-                Teams Registered
+                    Teams Registered
 
-            </span>
+                </span>
 
-            <span>
+                <span style="color: #22d3ee;">
 
-                {{ tournament.registrations.count }}/{{ tournament.max_participants }}
+                    {{ tournament.registrations.count }}/{{ tournament.max_participants }}
 
-            </span>
+                </span>
 
+            </div>
+
+            <div class="progress ga-progress mb-3" style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px;">
+
+                <div class="progress-bar" style="background: linear-gradient(90deg, #2563eb, #22d3ee); width:{% widthratio tournament.registrations.count tournament.max_participants 100 %}%">
+
+                </div>
+
+            </div>
+
+            <div class="ga-card-stats row g-2 py-2 border-top border-bottom my-3" style="border-color: rgba(148, 163, 184, 0.15) !important;">
+
+                <div class="ga-stat col-4 text-center">
+
+                    <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Prize</small>
+
+                    <strong style="color: #f8fafc;" class="fs-8">
+
+                        NPR {{ tournament.prize_pool }}
+
+                    </strong>
+
+                </div>
+
+                <div class="ga-stat col-4 text-center">
+
+                    <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Organizer</small>
+
+                    <strong style="color: #cbd5e1;" class="fs-8">
+
+                        {{ tournament.organizer.username }}
+
+                    </strong>
+
+                </div>
+
+                <div class="ga-stat col-4 text-center">
+
+                    <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Teams</small>
+
+                    <strong style="color: #cbd5e1;" class="fs-8">
+
+                        {{ tournament.registrations.count }}
+
+                    </strong>
+
+                </div>
+
+            </div>
         </div>
 
-        <div class="progress ga-progress">
-
-            <div class="progress-bar"
-                style="width:{% widthratio tournament.registrations.count tournament.max_participants 100 %}%">
-
-            </div>
-
-        </div>
-
-        <div class="ga-card-stats">
-
-            <div class="ga-stat">
-
-                <small>Prize</small>
-
-                <strong>
-
-                    NPR {{ tournament.prize_pool }}
-
-                </strong>
-
-            </div>
-
-            <div class="ga-stat">
-
-                <small>Organizer</small>
-
-                <strong>
-
-                    {{ tournament.organizer.username }}
-
-                </strong>
-
-            </div>
-
-            <div class="ga-stat">
-
-                <small>Teams</small>
-
-                <strong>
-
-                    {{ tournament.registrations.count }}
-
-                </strong>
-
-            </div>
-
-        </div>
-
-        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn ga-view-btn w-100">
+        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-primary ga-view-btn w-100 py-2.5 fw-bold mt-2" style="border-radius: 12px; background: #2563eb; border-color: #2563eb; color: #ffffff;">
 
             View Tournament
 
@@ -149,4 +150,4 @@
 
     </div>
 
-</div>
+</div>

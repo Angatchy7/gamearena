@@ -2,18 +2,65 @@
 
 {% load static %}
 
+{% block title %}Bracket - {{ tournament.name }}{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/bracket.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid px-0 py-2">
 
-    <h2 class="mb-4">
-        {{ tournament.name }}
-    </h2>
+    <!-- Header Section -->
+    <div class="card border-0 shadow-lg mb-4 overflow-hidden"
+         style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+        <div class="card-body p-4 p-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mb-3 mb-lg-0">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="badge bg-primary px-3 py-2 fs-7 fw-semibold text-uppercase">
+                            {{ tournament.get_status_display }}
+                        </span>
+                        <span class="badge bg-secondary px-3 py-2 fs-7 fw-semibold">
+                            <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
+                        </span>
+                    </div>
+                    <h1 class="fw-bold text-white mb-2 display-6">
+                        🏆 {{ tournament.name }} — Bracket
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Tournament bracket showing all rounds and match progression.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                        <a href="{% url 'tournaments:matches' tournament.slug %}" class="btn btn-outline-light px-3 py-2">
+                            <i class="bi bi-controller me-1"></i> Matches
+                        </a>
+                        <a href="{% url 'tournaments:statistics' tournament.slug %}" class="btn btn-outline-info px-3 py-2">
+                            <i class="bi bi-bar-chart-line me-1"></i> Statistics
+                        </a>
+                        <a href="{% url 'tournaments:leaderboard' tournament.slug %}" class="btn btn-outline-warning px-3 py-2">
+                            <i class="bi bi-trophy me-1"></i> Leaderboard
+                        </a>
+                        {% if request.user == tournament.organizer %}
+                        <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-primary px-3 py-2">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                        {% else %}
+                        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-outline-light px-3 py-2">
+                            <i class="bi bi-arrow-left me-1"></i> Details
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    {% if rounds %}
+    <!-- Bracket -->
     <div class="bracket-container">
 
         {% for round in rounds %}
@@ -111,7 +158,22 @@
         {% endfor %}
 
     </div>
+    {% else %}
+    <div class="card border-0 shadow-sm py-5 text-center"
+         style="background: #1e293b; border-radius: 16px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+        <div class="card-body">
+            <i class="bi bi-diagram-3 display-4 mb-3 d-block" style="color: #64748b;"></i>
+            <h4 class="fw-bold text-white mb-2">No Bracket Generated</h4>
+            <p class="mb-0" style="color: #94a3b8;">
+                The tournament bracket has not been generated yet.
+                {% if request.user == tournament.organizer %}
+                    <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="text-cyan">Open the dashboard</a> to generate it.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    {% endif %}
 
 </div>
 
-{% endblock %}
+{% endblock %}

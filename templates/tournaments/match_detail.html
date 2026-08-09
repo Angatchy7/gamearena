@@ -8,29 +8,24 @@ Match {{ match.match_number }} — {{ tournament.name }}
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-9 col-xl-8">
-
+            
             <!-- Breadcrumbs / Top Bar -->
             <div class="d-flex align-items-center justify-content-between mb-4">
-                <a href="{% url 'tournaments:matches' tournament.slug %}"
-                    class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
+                <a href="{% url 'tournaments:matches' tournament.slug %}" class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i> Back to Matches
                 </a>
-                <span
-                    class="badge {% if match.status == 'COMPLETED' %}bg-success{% elif match.status == 'LIVE' %}bg-danger{% else %}bg-secondary{% endif %} px-3 py-2 fs-7 fw-semibold">
-                    <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> Status: {{ match.get_status_display
-                    }}
+                <span class="badge {% if match.status == 'COMPLETED' %}bg-success{% elif match.status == 'LIVE' %}bg-danger{% else %}bg-secondary{% endif %} px-3 py-2 fs-7 fw-semibold">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> Status: {{ match.get_status_display }}
                 </span>
             </div>
 
             <!-- Main Match Card -->
-            <div class="card border-0 shadow-lg overflow-hidden"
-                style="background: #1e293b; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08) !important;">
-
+            <div class="card border-0 shadow-lg overflow-hidden" style="background: #1e293b; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08) !important;">
+                
                 <!-- Arena Scoreboard Header -->
-                <div class="card-header border-0 text-center py-4 px-4"
-                    style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);">
-                    <div class="text-uppercase tracking-wider text-muted small fw-bold mb-1">
-                        {{ tournament.name }}
+                <div class="card-header border-0 text-center py-4 px-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);">
+                    <div class="text-uppercase tracking-wider small fw-bold mb-1" style="color: #60a5fa;">
+                        <i class="bi bi-trophy-fill me-1"></i> {{ tournament.name }}
                     </div>
                     <h3 class="fw-bold text-white mb-0">
                         {{ match.round.name }} • Match #{{ match.match_number }}
@@ -58,30 +53,27 @@ Match {{ match.match_number }} — {{ tournament.name }}
 
                             <!-- Team One -->
                             <div class="col-md-5">
-                                <div class="p-4 rounded-4 text-center h-100 d-flex flex-column align-items-center justify-content-center"
-                                    style="background: #111827; border: 1px solid rgba(255,255,255,0.06);">
-                                    <div class="profile-avatar rounded-circle text-white fw-bold d-flex align-items-center justify-content-center mb-3 shadow"
-                                        style="width: 64px; height: 64px; font-size: 24px; background: linear-gradient(135deg, #2563eb, #3b82f6);">
-                                        {% if match.team_one %}{{ match.team_one.name|slice:":2"|upper }}{% else %}?{%
-                                        endif %}
+                                <div class="p-4 rounded-4 text-center h-100 d-flex flex-column align-items-center justify-content-center" style="background: #111827; border: 1px solid rgba(148, 163, 184, 0.2);">
+                                    <div class="profile-avatar rounded-circle text-white fw-bold d-flex align-items-center justify-content-center mb-3 shadow" style="width: 64px; height: 64px; font-size: 24px; background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                                        {% if match.team_one %}{{ match.team_one.name|slice:":2"|upper }}{% else %}?{% endif %}
                                     </div>
                                     <h4 class="fw-bold text-white mb-3">
                                         {% if match.team_one %}
-                                        {{ match.team_one.name }}
+                                            {{ match.team_one.name }}
                                         {% else %}
-                                        <span class="text-muted opacity-75">BYE / TBD</span>
+                                            <span style="color: #94a3b8;" class="opacity-75">BYE / TBD</span>
                                         {% endif %}
                                     </h4>
 
                                     <div class="form-group w-100 px-3">
-                                        <label class="form-label text-muted small text-uppercase fw-semibold mb-2">Team
-                                            1 Score</label>
-                                        <input type="number"
-                                            class="form-control form-control-lg text-center fs-2 fw-bold text-white bg-dark border-secondary"
-                                            name="team_one_score"
-                                            value="{{ form.team_one_score.value|default:match.team_one_score }}" min="0"
-                                            style="border-radius: 12px; height: 60px;" {% if not can_edit and
-                                            request.user !=tournament.organizer %}readonly{% endif %}>
+                                        <label class="form-label small text-uppercase fw-bold mb-2" style="color: #cbd5e1;">Team 1 Score</label>
+                                        <input type="number" 
+                                               class="form-control form-control-lg text-center fs-2 fw-bold text-white bg-dark border-secondary"
+                                               name="team_one_score" 
+                                               value="{{ form.team_one_score.value|default:match.team_one_score }}" 
+                                               min="0"
+                                               style="border-radius: 12px; height: 60px;"
+                                               {% if not can_edit and request.user != tournament.organizer %}readonly{% endif %}>
                                         {% if form.team_one_score.errors %}
                                         <div class="text-danger small mt-2">
                                             {{ form.team_one_score.errors.0 }}
@@ -92,40 +84,35 @@ Match {{ match.match_number }} — {{ tournament.name }}
                             </div>
 
                             <!-- VS Divider -->
-                            <div
-                                class="col-md-2 d-flex flex-column align-items-center justify-content-center my-3 my-md-0">
-                                <div class="badge bg-primary rounded-circle p-3 fs-5 fw-bold shadow-lg d-flex align-items-center justify-content-center"
-                                    style="width: 54px; height: 54px; background: linear-gradient(135deg, #2563eb, #4f46e5) !important;">
+                            <div class="col-md-2 d-flex flex-column align-items-center justify-content-center my-3 my-md-0">
+                                <div class="badge bg-primary rounded-circle p-3 fs-5 fw-bold shadow-lg d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: linear-gradient(135deg, #2563eb, #4f46e5) !important;">
                                     VS
                                 </div>
                             </div>
 
                             <!-- Team Two -->
                             <div class="col-md-5">
-                                <div class="p-4 rounded-4 text-center h-100 d-flex flex-column align-items-center justify-content-center"
-                                    style="background: #111827; border: 1px solid rgba(255,255,255,0.06);">
-                                    <div class="profile-avatar rounded-circle text-white fw-bold d-flex align-items-center justify-content-center mb-3 shadow"
-                                        style="width: 64px; height: 64px; font-size: 24px; background: linear-gradient(135deg, #4f46e5, #818cf8);">
-                                        {% if match.team_two %}{{ match.team_two.name|slice:":2"|upper }}{% else %}?{%
-                                        endif %}
+                                <div class="p-4 rounded-4 text-center h-100 d-flex flex-column align-items-center justify-content-center" style="background: #111827; border: 1px solid rgba(148, 163, 184, 0.2);">
+                                    <div class="profile-avatar rounded-circle text-white fw-bold d-flex align-items-center justify-content-center mb-3 shadow" style="width: 64px; height: 64px; font-size: 24px; background: linear-gradient(135deg, #4f46e5, #818cf8);">
+                                        {% if match.team_two %}{{ match.team_two.name|slice:":2"|upper }}{% else %}?{% endif %}
                                     </div>
                                     <h4 class="fw-bold text-white mb-3">
                                         {% if match.team_two %}
-                                        {{ match.team_two.name }}
+                                            {{ match.team_two.name }}
                                         {% else %}
-                                        <span class="text-muted opacity-75">BYE / TBD</span>
+                                            <span style="color: #94a3b8;" class="opacity-75">BYE / TBD</span>
                                         {% endif %}
                                     </h4>
 
                                     <div class="form-group w-100 px-3">
-                                        <label class="form-label text-muted small text-uppercase fw-semibold mb-2">Team
-                                            2 Score</label>
-                                        <input type="number"
-                                            class="form-control form-control-lg text-center fs-2 fw-bold text-white bg-dark border-secondary"
-                                            name="team_two_score"
-                                            value="{{ form.team_two_score.value|default:match.team_two_score }}" min="0"
-                                            style="border-radius: 12px; height: 60px;" {% if not can_edit and
-                                            request.user !=tournament.organizer %}readonly{% endif %}>
+                                        <label class="form-label small text-uppercase fw-bold mb-2" style="color: #cbd5e1;">Team 2 Score</label>
+                                        <input type="number" 
+                                               class="form-control form-control-lg text-center fs-2 fw-bold text-white bg-dark border-secondary"
+                                               name="team_two_score" 
+                                               value="{{ form.team_two_score.value|default:match.team_two_score }}" 
+                                               min="0"
+                                               style="border-radius: 12px; height: 60px;"
+                                               {% if not can_edit and request.user != tournament.organizer %}readonly{% endif %}>
                                         {% if form.team_two_score.errors %}
                                         <div class="text-danger small mt-2">
                                             {{ form.team_two_score.errors.0 }}
@@ -139,8 +126,7 @@ Match {{ match.match_number }} — {{ tournament.name }}
 
                         <!-- Match Winner Announcement Banner -->
                         {% if match.winner %}
-                        <div class="card bg-success bg-opacity-10 border border-success border-opacity-25 my-4 p-4 text-center"
-                            style="border-radius: 16px;">
+                        <div class="card bg-success bg-opacity-10 border border-success border-opacity-25 my-4 p-4 text-center" style="border-radius: 16px;">
                             <div class="text-success text-uppercase tracking-wider small fw-bold mb-1">
                                 🏆 Match Champion
                             </div>
@@ -154,14 +140,12 @@ Match {{ match.match_number }} — {{ tournament.name }}
 
                         <!-- Action Footer -->
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                            <a href="{% url 'tournaments:matches' tournament.slug %}"
-                                class="btn btn-outline-secondary px-4 py-2.5 fw-semibold" style="border-radius: 12px;">
+                            <a href="{% url 'tournaments:matches' tournament.slug %}" class="btn btn-outline-secondary px-4 py-2.5 fw-semibold" style="border-radius: 12px;">
                                 <i class="bi bi-arrow-left me-1"></i> Back to Matches
                             </a>
 
                             {% if can_edit or request.user == tournament.organizer %}
-                            <button type="submit" class="btn btn-success px-4 py-2.5 fw-semibold"
-                                style="border-radius: 12px; background: linear-gradient(135deg, #16a34a, #22c55e);">
+                            <button type="submit" class="btn btn-success px-4 py-2.5 fw-semibold" style="border-radius: 12px; background: linear-gradient(135deg, #16a34a, #22c55e);">
                                 <i class="bi bi-check-circle-fill me-1"></i> Save & Declare Winner
                             </button>
                             {% endif %}

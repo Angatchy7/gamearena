@@ -83,7 +83,7 @@
 
 .search-wrapper input::placeholder {
 
-    color: #9ca3af;
+    color: #94a3b8;
 
 }
 
@@ -275,7 +275,7 @@
 
     letter-spacing: 2px;
 
-    color: #64748b;
+    color: #94a3b8;
 
     font-weight: 700;
 
@@ -596,66 +596,6 @@
     background: rgba(255, 255, 255, .06);
 
     margin: 18px 0;
-
-}
-
-/* ======================================
-   LIVE SEARCH
-====================================== */
-
-.search-wrapper {
-
-    position: relative;
-
-}
-
-.search-results-dropdown {
-
-    position: absolute;
-
-    top: 100%;
-
-    left: 0;
-
-    width: 100%;
-
-    margin-top: 10px;
-
-    background: #1b2435;
-
-    border: 1px solid rgba(255, 255, 255, .08);
-
-    border-radius: 18px;
-
-    box-shadow: 0 25px 60px rgba(0, 0, 0, .45);
-
-    z-index: 9999;
-
-    overflow: hidden;
-
-    max-height: 520px;
-
-    overflow-y: auto;
-
-}
-
-.search-section {
-
-    padding: 16px;
-
-}
-
-.search-section-title {
-
-    color: #94a3b8;
-
-    font-size: .8rem;
-
-    font-weight: 700;
-
-    letter-spacing: 1px;
-
-    margin-bottom: 12px;
 
 }
 

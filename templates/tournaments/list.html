@@ -4,6 +4,11 @@
 Browse Tournaments
 {% endblock %}
 
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/tournament.css' %}">
+{% endblock %}
+
 {% block content %}
 
 <div class="container-fluid">
@@ -44,45 +49,55 @@ Browse Tournaments
 
     </div>
 
-    <!-- ================= SEARCH ================= -->
+    <!-- ================= SEARCH / FILTER ================= -->
 
-    <div class="card border-0 shadow-sm mb-5">
+    <form method="get" class="tournament-filters mb-5">
 
-        <div class="card-body">
+        <div class="tournament-filter-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
 
-            <div class="row">
-
-                <div class="col-lg-8">
-
-                    <input class="form-control form-control-lg" type="text" placeholder="Search tournaments...">
-
-                </div>
-
-                <div class="col-lg-4 mt-3 mt-lg-0">
-
-                    <select class="form-select form-select-lg">
-
-                        <option>All Games</option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
+            <input class="form-control" name="q" value="{{ search_query|default:'' }}" type="search"
+                placeholder="Search tournaments, games, or descriptions..." aria-label="Search tournaments">
         </div>
 
-    </div>
+        <div class="tournament-filter-game">
+            <label for="game-filter" class="visually-hidden">
+                Filter by game
+            </label>
 
+            <select id="game-filter" name="game" class="form-select">
+                <option value="">All Games</option>
+
+                {% for game in games %}
+                <option value="{{ game.slug }}" {% if selected_game == game.slug %}selected{% endif %}>
+                    {{ game.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary tournament-filter-button">
+            <i class="bi bi-search me-1"></i>
+            <span>Search</span>
+        </button>
+
+        {% if search_query or selected_game %}
+        <a href="{{ request.path }}" class="btn btn-outline-light tournament-filter-clear">
+            <i class="bi bi-x-lg me-1"></i>
+            <span>Clear</span>
+        </a>
+        {% endif %}
+
+    </form>
     <!-- ================= TOURNAMENTS ================= -->
 
     <div class="row g-4">
 
         {% for tournament in tournaments %}
 
-        <div class="col-md-6 col-xl-4">
+        <div class="col-md-6 col-xl-4 tournament-card-column">
 
-            <div class="card h-100 border-0 shadow-sm" style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <article class="card h-100 border-0 shadow-sm tournament-card">
 
                 <div class="card-body p-4 d-flex flex-column justify-content-between">
 
@@ -90,37 +105,43 @@ Browse Tournaments
                         <!-- Game & Status Top Row -->
                         <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
 
-                            <span class="badge px-3 py-1.5 fs-7 text-uppercase fw-bold" style="background: rgba(37, 99, 235, 0.2); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.4);">
+                            <span class="badge px-3 py-1.5 fs-7 text-uppercase fw-bold"
+                                style="background: rgba(37, 99, 235, 0.2); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.4);">
                                 <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
                             </span>
 
                             {% if tournament.status == tournament.Status.DRAFT %}
 
-                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold"
+                                style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
                                 Draft
                             </span>
 
                             {% elif tournament.status == tournament.Status.REGISTRATION_OPEN %}
 
-                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35);">
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold"
+                                style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35);">
                                 Registration Open
                             </span>
 
                             {% elif tournament.status == tournament.Status.REGISTRATION_CLOSED %}
 
-                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);">
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold"
+                                style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);">
                                 Registration Closed
                             </span>
 
                             {% elif tournament.status == tournament.Status.LIVE %}
 
-                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold"
+                                style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
                                 🔴 Live
                             </span>
 
                             {% else %}
 
-                            <span class="badge px-3 py-1.5 fs-7 fw-bold" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold"
+                                style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
 
                                 {{ tournament.get_status_display }}
 
@@ -145,13 +166,21 @@ Browse Tournaments
                         {% endif %}
 
                         <!-- Metadata Row -->
-                        <div class="row g-2 py-3 border-top border-bottom my-3" style="border-color: rgba(148, 163, 184, 0.15) !important;">
-                            <div class="col-6">
-                                <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Organizer</small>
-                                <strong style="color: #f8fafc;" class="fs-7"><i class="bi bi-person-circle me-1"></i> {{ tournament.organizer.username }}</strong>
+                        <div class="row g-2 py-3 border-top border-bottom my-3"
+                            style="border-color: rgba(148, 163, 184, 0.15) !important;">
+                            <div class="col-4">
+                                <small style="color: #94a3b8;"
+                                    class="d-block text-uppercase fs-8 fw-bold">Organizer</small>
+                                <strong style="color: #f8fafc;" class="fs-7 text-truncate d-block"><i
+                                        class="bi bi-person-circle me-1"></i> {{ tournament.organizer.username }}</strong>
                             </div>
-                            <div class="col-6">
-                                <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Prize Pool</small>
+                            <div class="col-4">
+                                <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Teams</small>
+                                <strong style="color: #e2e8f0;" class="fs-7"><i class="bi bi-people-fill me-1"></i>{{ tournament.registered_count|default:tournament.registrations.count }}/{{ tournament.max_participants }}</strong>
+                            </div>
+                            <div class="col-4">
+                                <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Prize
+                                    Pool</small>
                                 <strong style="color: #22c55e;" class="fs-7">NPR {{ tournament.prize_pool }}</strong>
                             </div>
                         </div>
@@ -160,7 +189,8 @@ Browse Tournaments
                     <!-- Card Footer CTA -->
                     <div class="pt-2">
 
-                        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-primary w-100 py-2.5 fw-bold" style="border-radius: 12px;">
+                        <a href="{% url 'tournaments:detail' tournament.slug %}"
+                            class="btn btn-primary w-100 py-2.5 fw-bold" style="border-radius: 12px;">
 
                             View Tournament
 
@@ -170,7 +200,7 @@ Browse Tournaments
 
                 </div>
 
-            </div>
+            </article>
 
         </div>
 
@@ -178,7 +208,8 @@ Browse Tournaments
 
         <div class="col-12">
 
-            <div class="card border-0 shadow-sm" style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <div class="card border-0 shadow-sm"
+                style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
 
                 <div class="card-body text-center py-5">
 
@@ -196,7 +227,8 @@ Browse Tournaments
 
                     </p>
 
-                    <a href="{% url 'tournaments:create' %}" class="btn btn-primary px-4 py-2.5 fw-bold" style="border-radius: 12px;">
+                    <a href="{% url 'tournaments:create' %}" class="btn btn-primary px-4 py-2.5 fw-bold"
+                        style="border-radius: 12px;">
 
                         <i class="bi bi-plus-lg me-1"></i> Create Tournament
 
@@ -214,4 +246,4 @@ Browse Tournaments
 
 </div>
 
-{% endblock %}
+{% endblock %}
