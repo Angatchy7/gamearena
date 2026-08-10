@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - GameArena{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex align-items-center justify-content-between p-4 rounded-4 shadow-sm" style="background: linear-gradient(135deg, #0d1b2a, #1b263b); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div>
+                    <span class="badge bg-danger mb-2">ADMINISTRATOR CONTROL PANEL</span>
+                    <h1 class="h2 text-white fw-bold mb-1">System Administration</h1>
+                    <p class="text-secondary small mb-0">Platform overview, user management, and tournament governance.</p>
+                </div>
+                <div>
+                    <a href="{% url 'admin:index' %}" class="btn btn-outline-warning btn-sm fw-bold me-2" target="_blank">
+                        <i class="bi bi-shield-lock me-1"></i> Django Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Users Overview Card -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3" style="background: #111a2e; border: 1px solid rgba(255, 255, 255, 0.05)!important;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-3 bg-primary bg-opacity-20 text-primary p-2 me-3 fs-4">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-secondary mb-0 small text-uppercase">Platform Management</h6>
+                            <h4 class="text-white fw-bold mb-0">User Governance</h4>
+                        </div>
+                    </div>
+                    <p class="text-secondary small">View system users, inspect roles, and manage permissions across the platform.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tournaments Overview Card -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3" style="background: #111a2e; border: 1px solid rgba(255, 255, 255, 0.05)!important;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-3 bg-warning bg-opacity-20 text-warning p-2 me-3 fs-4">
+                            <i class="bi bi-trophy-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-secondary mb-0 small text-uppercase">Tournament Governance</h6>
+                            <h4 class="text-white fw-bold mb-0">Active Events</h4>
+                        </div>
+                    </div>
+                    <p class="text-secondary small">Monitor single elimination brackets, match progression, and organizer activities.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health Card -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3" style="background: #111a2e; border: 1px solid rgba(255, 255, 255, 0.05)!important;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-3 bg-success bg-opacity-20 text-success p-2 me-3 fs-4">
+                            <i class="bi bi-activity"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-secondary mb-0 small text-uppercase">System Status</h6>
+                            <h4 class="text-white fw-bold mb-0">Platform Healthy</h4>
+                        </div>
+                    </div>
+                    <p class="text-secondary small">All services, database constraints, and permission layers operating within normal parameters.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

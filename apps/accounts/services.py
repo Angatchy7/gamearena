@@ -40,7 +40,7 @@ def get_player_profile(*, user):
     )
 
     completed_matches = [
-        m for m in all_user_matches if m.status == Match.Status.COMPLETED
+        m for m in all_user_matches if m.status == Match.Status.COMPLETED and m.team_one and m.team_two
     ]
 
     wins = sum(1 for m in completed_matches if m.winner in user_teams)

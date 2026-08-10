@@ -9,7 +9,8 @@ from apps.notifications.services import (
     mark_all_notifications_as_read,
     get_unread_count,
 )
-from apps.teams.models import Team, TeamInvitation
+from apps.teams.models import Team, TeamMember, TeamInvitation
+from apps.teams.services import send_team_invitation
 
 User = get_user_model()
 
@@ -84,3 +85,46 @@ class NotificationViewTests(TestCase):
         response = self.client.post(reverse("notifications:mark_all_read"))
         self.assertRedirects(response, reverse("notifications:list"))
         self.assertEqual(get_unread_count(user=self.user), 0)
+
+
+class NotificationExtendedTests(TestCase):
+    """
+    Extended tests for invitation response handling via notification endpoints and privacy checks.
+    """
+
+    def setUp(self):
+        self.manager = User.objects.create_user(username="inviter", password="password123")
+        self.recipient = User.objects.create_user(username="invitee", password="password123")
+        self.attacker = User.objects.create_user(username="attacker", password="password123")
+
+        self.team = Team.objects.create(name="Titans", manager=self.manager)
+        TeamMember.objects.create(team=self.team, user=self.manager)
+
+        res = send_team_invitation(team=self.team, sender=self.manager, receiver=self.recipient)
+        self.invitation = res["invitation"]
+        self.notification = Notification.objects.get(recipient=self.recipient, team_invitation=self.invitation)
+
+    def test_accept_invitation_via_notification_endpoint(self):
+        self.client.login(username="invitee", password="password123")
+        url = reverse("notifications:accept_invitation", kwargs={"pk": self.notification.pk})
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse("notifications:list"))
+
+        self.invitation.refresh_from_db()
+        self.assertEqual(self.invitation.status, TeamInvitation.Status.ACCEPTED)
+        self.assertTrue(TeamMember.objects.filter(team=self.team, user=self.recipient).exists())
+
+    def test_reject_invitation_via_notification_endpoint(self):
+        self.client.login(username="invitee", password="password123")
+        url = reverse("notifications:reject_invitation", kwargs={"pk": self.notification.pk})
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse("notifications:list"))
+
+        self.invitation.refresh_from_db()
+        self.assertEqual(self.invitation.status, TeamInvitation.Status.REJECTED)
+
+    def test_unauthorized_user_cannot_access_other_user_notification(self):
+        self.client.login(username="attacker", password="password123")
+        url = reverse("notifications:mark_as_read", kwargs={"pk": self.notification.pk})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)

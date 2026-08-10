@@ -201,7 +201,7 @@ Dashboard - {{ tournament.name }}
                                 <div class="col-6">
                                     <div class="text-muted small text-uppercase fw-bold">First Completed</div>
                                     {% if first_completed_match %}
-                                    <div class="small fw-bold text-truncate">{{ first_completed_match.team_one.name }} vs {{ first_completed_match.team_two.name }}</div>
+                                    <div class="small fw-bold text-truncate">{{ first_completed_match.team_one.name|default:"TBA" }} vs {{ first_completed_match.team_two.name|default:"BYE" }}</div>
                                     <small class="text-muted">Match #{{ first_completed_match.match_number }}</small>
                                     {% else %}
                                     <div class="text-muted small">N/A</div>
@@ -210,7 +210,7 @@ Dashboard - {{ tournament.name }}
                                 <div class="col-6">
                                     <div class="text-muted small text-uppercase fw-bold">Last Completed</div>
                                     {% if last_completed_match %}
-                                    <div class="small fw-bold text-truncate">{{ last_completed_match.team_one.name }} vs {{ last_completed_match.team_two.name }}</div>
+                                    <div class="small fw-bold text-truncate">{{ last_completed_match.team_one.name|default:"TBA" }} vs {{ last_completed_match.team_two.name|default:"BYE" }}</div>
                                     <small class="text-muted">Match #{{ last_completed_match.match_number }}</small>
                                     {% else %}
                                     <div class="text-muted small">N/A</div>

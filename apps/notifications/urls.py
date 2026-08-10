@@ -36,8 +36,20 @@ urlpatterns = [
     ),
 
     path(
+        "<int:pk>/accept-invitation/",
+        AcceptInvitationView.as_view(),
+        name="accept_invitation",
+    ),
+
+    path(
         "<int:pk>/reject/",
         RejectInvitationView.as_view(),
         name="reject",
+    ),
+
+    path(
+        "<int:pk>/reject-invitation/",
+        RejectInvitationView.as_view(),
+        name="reject_invitation",
     ),
 ]

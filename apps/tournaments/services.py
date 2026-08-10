@@ -235,18 +235,32 @@ def generate_single_elimination_bracket(*, tournament):
 
     random.shuffle(registrations)
 
-    teams = [r.team for r in registrations]
+    real_teams = [r.team for r in registrations]
 
-    total_teams = len(teams)
+    total_teams = len(real_teams)
 
     bracket_size = 1
     while bracket_size < total_teams:
         bracket_size *= 2
 
     byes = bracket_size - total_teams
+    num_matches = bracket_size // 2
+    two_team_matches = num_matches - byes
 
-    # Add BYEs
-    teams.extend([None] * byes)
+    teams = []
+    team_idx = 0
+
+    # Fill matches with 2 real teams first
+    for _ in range(two_team_matches):
+        teams.append(real_teams[team_idx])
+        teams.append(real_teams[team_idx + 1])
+        team_idx += 2
+
+    # Fill remaining matches with 1 real team and 1 BYE (None)
+    for _ in range(byes):
+        teams.append(real_teams[team_idx])
+        teams.append(None)
+        team_idx += 1
 
     total_rounds = int(math.log2(bracket_size))
 
@@ -415,6 +429,10 @@ def get_tournament_statistics(*, tournament):
     completed_matches_count = len(completed_matches)
     remaining_matches_count = total_matches_count - completed_matches_count
 
+    played_matches = [
+        m for m in completed_matches if m.team_one and m.team_two
+    ]
+
     completion_percentage = (
         int((completed_matches_count / total_matches_count) * 100)
         if total_matches_count > 0
@@ -429,23 +447,23 @@ def get_tournament_statistics(*, tournament):
 
     # Performance Statistics
     total_goals = sum(
-        m.team_one_score + m.team_two_score for m in completed_matches
+        m.team_one_score + m.team_two_score for m in played_matches
     )
     avg_goals = (
-        round(total_goals / completed_matches_count, 2)
-        if completed_matches_count > 0
+        round(total_goals / len(played_matches), 2)
+        if len(played_matches) > 0
         else 0
     )
 
     highest_scoring_match = None
-    if completed_matches:
+    if played_matches:
         highest_scoring_match = max(
-            completed_matches,
+            played_matches,
             key=lambda m: m.team_one_score + m.team_two_score,
         )
 
-    first_completed_match = completed_matches[0] if completed_matches else None
-    last_completed_match = completed_matches[-1] if completed_matches else None
+    first_completed_match = played_matches[0] if played_matches else None
+    last_completed_match = played_matches[-1] if played_matches else None
 
     # Team Rankings
     team_stats = {}

@@ -67,6 +67,17 @@ def send_team_invitation(team,sender,receiver,):
             "message": "Only the team manager can invite players.",
         }
 
+    active_members = TeamMember.objects.filter(
+        team=team,
+        is_active=True,
+    ).count()
+
+    if active_members >= team.max_players:
+        return {
+            "success": False,
+            "message": "Team has reached maximum player capacity.",
+        }
+
     if TeamMember.objects.filter(
         team=team,
         user=receiver,
@@ -109,16 +120,33 @@ def send_team_invitation(team,sender,receiver,):
         "invitation": invitation,
     }
 
+@transaction.atomic
 def accept_team_invitation(invitation):
     """
     Accept a pending invitation.
     """
 
     if invitation.status != TeamInvitation.Status.PENDING:
-        return
+        return {
+            "success": False,
+            "message": "Invitation is no longer pending.",
+        }
+
+    team = invitation.team
+
+    active_members = TeamMember.objects.filter(
+        team=team,
+        is_active=True,
+    ).count()
+
+    if active_members >= team.max_players:
+        return {
+            "success": False,
+            "message": "Team has reached maximum player capacity.",
+        }
 
     TeamMember.objects.create(
-        team=invitation.team,
+        team=team,
         user=invitation.receiver,
         team_role=TeamMember.TeamRole.PLAYER,
     )
@@ -131,6 +159,11 @@ def accept_team_invitation(invitation):
     ).update(
         is_read=True,
     )
+
+    return {
+        "success": True,
+        "message": "Invitation accepted successfully.",
+    }
 
 
 def reject_team_invitation(invitation):
@@ -204,7 +237,7 @@ def get_team_profile_data(*, team):
     )
 
     completed_matches = [
-        m for m in all_team_matches if m.status == Match.Status.COMPLETED
+        m for m in all_team_matches if m.status == Match.Status.COMPLETED and m.team_one and m.team_two
     ]
 
     wins = sum(1 for m in completed_matches if m.winner == team)

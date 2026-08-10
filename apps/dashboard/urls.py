@@ -14,6 +14,12 @@ urlpatterns = [
     path(
         "admin/",
         views.admin_dashboard,
+        name="admin",
+    ),
+
+    path(
+        "admin-dashboard/",
+        views.admin_dashboard,
         name="admin_dashboard",
     ),
 ]
