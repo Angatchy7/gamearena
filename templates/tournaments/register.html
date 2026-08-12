@@ -1,50 +1,66 @@
 {% extends "base.html" %}
 
 {% block title %}
-Register Team
+{% if tournament.participation_type == 'SOLO' %}Register for Tournament{% else %}Register Team{% endif %} - {{ tournament.name }}
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0 tournament-form-card" style="background: #18243a; border-radius: 14px;">
 
-        <div class="card-header">
+        <div class="card-header bg-transparent border-secondary py-3">
 
-            <h3>
-
-                Register Team
-
+            <h3 class="fw-bold text-white mb-1">
+                {% if tournament.participation_type == 'SOLO' %}
+                    <i class="bi bi-person-plus text-primary me-2"></i> Register for Tournament
+                {% else %}
+                    <i class="bi bi-shield-plus text-primary me-2"></i> Register Team
+                {% endif %}
             </h3>
 
-            <p class="mb-0">
-
-                {{ tournament.name }}
-
+            <p class="text-muted mb-0">
+                {{ tournament.name }} ({{ tournament.get_participation_type_display }})
             </p>
 
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-4">
+
+            {% if error_message %}
+                <div class="alert alert-danger mb-4">
+                    {{ error_message }}
+                </div>
+            {% endif %}
 
             <form method="post">
 
                 {% csrf_token %}
 
-                {{ form.as_p }}
+                {% if tournament.participation_type == 'SOLO' %}
+                    <div class="alert alert-info border-0 mb-4" style="background: rgba(34, 211, 238, 0.1); color: #67e8f9;">
+                        <i class="bi bi-info-circle me-2"></i> You are registering as an individual player: <strong>{{ user.username }}</strong>.
+                    </div>
+                {% else %}
+                    {% if form %}
+                        {{ form.as_p }}
+                    {% endif %}
+                {% endif %}
 
-                <button type="submit" class="btn btn-success">
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success btn-lg fw-bold px-4">
+                        {% if tournament.participation_type == 'SOLO' %}
+                            <i class="bi bi-person-check me-1.5"></i> Register
+                        {% else %}
+                            <i class="bi bi-shield-check me-1.5"></i> Register Team
+                        {% endif %}
+                    </button>
 
-                    Register Team
-
-                </button>
-
-                <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-secondary">
-
-                    Cancel
-
-                </a>
+                    <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-outline-light btn-lg ms-2">
+                        Cancel
+                    </a>
+                </div>
 
             </form>
 

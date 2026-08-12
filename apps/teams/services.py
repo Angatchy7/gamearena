@@ -12,7 +12,7 @@ def create_team(*, manager, form):
     adds the manager as the first member.
     """
 
-    if Team.objects.filter(manager=manager).exists():
+    if Team.objects.filter(manager=manager).exclude(description="__SOLO_INTERNAL__").exists():
         return {
             "success": False,
             "message": "You already manage a team.",

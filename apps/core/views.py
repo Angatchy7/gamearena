@@ -54,10 +54,10 @@ def home(request):
     )
 
     stats = {
-    "tournaments": Tournament.objects.count(),
-    "teams": Team.objects.count(),
-    "games": Game.objects.count(),
-}
+        "tournaments": Tournament.objects.count(),
+        "teams": Team.objects.exclude(description="__SOLO_INTERNAL__").count(),
+        "games": Game.objects.count(),
+    }
 
     return render(
     request,
@@ -115,6 +115,7 @@ class SearchView(View):
 
             teams = (
                 Team.objects
+                .exclude(description="__SOLO_INTERNAL__")
                 .filter(
                     Q(name__icontains=query)
                     | Q(description__icontains=query)
@@ -170,6 +171,7 @@ class SearchAjaxView(View):
 
         teams = (
             Team.objects
+            .exclude(description="__SOLO_INTERNAL__")
             .filter(name__icontains=query)
             .order_by("name")[:4]
         )

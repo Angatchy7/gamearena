@@ -16,6 +16,7 @@ from apps.tournaments.services import (
     close_registration,
     cancel_tournament,
     register_team,
+    register_solo_player,
     generate_single_elimination_bracket,
     advance_winner,
     get_tournament_statistics,
@@ -639,3 +640,316 @@ class NonPowerOfTwoBracketRegressionTests(TestCase):
 
     def test_bracket_15_teams(self):
         self._setup_and_verify_bracket(15)
+
+
+class TournamentPlayerUniquenessTests(TestCase):
+    """
+    Tests for Requirement 1: Player uniqueness within the same tournament.
+    """
+
+    def setUp(self):
+        self.organizer = User.objects.create_user(username="org_uniq", password="Password123!")
+        self.tournament1 = create_test_tournament(organizer=self.organizer, max_participants=4, team_size=2)
+        self.tournament2 = create_test_tournament(organizer=self.organizer, max_participants=4, team_size=2)
+
+        # Shared player
+        self.player1 = User.objects.create_user(username="shared_p1", password="Password123!")
+        self.player2 = User.objects.create_user(username="p2", password="Password123!")
+        self.player3 = User.objects.create_user(username="p3", password="Password123!")
+
+        # Team A: player1 & player2
+        self.mgr_a = User.objects.create_user(username="mgr_a", password="Password123!")
+        self.team_a = Team.objects.create(name="Team A", manager=self.mgr_a)
+        TeamMember.objects.create(team=self.team_a, user=self.mgr_a, team_role=TeamMember.TeamRole.MANAGER, is_active=True)
+        TeamMember.objects.create(team=self.team_a, user=self.player1, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+        TeamMember.objects.create(team=self.team_a, user=self.player2, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+        # Team B: player1 & player3 (overlaps with Team A on player1)
+        self.mgr_b = User.objects.create_user(username="mgr_b", password="Password123!")
+        self.team_b = Team.objects.create(name="Team B", manager=self.mgr_b)
+        TeamMember.objects.create(team=self.team_b, user=self.mgr_b, team_role=TeamMember.TeamRole.MANAGER, is_active=True)
+        TeamMember.objects.create(team=self.team_b, user=self.player1, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+        TeamMember.objects.create(team=self.team_b, user=self.player3, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+        # Team C: completely different players
+        self.mgr_c = User.objects.create_user(username="mgr_c", password="Password123!")
+        self.team_c = create_test_team("Team C", self.mgr_c, member_count=2)
+
+    def test_player_in_team_a_cannot_register_team_b_in_same_tournament(self):
+        res_a = register_team(tournament=self.tournament1, team=self.team_a, user=self.mgr_a)
+        self.assertTrue(res_a["success"])
+
+        res_b = register_team(tournament=self.tournament1, team=self.team_b, user=self.mgr_b)
+        self.assertFalse(res_b["success"])
+        self.assertEqual(
+            res_b["message"],
+            "One or more players are already registered with another team in this tournament."
+        )
+
+    def test_player_in_team_a_can_participate_in_another_tournament(self):
+        res_a = register_team(tournament=self.tournament1, team=self.team_a, user=self.mgr_a)
+        self.assertTrue(res_a["success"])
+
+        # Same player in Team B registering for Tournament 2 MUST be allowed
+        res_b = register_team(tournament=self.tournament2, team=self.team_b, user=self.mgr_b)
+        self.assertTrue(res_b["success"])
+
+    def test_multiple_overlapping_players_rejected(self):
+        # Create Team D with both player1 and player2
+        mgr_d = User.objects.create_user(username="mgr_d", password="Password123!")
+        team_d = Team.objects.create(name="Team D", manager=mgr_d)
+        TeamMember.objects.create(team=team_d, user=mgr_d, team_role=TeamMember.TeamRole.MANAGER, is_active=True)
+        TeamMember.objects.create(team=team_d, user=self.player1, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+        TeamMember.objects.create(team=team_d, user=self.player2, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+        register_team(tournament=self.tournament1, team=self.team_a, user=self.mgr_a)
+        res_d = register_team(tournament=self.tournament1, team=team_d, user=mgr_d)
+        self.assertFalse(res_d["success"])
+
+    def test_teams_with_different_players_can_register(self):
+        res_a = register_team(tournament=self.tournament1, team=self.team_a, user=self.mgr_a)
+        res_c = register_team(tournament=self.tournament1, team=self.team_c, user=self.mgr_c)
+        self.assertTrue(res_a["success"])
+        self.assertTrue(res_c["success"])
+
+    def test_inactive_team_members_do_not_trigger_conflict(self):
+        # Deactivate player1 in Team A
+        mem = TeamMember.objects.get(team=self.team_a, user=self.player1)
+        mem.is_active = False
+        mem.save()
+
+        # Add another active player to Team A so team_size=2 requirement is met
+        extra_p = User.objects.create_user(username="extra_p", password="Password123!")
+        TeamMember.objects.create(team=self.team_a, user=extra_p, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+        register_team(tournament=self.tournament1, team=self.team_a, user=self.mgr_a)
+
+        # Team B has player1 active -> Should NOT conflict because player1 was inactive in Team A
+        res_b = register_team(tournament=self.tournament1, team=self.team_b, user=self.mgr_b)
+        self.assertTrue(res_b["success"])
+
+
+class SoloTournamentBusinessRuleTests(TestCase):
+    """
+    Tests for Requirements 2, 3, 4, 5, 8: SOLO tournament team_size=1, individual registration, capacity, and UI action strings.
+    """
+
+    def setUp(self):
+        self.organizer = User.objects.create_user(username="solo_org", password="Password123!")
+        self.game = create_test_game("FC 26")
+        now = timezone.now()
+        self.solo_tournament = Tournament.objects.create(
+            name="FIFA Solo Championship",
+            game=self.game,
+            organizer=self.organizer,
+            description="Solo Tournament",
+            rules="Solo Rules",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=5,  # Submitted as 5, should force to 1
+            max_participants=4,
+            registration_start=now - timedelta(days=1),
+            registration_end=now + timedelta(days=1),
+            start_date=now + timedelta(days=2),
+            end_date=now + timedelta(days=5),
+            contact_email="solo@example.com",
+            status=Tournament.Status.REGISTRATION_OPEN,
+        )
+        self.p1 = User.objects.create_user(username="solo_player1", password="Password123!")
+        self.p2 = User.objects.create_user(username="solo_player2", password="Password123!")
+        self.p3 = User.objects.create_user(username="solo_player3", password="Password123!")
+        self.p4 = User.objects.create_user(username="solo_player4", password="Password123!")
+        self.p5 = User.objects.create_user(username="solo_player5", password="Password123!")
+
+        self.client = Client()
+
+    def test_solo_tournament_forces_team_size_one(self):
+        self.solo_tournament.refresh_from_db()
+        self.assertEqual(self.solo_tournament.team_size, 1)
+
+    def test_solo_tournament_form_validates_team_size(self):
+        now = timezone.now()
+        form_data = {
+            "name": "Solo Cup",
+            "game": self.game.id,
+            "description": "Desc",
+            "rules": "Rules",
+            "tournament_type": Tournament.TournamentType.SINGLE_ELIMINATION,
+            "participation_type": Tournament.ParticipationType.SOLO,
+            "team_size": 5,
+            "max_participants": 8,
+            "registration_fee": 0,
+            "prize_pool": 500,
+            "registration_start": (now + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
+            "registration_end": (now + timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
+            "start_date": (now + timedelta(days=3)).strftime("%Y-%m-%dT%H:%M"),
+            "end_date": (now + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M"),
+            "contact_email": "solo@example.com",
+            "visibility": Tournament.Visibility.PUBLIC,
+        }
+        form = TournamentCreateForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("team_size", form.errors)
+
+    def test_solo_player_individual_registration(self):
+        res = register_solo_player(tournament=self.solo_tournament, user=self.p1)
+        self.assertTrue(res["success"])
+        self.assertTrue(TournamentRegistration.objects.filter(tournament=self.solo_tournament, user=self.p1).exists())
+
+    def test_solo_player_cannot_register_twice(self):
+        res1 = register_solo_player(tournament=self.solo_tournament, user=self.p1)
+        self.assertTrue(res1["success"])
+
+        res2 = register_solo_player(tournament=self.solo_tournament, user=self.p1)
+        self.assertFalse(res2["success"])
+        self.assertEqual(res2["message"], "You are already registered for this tournament.")
+
+    def test_solo_capacity_boundary_n_minus_1_n_n_plus_1(self):
+        # Capacity max_participants = 4
+        res1 = register_solo_player(tournament=self.solo_tournament, user=self.p1)
+        res2 = register_solo_player(tournament=self.solo_tournament, user=self.p2)
+        res3 = register_solo_player(tournament=self.solo_tournament, user=self.p3) # N-1 = 3 -> Success
+        self.assertTrue(res3["success"])
+
+        res4 = register_solo_player(tournament=self.solo_tournament, user=self.p4) # N = 4 -> Success (Full)
+        self.assertTrue(res4["success"])
+
+        res5 = register_solo_player(tournament=self.solo_tournament, user=self.p5) # N+1 -> Rejection
+        self.assertFalse(res5["success"])
+        self.assertEqual(res5["message"], "Tournament is already full.")
+
+    def test_team_tournament_registration_preserved(self):
+        mgr = User.objects.create_user(username="team_mgr_pres", password="Password123!")
+        team = create_test_team("Team Preserved", mgr, member_count=5)
+        team_tourney = create_test_tournament(organizer=self.organizer, max_participants=4, team_size=5)
+        res = register_team(tournament=team_tourney, team=team, user=mgr)
+        self.assertTrue(res["success"])
+
+    def test_ui_display_action_labels_solo_vs_team(self):
+        self.client.login(username="solo_player1", password="Password123!")
+
+        # SOLO tournament registration page shows "Register"
+        url_solo = reverse("tournaments:register", kwargs={"slug": self.solo_tournament.slug})
+        resp_solo = self.client.get(url_solo)
+        self.assertEqual(resp_solo.status_code, 200)
+        self.assertContains(resp_solo, "Register for Tournament")
+        self.assertNotContains(resp_solo, "Select Team")
+
+        # TEAM tournament registration page shows "Register Team"
+        team_tourney = create_test_tournament(organizer=self.organizer, max_participants=4, team_size=5)
+        url_team = reverse("tournaments:register", kwargs={"slug": team_tourney.slug})
+        resp_team = self.client.get(url_team)
+        self.assertEqual(resp_team.status_code, 200)
+        self.assertContains(resp_team, "Register Team")
+
+    def test_unauthenticated_users_cannot_register(self):
+        url = reverse("tournaments:register", kwargs={"slug": self.solo_tournament.slug})
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/accounts/login/", resp.url)
+
+    def test_manager_cannot_register_player_already_in_same_tournament(self):
+        # Create team T1 with p1, T2 with p1
+        mgr1 = User.objects.create_user(username="m1_sec", password="Password123!")
+        t1 = create_test_team("T1 Sec", mgr1, member_count=2)
+        # Add p1 to t1
+        TeamMember.objects.create(team=t1, user=self.p1, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+        mgr2 = User.objects.create_user(username="m2_sec", password="Password123!")
+        t2 = create_test_team("T2 Sec", mgr2, member_count=2)
+        # Add p1 to t2 as well
+        TeamMember.objects.create(team=t2, user=self.p1, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+        team_tourney = create_test_tournament(organizer=self.organizer, max_participants=4, team_size=2)
+        register_team(tournament=team_tourney, team=t1, user=mgr1)
+
+        # mgr2 trying to register t2 should be rejected because p1 is already registered in t1
+        res = register_team(tournament=team_tourney, team=t2, user=mgr2)
+        self.assertFalse(res["success"])
+        self.assertEqual(res["message"], "One or more players are already registered with another team in this tournament.")
+
+
+class SoloTournamentBracketRegressionTests(TestCase):
+    """
+    Regression tests for bracket generation and match progression in SOLO tournaments for 2, 3, 5, 6, 7, and 8 participants.
+    """
+
+    def setUp(self):
+        self.organizer = User.objects.create_user(username="solo_bracket_org", password="Password123!")
+        self.game = create_test_game("FC 26 Solo")
+
+    def _setup_and_verify_solo_bracket(self, count):
+        now = timezone.now()
+        tourney = Tournament.objects.create(
+            name=f"Solo Tournament {count} Players",
+            game=self.game,
+            organizer=self.organizer,
+            description="Bracket test",
+            rules="Rules",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=count,
+            registration_start=now - timedelta(days=1),
+            registration_end=now + timedelta(days=1),
+            start_date=now + timedelta(days=2),
+            end_date=now + timedelta(days=5),
+            contact_email="solo@example.com",
+            status=Tournament.Status.REGISTRATION_OPEN,
+        )
+
+        players = []
+        for i in range(1, count + 1):
+            p = User.objects.create_user(username=f"solo_{count}_player_{i}", password="Password123!")
+            players.append(p)
+            res = register_solo_player(tournament=tourney, user=p)
+            self.assertTrue(res["success"], f"Failed to register solo player {i} for {count} players")
+
+        tourney.status = Tournament.Status.REGISTRATION_CLOSED
+        tourney.save()
+
+        res_bracket = generate_single_elimination_bracket(tournament=tourney)
+        self.assertTrue(res_bracket["success"], f"Failed to generate bracket for {count} solo players: {res_bracket.get('message')}")
+
+        rounds = Round.objects.filter(tournament=tourney).order_by("order")
+        self.assertGreater(rounds.count(), 0)
+
+        # Play out all matches
+        for r in rounds:
+            matches = Match.objects.filter(round=r).order_by("match_number")
+            for m in matches:
+                if r.order == 1:
+                    self.assertTrue(
+                        m.team_one is not None or m.team_two is not None,
+                        f"Match {m.id} in Round 1 for {count} solo players has no teams"
+                    )
+
+                if m.status != Match.Status.COMPLETED:
+                    m.team_one_score = 2
+                    m.team_two_score = 1
+                    m.winner = m.team_one
+                    m.status = Match.Status.COMPLETED
+                    m.save()
+                    advance_winner(match=m)
+
+        tourney.refresh_from_db()
+        self.assertIsNotNone(tourney.champion, f"Champion not assigned for {count} solo players")
+        self.assertEqual(tourney.status, Tournament.Status.COMPLETED, f"Tournament not completed for {count} solo players")
+
+    def test_solo_bracket_2_players(self):
+        self._setup_and_verify_solo_bracket(2)
+
+    def test_solo_bracket_3_players(self):
+        self._setup_and_verify_solo_bracket(3)
+
+    def test_solo_bracket_5_players(self):
+        self._setup_and_verify_solo_bracket(5)
+
+    def test_solo_bracket_6_players(self):
+        self._setup_and_verify_solo_bracket(6)
+
+    def test_solo_bracket_7_players(self):
+        self._setup_and_verify_solo_bracket(7)
+
+    def test_solo_bracket_8_players(self):
+        self._setup_and_verify_solo_bracket(8)

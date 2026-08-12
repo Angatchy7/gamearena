@@ -42,19 +42,28 @@
                     <tr>
                         <td>
                             <div class="participant-team">
-                                {% if registration.team.logo %}
-                                    <img src="{{ registration.team.logo.url }}" alt="{{ registration.team.name }}" class="participant-avatar" style="object-fit:cover;">
+                                {% if tournament.participation_type == 'SOLO' %}
+                                    <span class="participant-avatar">{{ registration.user.username|default:registration.registered_by.username|slice:":2"|upper }}</span>
+                                    <span>{{ registration.user.username|default:registration.registered_by.username }}</span>
                                 {% else %}
-                                    <span class="participant-avatar">{{ registration.team.name|slice:":2"|upper }}</span>
+                                    {% if registration.team.logo %}
+                                        <img src="{{ registration.team.logo.url }}" alt="{{ registration.team.name }}" class="participant-avatar" style="object-fit:cover;">
+                                    {% else %}
+                                        <span class="participant-avatar">{{ registration.team.name|slice:":2"|upper }}</span>
+                                    {% endif %}
+                                    <span>{{ registration.team.name }}</span>
                                 {% endif %}
-                                <span>{{ registration.team.name }}</span>
                             </div>
                         </td>
                         <td class="participant-manager">
-                            <i class="bi bi-person-circle me-1 text-cyan"></i>{{ registration.team.manager.username }}
+                            {% if tournament.participation_type == 'SOLO' %}
+                                <i class="bi bi-person-circle me-1 text-cyan"></i>{{ registration.user.username|default:registration.registered_by.username }}
+                            {% else %}
+                                <i class="bi bi-person-circle me-1 text-cyan"></i>{{ registration.team.manager.username }}
+                            {% endif %}
                         </td>
                         <td>
-                            <span class="participant-count"><i class="bi bi-people-fill"></i>{{ registration.team.active_member_count }}</span>
+                            <span class="participant-count"><i class="bi bi-people-fill"></i>{% if tournament.participation_type == 'SOLO' %}1{% else %}{{ registration.team.active_member_count }}{% endif %}</span>
                         </td>
                         <td>
                             <span class="participant-status">{{ registration.get_status_display }}</span>

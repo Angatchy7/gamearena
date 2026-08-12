@@ -71,6 +71,7 @@ class TeamListView(LoginRequiredMixin, ListView):
                 members__user=self.request.user,
                 members__is_active=True,
             )
+            .exclude(description="__SOLO_INTERNAL__")
             .annotate(
                 _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
             )

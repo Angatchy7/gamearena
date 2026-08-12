@@ -11,13 +11,18 @@ def get_player_profile(*, user):
 
     memberships = (
         TeamMember.objects.filter(user=user, is_active=True)
+        .exclude(team__description="__SOLO_INTERNAL__")
         .select_related("team")
         .order_by("-joined_at")
     )
     user_teams = [m.team for m in memberships]
 
     registrations = (
-        TournamentRegistration.objects.filter(team__in=user_teams)
+        TournamentRegistration.objects.filter(
+            Q(team__in=user_teams)
+            | Q(user=user)
+            | Q(registered_by=user, tournament__participation_type=Tournament.ParticipationType.SOLO)
+        )
         .select_related("tournament", "tournament__game", "team")
         .order_by("-registered_at")
     )
@@ -27,7 +32,7 @@ def get_player_profile(*, user):
         if reg.tournament.id not in tournaments_dict:
             tournaments_dict[reg.tournament.id] = {
                 "tournament": reg.tournament,
-                "team": reg.team,
+                "team": reg.team if reg.team and reg.team.description != "__SOLO_INTERNAL__" else None,
             }
     tournament_history = list(tournaments_dict.values())
 

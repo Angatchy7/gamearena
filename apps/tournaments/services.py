@@ -6,7 +6,7 @@ import math
 from .models import Tournament, Round, Match
 from .models import TournamentRegistration
 # pyrefly: ignore [missing-import]
-from apps.teams.models import TeamMember
+from apps.teams.models import Team, TeamMember
 
 
 @transaction.atomic
@@ -114,6 +114,7 @@ def cancel_tournament(*, tournament):
 
 
 
+@transaction.atomic
 def register_team(
     *,
     tournament,
@@ -144,14 +145,17 @@ def register_team(
     ):
         return {
             "success": False,
-        "message": "Registration period has ended.",
-    }  
+            "message": "Registration period has ended.",
+        }
 
     if team.manager != user:
         return {
             "success": False,
             "message": "Only the team manager can register the team.",
         }
+
+    # Lock tournament row for atomic capacity check & race condition safety
+    Tournament.objects.select_for_update().get(pk=tournament.pk)
 
     if TournamentRegistration.objects.filter(
         tournament=tournament,
@@ -162,29 +166,45 @@ def register_team(
             "message": "Team is already registered.",
         }
 
-
-    active_players = TeamMember.objects.filter(
-        team=team,
-        is_active=True,
-    ).count()
-
     if not team.is_active:
         return {
             "success": False,
             "message": "This team is inactive.",
         }
 
+    # Player overlap check: A player cannot participate in two different teams in the SAME tournament.
+    new_team_player_ids = set(
+        TeamMember.objects.filter(
+            team=team,
+            is_active=True,
+        ).values_list("user_id", flat=True)
+    )
+
+    registered_team_ids = TournamentRegistration.objects.filter(
+        tournament=tournament,
+        team__isnull=False,
+    ).values_list("team_id", flat=True)
+
+    if TeamMember.objects.filter(
+        team_id__in=registered_team_ids,
+        user_id__in=new_team_player_ids,
+        is_active=True,
+    ).exists():
+        return {
+            "success": False,
+            "message": "One or more players are already registered with another team in this tournament.",
+        }
+
+    active_players = len(new_team_player_ids)
+
     if active_players < tournament.team_size:
         return {
             "success": False,
             "message": (
-                f"This tournament requires "
-                f"{tournament.team_size} players.\n"
-            f"Your team currently has "
-            f"{active_players} active players."
-        ),
-    }
-
+                f"This tournament requires {tournament.team_size} players.\n"
+                f"Your team currently has {active_players} active players."
+            ),
+        }
 
     participant_count = TournamentRegistration.objects.filter(
         tournament=tournament,
@@ -199,6 +219,100 @@ def register_team(
     registration = TournamentRegistration.objects.create(
         tournament=tournament,
         team=team,
+        registered_by=user,
+    )
+
+    return {
+        "success": True,
+        "registration": registration,
+    }
+
+
+@transaction.atomic
+def register_solo_player(
+    *,
+    tournament,
+    user,
+):
+    """
+    Registers an individual player in a SOLO tournament.
+    """
+
+    if tournament.participation_type != Tournament.ParticipationType.SOLO:
+        return {
+            "success": False,
+            "message": "This is not a solo tournament.",
+        }
+
+    if tournament.status != Tournament.Status.REGISTRATION_OPEN:
+        return {
+            "success": False,
+            "message": "Tournament registration is closed.",
+        }
+
+    now = timezone.now()
+
+    if (
+        now < tournament.registration_start
+        or now > tournament.registration_end
+    ):
+        return {
+            "success": False,
+            "message": "Registration period has ended.",
+        }
+
+    # Lock tournament row for atomic capacity check & race condition safety
+    Tournament.objects.select_for_update().get(pk=tournament.pk)
+
+    if (
+        TournamentRegistration.objects.filter(
+            tournament=tournament,
+            user=user,
+        ).exists()
+        or TournamentRegistration.objects.filter(
+            tournament=tournament,
+            registered_by=user,
+        ).exists()
+    ):
+        return {
+            "success": False,
+            "message": "You are already registered for this tournament.",
+        }
+
+    participant_count = TournamentRegistration.objects.filter(
+        tournament=tournament,
+    ).count()
+
+    if participant_count >= tournament.max_participants:
+        return {
+            "success": False,
+            "message": "Tournament is already full.",
+        }
+
+    # Internal solo team representation for bracket & match compatibility
+    solo_team, _ = Team.objects.get_or_create(
+        name=f"__SOLO_{user.username}_{tournament.pk}__",
+        manager=user,
+        defaults={
+            "description": "__SOLO_INTERNAL__",
+            "is_active": False,  # Hide from public team listings
+            "max_players": 1,
+        },
+    )
+
+    TeamMember.objects.get_or_create(
+        team=solo_team,
+        user=user,
+        defaults={
+            "is_active": True,
+            "team_role": TeamMember.TeamRole.PLAYER,
+        },
+    )
+
+    registration = TournamentRegistration.objects.create(
+        tournament=tournament,
+        team=solo_team,
+        user=user,
         registered_by=user,
     )
 

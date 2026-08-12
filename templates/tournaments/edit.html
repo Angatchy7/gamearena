@@ -1,16 +1,21 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
-Edit Tournament
+Edit Tournament - GameArena
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tournament.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
 
-    <h2>Edit Tournament</h2>
+    <h2 class="text-white fw-bold mb-4">Edit Tournament</h2>
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" class="tournament-form">
 
         {% include "tournaments/_form.html" %}
 

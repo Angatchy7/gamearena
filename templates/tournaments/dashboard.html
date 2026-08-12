@@ -303,6 +303,15 @@ Dashboard - {{ tournament.name }}
                         <i class="bi bi-pencil-square me-2"></i> Edit Tournament
                     </a>
 
+                    {% if tournament.status == 'DRAFT' or tournament.status == tournament.Status.DRAFT %}
+                    <form method="post" action="{% url 'tournaments:publish' tournament.slug %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100 mt-1 fw-bold">
+                            <i class="bi bi-cloud-upload me-2"></i> Publish Tournament
+                        </button>
+                    </form>
+                    {% endif %}
+
                     {% if tournament.status == tournament.Status.REGISTRATION_OPEN %}
                     <form method="post" action="{% url 'tournaments:close_registration' tournament.slug %}">
                         {% csrf_token %}

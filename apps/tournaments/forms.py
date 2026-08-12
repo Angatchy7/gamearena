@@ -180,6 +180,17 @@ class TournamentCreateForm(forms.ModelForm):
 
         cleaned_data = super().clean()
 
+        participation_type = cleaned_data.get("participation_type")
+        team_size = cleaned_data.get("team_size")
+
+        if participation_type == Tournament.ParticipationType.SOLO:
+            if team_size and team_size > 1:
+                self.add_error(
+                    "team_size",
+                    "Solo tournaments must have a team size of 1.",
+                )
+            cleaned_data["team_size"] = 1
+
         registration_start = cleaned_data.get("registration_start")
         registration_end = cleaned_data.get("registration_end")
 
@@ -241,7 +252,7 @@ class TournamentRegistrationForm(forms.Form):
         self.fields["team"].queryset = Team.objects.filter(
             manager=user,
             is_active=True,
-        ).order_by("name")
+        ).exclude(description="__SOLO_INTERNAL__").order_by("name")
 
 
 class MatchResultForm(forms.ModelForm):

@@ -215,6 +215,9 @@ class Tournament(models.Model):
         ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):
+        if self.participation_type == self.ParticipationType.SOLO:
+            self.team_size = 1
+
         if not self.slug:
             base_slug = slugify(self.name)
             slug = base_slug
@@ -257,7 +260,7 @@ class Tournament(models.Model):
 
 class TournamentRegistration(models.Model):
     """
-    A team's registration in a tournament.
+    A team or individual player's registration in a tournament.
     """
 
     class Status(models.TextChoices):
@@ -275,7 +278,17 @@ class TournamentRegistration(models.Model):
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="tournament_registrations",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="solo_tournament_registrations",
     )
 
     registered_by = models.ForeignKey(
@@ -302,12 +315,25 @@ class TournamentRegistration(models.Model):
                     "tournament",
                     "team",
                 ],
+                condition=models.Q(team__isnull=False),
                 name="unique_team_registration",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=[
+                    "tournament",
+                    "user",
+                ],
+                condition=models.Q(user__isnull=False),
+                name="unique_user_solo_registration",
+            ),
         ]
 
     def __str__(self):
-        return f"{self.team.name} - {self.tournament.name}"
+        if self.team:
+            return f"{self.team.name} - {self.tournament.name}"
+        if self.user:
+            return f"{self.user.username} - {self.tournament.name}"
+        return f"{self.registered_by.username} - {self.tournament.name}"
 
 class Round(models.Model):
     """

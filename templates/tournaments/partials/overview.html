@@ -19,7 +19,7 @@
             <div class="col-md-6">
                 <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
                     <div class="d-flex align-items-center mb-1">
-                        <i class="bi bi-calendar-event fs-5 text-primary me-2"></i>
+                        <i class="bi bi-calendar-event fs-5 text-info me-2"></i>
                         <span class="text-muted small text-uppercase fw-semibold">Registration Deadline</span>
                     </div>
                     <strong class="text-white fs-6 ms-4 d-block">{{ tournament.registration_end|date:"d M Y, H:i" }}</strong>
@@ -29,7 +29,7 @@
             <div class="col-md-6">
                 <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
                     <div class="d-flex align-items-center mb-1">
-                        <i class="bi bi-play-circle fs-5 text-success me-2"></i>
+                        <i class="bi bi-clock fs-5 text-success me-2"></i>
                         <span class="text-muted small text-uppercase fw-semibold">Tournament Starts</span>
                     </div>
                     <strong class="text-white fs-6 ms-4 d-block">{{ tournament.start_date|date:"d M Y, H:i" }}</strong>
@@ -39,7 +39,7 @@
             <div class="col-md-6">
                 <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
                     <div class="d-flex align-items-center mb-1">
-                        <i class="bi bi-trophy fs-5 text-warning me-2"></i>
+                        <i class="bi bi-trophy-fill fs-5 text-success me-2"></i>
                         <span class="text-muted small text-uppercase fw-semibold">Prize Pool</span>
                     </div>
                     <strong class="text-success fs-6 ms-4 d-block">NPR {{ tournament.prize_pool }}</strong>
@@ -49,10 +49,10 @@
             <div class="col-md-6">
                 <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
                     <div class="d-flex align-items-center mb-1">
-                        <i class="bi bi-people fs-5 text-info me-2"></i>
+                        <i class="bi bi-people-fill fs-5 text-warning me-2"></i>
                         <span class="text-muted small text-uppercase fw-semibold">Participating Teams</span>
                     </div>
-                    <strong class="text-white fs-6 ms-4 d-block">{{ tournament.registrations.count }} / {{ tournament.max_participants }} Teams</strong>
+                    <strong class="text-warning fs-6 ms-4 d-block">{{ tournament.registrations.count }} / {{ tournament.max_participants }} Teams</strong>
                 </div>
             </div>
         </div>

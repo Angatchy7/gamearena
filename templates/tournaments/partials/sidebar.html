@@ -43,15 +43,23 @@
         {% for registration in tournament.registrations.all|slice:":6" %}
             <div class="registered-team-preview">
                 <div class="registered-team-identity">
-                    {% if registration.team.logo %}
-                        <img src="{{ registration.team.logo.url }}" alt="{{ registration.team.name }}" class="registered-team-avatar">
+                    {% if tournament.participation_type == 'SOLO' %}
+                        <span class="registered-team-avatar">{{ registration.user.username|default:registration.registered_by.username|slice:":2"|upper }}</span>
+                        <div class="registered-team-copy">
+                            <strong>{{ registration.user.username|default:registration.registered_by.username }}</strong>
+                            <span>Solo Player</span>
+                        </div>
                     {% else %}
-                        <span class="registered-team-avatar">{{ registration.team.name|slice:":2"|upper }}</span>
+                        {% if registration.team.logo %}
+                            <img src="{{ registration.team.logo.url }}" alt="{{ registration.team.name }}" class="registered-team-avatar">
+                        {% else %}
+                            <span class="registered-team-avatar">{{ registration.team.name|slice:":2"|upper }}</span>
+                        {% endif %}
+                        <div class="registered-team-copy">
+                            <strong>{{ registration.team.name }}</strong>
+                            <span>Manager: {{ registration.team.manager.username }}</span>
+                        </div>
                     {% endif %}
-                    <div class="registered-team-copy">
-                        <strong>{{ registration.team.name }}</strong>
-                        <span>Manager: {{ registration.team.manager.username }}</span>
-                    </div>
                 </div>
                 <span class="registered-team-status">{{ registration.get_status_display }}</span>
             </div>
@@ -91,6 +99,14 @@
 
         {% if request.user == tournament.organizer %}
             <hr class="my-2 border-secondary">
+            {% if tournament.status == 'DRAFT' %}
+                <form method="post" action="{% url 'tournaments:publish' tournament.slug %}" class="w-100 mb-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success fw-bold w-100 py-2">
+                        <i class="bi bi-cloud-upload me-1.5"></i> Publish Tournament
+                    </button>
+                </form>
+            {% endif %}
             <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-warning fw-semibold">
                 <i class="bi bi-speedometer2 me-1.5"></i> Organizer Dashboard
             </a>
@@ -104,7 +120,11 @@
             {% if tournament.status == tournament.Status.REGISTRATION_OPEN %}
                 <hr class="my-2 border-secondary">
                 <a href="{% url 'tournaments:register' tournament.slug %}" class="btn btn-success fw-bold py-2">
-                    <i class="bi bi-shield-plus me-1.5"></i> Register Team
+                    {% if tournament.participation_type == 'SOLO' %}
+                        <i class="bi bi-person-plus me-1.5"></i> Register
+                    {% else %}
+                        <i class="bi bi-shield-plus me-1.5"></i> Register Team
+                    {% endif %}
                 </a>
             {% endif %}
         {% endif %}

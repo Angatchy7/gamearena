@@ -27,13 +27,21 @@ def dashboard_home(request):
     """
     user = request.user
 
-    # User's teams annotated with active member count
-    managed_teams = Team.objects.filter(manager=user, is_active=True).annotate(
+    # User's teams annotated with active member count (excluding internal solo teams)
+    managed_teams = Team.objects.filter(
+        manager=user,
+        is_active=True
+    ).exclude(
+        description="__SOLO_INTERNAL__"
+    ).annotate(
         _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
     )
+
     user_team_qs = Team.objects.filter(
         Q(manager=user) | Q(members__user=user, members__is_active=True),
         is_active=True
+    ).exclude(
+        description="__SOLO_INTERNAL__"
     ).distinct().annotate(
         _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
     ).order_by("name")
@@ -42,16 +50,26 @@ def dashboard_home(request):
     # User's organized tournaments
     organized_tournaments = Tournament.objects.filter(organizer=user).select_related("game").order_by("-created_at")
 
-    # Tournaments joined by user's teams
+    # Tournaments joined by user's teams OR by user directly (SOLO)
     user_team_ids = [t.id for t in user_teams]
     joined_registrations = (
         TournamentRegistration.objects
-        .filter(team_id__in=user_team_ids)
+        .filter(
+            Q(team_id__in=user_team_ids)
+            | Q(user=user)
+            | Q(registered_by=user, tournament__participation_type=Tournament.ParticipationType.SOLO)
+        )
         .select_related("tournament", "tournament__game", "team")
+        .distinct()
         .order_by("-registered_at")
     )
 
-    joined_tournaments = [reg.tournament for reg in joined_registrations]
+    seen_tournament_ids = set()
+    joined_tournaments = []
+    for reg in joined_registrations:
+        if reg.tournament.id not in seen_tournament_ids:
+            seen_tournament_ids.add(reg.tournament.id)
+            joined_tournaments.append(reg.tournament)
 
     # Recent notifications / activity
     recent_notifications = Notification.objects.filter(recipient=user).order_by("-created_at")[:6]

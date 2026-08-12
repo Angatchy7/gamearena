@@ -10,6 +10,7 @@ from .forms import TournamentRegistrationForm, MatchResultForm
 from .models import TournamentRegistration, Tournament, Game
 from django.contrib import messages
 from django.db.models import Q, Count
+from apps.teams.models import Team
 
 from .forms import (
     TournamentCreateForm,
@@ -21,6 +22,7 @@ from .services import (
     delete_tournament,
     publish_tournament,
     register_team,
+    register_solo_player,
     close_registration,
     generate_single_elimination_bracket,
     advance_winner,
@@ -408,7 +410,7 @@ class GenerateBracketView(LoginRequiredMixin, View):
         
 class TournamentRegisterView(LoginRequiredMixin, View):
     """
-    Allows a team manager to register one of their teams
+    Allows a team manager or solo player to register
     for a tournament.
     """
 
@@ -421,6 +423,17 @@ class TournamentRegisterView(LoginRequiredMixin, View):
             slug=slug,
         )
 
+        if tournament.participation_type == Tournament.ParticipationType.SOLO:
+            return render(
+                request,
+                self.template_name,
+                {
+                    "tournament": tournament,
+                    "form": None,
+                    "is_solo": True,
+                },
+            )
+
         form = TournamentRegistrationForm(
             user=request.user,
         )
@@ -431,6 +444,7 @@ class TournamentRegisterView(LoginRequiredMixin, View):
             {
                 "tournament": tournament,
                 "form": form,
+                "is_solo": False,
             },
         )
 
@@ -440,6 +454,30 @@ class TournamentRegisterView(LoginRequiredMixin, View):
             Tournament,
             slug=slug,
         )
+
+        if tournament.participation_type == Tournament.ParticipationType.SOLO:
+            result = register_solo_player(
+                tournament=tournament,
+                user=request.user,
+            )
+
+            if result["success"]:
+                messages.success(request, "Registered successfully!")
+                return redirect(
+                    "tournaments:detail",
+                    slug=tournament.slug,
+                )
+
+            return render(
+                request,
+                self.template_name,
+                {
+                    "tournament": tournament,
+                    "form": None,
+                    "is_solo": True,
+                    "error_message": result["message"],
+                },
+            )
 
         form = TournamentRegistrationForm(
             request.POST,
@@ -455,6 +493,7 @@ class TournamentRegisterView(LoginRequiredMixin, View):
             )
 
             if result["success"]:
+                messages.success(request, "Team registered successfully!")
                 return redirect(
                     "tournaments:detail",
                     slug=tournament.slug,
@@ -471,6 +510,7 @@ class TournamentRegisterView(LoginRequiredMixin, View):
             {
                 "tournament": tournament,
                 "form": form,
+                "is_solo": False,
             },
         )
 
@@ -629,6 +669,11 @@ class TournamentPublishView(LoginRequiredMixin, View):
 
         publish_tournament(
             tournament=tournament,
+        )
+
+        messages.success(
+            request,
+            f"Tournament '{tournament.name}' published successfully! Registration is now open.",
         )
 
         return redirect(
