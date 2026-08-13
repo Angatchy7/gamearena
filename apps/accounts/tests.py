@@ -215,3 +215,66 @@ class PlayerProfileServiceTests(TestCase):
         data = get_player_profile(user=self.user)
         achievement_titles = [a["title"] for a in data["achievements"]]
         self.assertIn("Team Leader", achievement_titles)
+
+
+from unittest.mock import patch
+
+
+class SuperuserSetupViewTests(TestCase):
+    """
+    Tests temporary production superuser setup endpoint security and user creation.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("accounts:setup_admin")
+        self.secret_token = "very_long_secure_setup_token_12345"
+
+    def test_setup_disabled_when_env_var_missing(self):
+        response = self.client.post(self.url, {"token": "test", "username": "admin", "password": "Pass123!"})
+        self.assertEqual(response.status_code, 404)
+
+    @patch.dict(os.environ, {"SETUP_ADMIN_TOKEN": "very_long_secure_setup_token_12345"})
+    def test_setup_forbidden_with_invalid_token(self):
+        response = self.client.post(self.url, {"token": "wrong_token", "username": "admin", "password": "Pass123!"})
+        self.assertEqual(response.status_code, 403)
+
+    @patch.dict(os.environ, {"SETUP_ADMIN_TOKEN": "very_long_secure_setup_token_12345"})
+    def test_setup_missing_credentials(self):
+        response = self.client.post(self.url, {"token": self.secret_token, "username": "", "password": ""})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json())
+
+    @patch.dict(os.environ, {"SETUP_ADMIN_TOKEN": "very_long_secure_setup_token_12345"})
+    def test_setup_successful_superuser_creation(self):
+        post_data = {
+            "token": self.secret_token,
+            "username": "prod_admin",
+            "email": "admin@gamearena.com",
+            "password": "SuperSecretAdminPassword123!",
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["username"], "prod_admin")
+
+        user = User.objects.get(username="prod_admin")
+        self.assertTrue(user.is_superuser)
+        self.assertTrue(user.is_staff)
+        self.assertEqual(user.role, User.Role.ADMIN)
+
+        self.assertNotIn("SuperSecretAdminPassword123!", response.content.decode("utf-8"))
+
+    @patch.dict(os.environ, {"SETUP_ADMIN_TOKEN": "very_long_secure_setup_token_12345"})
+    def test_setup_refuses_duplicate_username(self):
+        User.objects.create_user(username="existing_admin", password="Password123!")
+        post_data = {
+            "token": self.secret_token,
+            "username": "existing_admin",
+            "password": "NewPassword123!",
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("already exists", response.json()["error"])
+

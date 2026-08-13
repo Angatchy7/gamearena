@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from .views import RegisterView, PlayerProfileView
+from .views import RegisterView, PlayerProfileView, SuperuserSetupView
 
 app_name = 'accounts'
 
@@ -25,5 +25,10 @@ urlpatterns = [
         'profile/<str:username>/',
         PlayerProfileView.as_view(),
         name='profile',
+    ),
+    path(
+        'setup-admin/',
+        SuperuserSetupView.as_view(),
+        name='setup_admin',
     ),
 ]
