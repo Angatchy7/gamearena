@@ -32,7 +32,10 @@
                 <div class="mb-4 text-center">
                     <label class="form-label text-light fw-semibold d-block mb-2" style="color: #e2e8f0 !important;">Team Logo</label>
 
-                    <div class="logo-preview-box mx-auto mb-3" style="width: 130px; height: 130px; border-radius: 50%; border: 3px dashed rgba(56, 189, 248, 0.4); background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+                    <div class="logo-preview-box mx-auto mb-3 position-relative" style="width: 130px; height: 130px; border-radius: 50%; border: 3px dashed rgba(56, 189, 248, 0.4); background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+                        <button type="button" id="logo-remove-btn" class="ga-preview-remove-btn d-none" aria-label="Remove selected image" style="top: 4px; right: 4px;">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
                         <img id="logo-preview-img" src="" alt="Team Logo Preview" class="d-none w-100 h-100" style="object-fit: cover;">
                         <div id="logo-placeholder" class="text-center p-2">
                             <i class="bi bi-shield-shaded fs-1 text-primary d-block mb-1"></i>
@@ -115,52 +118,6 @@
 
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const logoInput = document.getElementById("id_logo");
-    const previewImg = document.getElementById("logo-preview-img");
-    const placeholder = document.getElementById("logo-placeholder");
-    const errorEl = document.getElementById("logo-error");
-    let objectUrl = null;
-
-    if (logoInput && previewImg && placeholder) {
-        logoInput.addEventListener("change", function(e) {
-            const file = e.target.files[0];
-
-            if (errorEl) {
-                errorEl.textContent = "";
-                errorEl.classList.add("d-none");
-            }
-
-            if (!file) {
-                previewImg.src = "";
-                previewImg.classList.add("d-none");
-                placeholder.classList.remove("d-none");
-                return;
-            }
-
-            if (!file.type || !file.type.startsWith("image/")) {
-                if (errorEl) {
-                    errorEl.textContent = "Selected file is not a valid image.";
-                    errorEl.classList.remove("d-none");
-                }
-                previewImg.src = "";
-                previewImg.classList.add("d-none");
-                placeholder.classList.remove("d-none");
-                return;
-            }
-
-            if (objectUrl) {
-                URL.revokeObjectURL(objectUrl);
-            }
-
-            objectUrl = URL.createObjectURL(file);
-            previewImg.src = objectUrl;
-            previewImg.classList.remove("d-none");
-            placeholder.classList.add("d-none");
-        });
-    }
-});
-</script>
+<script src="{% static 'js/image-preview.js' %}"></script>
 
 {% endblock %}

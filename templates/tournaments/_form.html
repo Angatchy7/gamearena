@@ -19,8 +19,11 @@
 
             {% if field.name == 'banner' %}
             <div id="banner-preview-error" class="text-danger small mt-1 d-none fw-medium" style="color: #f87171 !important;"></div>
-            <div id="banner-preview-container" class="mt-2.5 d-none">
-                <div class="preview-box p-2" style="background: #0f172a; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2); max-width: 100%;">
+            <div id="banner-preview-container" class="mt-2.5 d-none position-relative" style="display: inline-block; max-width: 100%;">
+                <div class="preview-box p-2 position-relative" style="background: #0f172a; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2); max-width: 100%;">
+                    <button type="button" id="banner-remove-btn" class="ga-preview-remove-btn d-none" aria-label="Remove selected image">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                     <small class="text-muted d-block mb-1 px-1 fw-semibold">Banner Preview:</small>
                     <img id="banner-preview-img" src="" alt="Tournament Banner Preview" class="img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: cover; border-radius: 8px;">
                 </div>
@@ -29,8 +32,11 @@
 
             {% if field.name == 'cover_image' %}
             <div id="cover-preview-error" class="text-danger small mt-1 d-none fw-medium" style="color: #f87171 !important;"></div>
-            <div id="cover-preview-container" class="mt-2.5 d-none">
-                <div class="preview-box p-2" style="background: #0f172a; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2); max-width: 260px;">
+            <div id="cover-preview-container" class="mt-2.5 d-none position-relative" style="display: inline-block; max-width: 260px;">
+                <div class="preview-box p-2 position-relative" style="background: #0f172a; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2); max-width: 260px;">
+                    <button type="button" id="cover-remove-btn" class="ga-preview-remove-btn d-none" aria-label="Remove selected image">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                     <small class="text-muted d-block mb-1 px-1 fw-semibold">Cover Image Preview:</small>
                     <img id="cover-preview-img" src="" alt="Tournament Cover Preview" class="img-fluid rounded" style="max-height: 180px; width: 100%; object-fit: cover; border-radius: 8px;">
                 </div>

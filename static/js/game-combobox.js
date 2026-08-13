@@ -2,22 +2,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const select = document.getElementById("id_game");
     if (!select) return;
 
-    // Build options list from the select element
+    // Dynamically build options list from select
     function getOptions() {
         const options = [];
         for (let i = 0; i < select.options.length; i++) {
             const opt = select.options[i];
-            if (opt.value) {
+            const val = String(opt.value || "").trim();
+            const text = (opt.textContent || opt.text || "").replace(/\u00a0/g, " ").trim();
+            if (val && val !== "" && text && text !== "---------") {
                 options.push({
-                    value: opt.value,
-                    text: opt.text.trim(),
+                    value: val,
+                    text: text,
                 });
             }
         }
         return options;
     }
 
-    const gameOptions = getOptions();
+    let gameOptions = getOptions();
 
     // Create wrapper container
     const wrapper = document.createElement("div");
@@ -49,15 +51,14 @@ document.addEventListener("DOMContentLoaded", function () {
     wrapper.appendChild(input);
     wrapper.appendChild(dropdown);
 
-    // Keep select hidden but functional
     select.classList.add("d-none");
 
     let activeIndex = -1;
     let selectedOption = null;
 
-    // Helper: Find selected option in select
     function syncInitialValue() {
-        const currentVal = select.value;
+        gameOptions = getOptions();
+        const currentVal = String(select.value || "").trim();
         if (currentVal) {
             const matched = gameOptions.find((o) => o.value === currentVal);
             if (matched) {
@@ -75,10 +76,16 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderDropdown(filterText = "") {
         dropdown.innerHTML = "";
         activeIndex = -1;
+        gameOptions = getOptions();
 
-        const query = filterText.toLowerCase().trim();
+        let query = filterText.toLowerCase().trim();
+        // If filter text matches currently selected game name exactly, show all options on focus
+        if (selectedOption && query === selectedOption.text.toLowerCase().trim()) {
+            query = "";
+        }
+
         const filtered = gameOptions.filter((opt) =>
-            opt.text.toLowerCase().includes(query)
+            opt.text.toLowerCase().trim().includes(query)
         );
 
         if (filtered.length === 0) {
@@ -143,7 +150,6 @@ document.addEventListener("DOMContentLoaded", function () {
         input.value = opt.text;
         closeDropdown();
 
-        // Dispatch change event on original select for any listener
         const event = new Event("change", { bubbles: true });
         select.dispatchEvent(event);
     }
@@ -157,7 +163,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Input Events
     input.addEventListener("focus", function () {
-        renderDropdown(this.value);
+        this.select();
+        renderDropdown("");
     });
 
     input.addEventListener("input", function () {
@@ -194,7 +201,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (e.key === "Escape") {
             e.preventDefault();
             closeDropdown();
-            // Revert input text to selected option or clear
             if (selectedOption) {
                 input.value = selectedOption.text;
             } else {
@@ -208,7 +214,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!wrapper.contains(e.target)) {
             if (!dropdown.classList.contains("d-none")) {
                 closeDropdown();
-                // Ensure text matches selected option to reject arbitrary client text
                 if (selectedOption) {
                     input.value = selectedOption.text;
                 } else {
