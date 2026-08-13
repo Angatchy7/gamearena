@@ -231,29 +231,32 @@ class SuperuserSetupViewTests(TestCase):
         self.secret_token = "very_long_secure_setup_token_12345"
 
     def test_setup_disabled_when_env_var_missing(self):
-        response = self.client.post(self.url, {"token": "test", "username": "admin", "password": "Pass123!"})
+        payload = {"token": "test", "username": "admin", "password": "Pass123!"}
+        response = self.client.post(self.url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 404)
 
     @patch.dict(os.environ, {"SETUP_ADMIN_TOKEN": "very_long_secure_setup_token_12345"})
     def test_setup_forbidden_with_invalid_token(self):
-        response = self.client.post(self.url, {"token": "wrong_token", "username": "admin", "password": "Pass123!"})
+        payload = {"token": "wrong_token", "username": "admin", "password": "Pass123!"}
+        response = self.client.post(self.url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 403)
 
     @patch.dict(os.environ, {"SETUP_ADMIN_TOKEN": "very_long_secure_setup_token_12345"})
     def test_setup_missing_credentials(self):
-        response = self.client.post(self.url, {"token": self.secret_token, "username": "", "password": ""})
+        payload = {"token": self.secret_token, "username": "", "password": ""}
+        response = self.client.post(self.url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 400)
         self.assertIn("error", response.json())
 
     @patch.dict(os.environ, {"SETUP_ADMIN_TOKEN": "very_long_secure_setup_token_12345"})
     def test_setup_successful_superuser_creation(self):
-        post_data = {
+        payload = {
             "token": self.secret_token,
             "username": "prod_admin",
             "email": "admin@gamearena.com",
             "password": "SuperSecretAdminPassword123!",
         }
-        response = self.client.post(self.url, post_data)
+        response = self.client.post(self.url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(data["success"])
@@ -269,12 +272,14 @@ class SuperuserSetupViewTests(TestCase):
     @patch.dict(os.environ, {"SETUP_ADMIN_TOKEN": "very_long_secure_setup_token_12345"})
     def test_setup_refuses_duplicate_username(self):
         User.objects.create_user(username="existing_admin", password="Password123!")
-        post_data = {
+        payload = {
             "token": self.secret_token,
             "username": "existing_admin",
             "password": "NewPassword123!",
         }
-        response = self.client.post(self.url, post_data)
+        response = self.client.post(self.url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 400)
         self.assertIn("already exists", response.json()["error"])
+
+
 

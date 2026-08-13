@@ -3,7 +3,7 @@ import os
 import secrets
 from django.contrib.auth import get_user_model
 from django.contrib.auth import views as auth_views
-from django.http import HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -52,36 +52,29 @@ class PlayerProfileView(View):
 @method_decorator(csrf_exempt, name="dispatch")
 class SuperuserSetupView(View):
     """
-    Temporary endpoint for initial production superuser creation on Render.
+    Temporary JSON endpoint for initial production superuser creation on Render.
     Requires environment variable SETUP_ADMIN_TOKEN to be set.
     """
 
     def post(self, request):
         env_token = os.getenv("SETUP_ADMIN_TOKEN", "").strip()
         if not env_token:
-            return HttpResponseNotFound("Setup disabled.")
+            return JsonResponse({"error": "Setup disabled."}, status=404)
 
-        token = request.headers.get("X-Setup-Token") or request.POST.get("token")
-        username = request.POST.get("username")
-        email = request.POST.get("email", "")
-        password = request.POST.get("password")
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("JSON body must be an object.")
+        except Exception:
+            return JsonResponse({"error": "Invalid JSON body."}, status=400)
 
-        if not token or not username or not password:
-            try:
-                data = json.loads(request.body.decode("utf-8"))
-                token = token or data.get("token")
-                username = username or data.get("username")
-                email = email or data.get("email", "")
-                password = password or data.get("password")
-            except Exception:
-                pass
+        token = str(data.get("token") or "").strip()
+        username = str(data.get("username") or "").strip()
+        email = str(data.get("email") or "").strip()
+        password = str(data.get("password") or "").strip()
 
         if not token or not secrets.compare_digest(token, env_token):
-            return HttpResponseForbidden("Invalid setup token.")
-
-        username = (username or "").strip()
-        email = (email or "").strip()
-        password = (password or "").strip()
+            return JsonResponse({"error": "Invalid setup token."}, status=403)
 
         if not username or not password:
             return JsonResponse({"error": "Username and password are required."}, status=400)
