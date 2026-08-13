@@ -26,7 +26,12 @@ User = get_user_model()
 
 
 def create_test_game(name="Valorant"):
-    return Game.objects.create(name=name, description="FPS Game")
+    game, _ = Game.objects.get_or_create(
+        name=name,
+        defaults={"description": "FPS Game"}
+    )
+    return game
+
 
 
 def create_test_tournament(organizer, game=None, max_participants=4, team_size=5, status=Tournament.Status.REGISTRATION_OPEN):
@@ -953,3 +958,102 @@ class SoloTournamentBracketRegressionTests(TestCase):
 
     def test_solo_bracket_8_players(self):
         self._setup_and_verify_solo_bracket(8)
+
+
+class BusinessRuleValidationTests(TestCase):
+    def setUp(self):
+        self.organizer = User.objects.create_user(username="rule_org", password="Password123!")
+        self.player1 = User.objects.create_user(username="rule_player1", password="Password123!")
+        self.player2 = User.objects.create_user(username="rule_player2", password="Password123!")
+
+    def test_game_sharing_across_tournaments(self):
+        game = create_test_game("Valorant")
+        t1 = create_test_tournament(organizer=self.organizer, game=game)
+        t2 = create_test_tournament(organizer=self.organizer, game=game)
+        t3 = create_test_tournament(organizer=self.organizer, game=game)
+
+        self.assertEqual(t1.game, game)
+        self.assertEqual(t2.game, game)
+        self.assertEqual(t3.game, game)
+        self.assertEqual(Game.objects.filter(name="Valorant").count(), 1)
+
+    def test_duplicate_tournament_names_unique_slugs(self):
+        now = timezone.now()
+        game = create_test_game("Dota 2")
+        t1 = Tournament.objects.create(
+            name="Champions Cup", game=game, organizer=self.organizer, description="D1", rules="R1",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION, team_size=5, max_participants=4,
+            registration_start=now - timedelta(days=1), registration_end=now + timedelta(days=1),
+            start_date=now + timedelta(days=2), end_date=now + timedelta(days=5), contact_email="a@ex.com"
+        )
+        t2 = Tournament.objects.create(
+            name="Champions Cup", game=game, organizer=self.organizer, description="D2", rules="R2",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION, team_size=5, max_participants=4,
+            registration_start=now - timedelta(days=1), registration_end=now + timedelta(days=1),
+            start_date=now + timedelta(days=2), end_date=now + timedelta(days=5), contact_email="a@ex.com"
+        )
+        t3 = Tournament.objects.create(
+            name="Champions Cup", game=game, organizer=self.organizer, description="D3", rules="R3",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION, team_size=5, max_participants=4,
+            registration_start=now - timedelta(days=1), registration_end=now + timedelta(days=1),
+            start_date=now + timedelta(days=2), end_date=now + timedelta(days=5), contact_email="a@ex.com"
+        )
+
+        self.assertEqual(t1.slug, "champions-cup")
+        self.assertEqual(t2.slug, "champions-cup-1")
+        self.assertEqual(t3.slug, "champions-cup-2")
+        self.assertEqual(Tournament.objects.filter(name="Champions Cup").count(), 3)
+
+    def test_duplicate_team_name_rejected(self):
+        Team.objects.create(name="Alpha Squad", manager=self.organizer)
+        with self.assertRaises(IntegrityError):
+            Team.objects.create(name="Alpha Squad", manager=self.organizer)
+
+    def test_duplicate_username_rejected(self):
+        with self.assertRaises(IntegrityError):
+            User.objects.create_user(username="rule_player1", password="Password123!")
+
+    def test_player_overlap_rules(self):
+        player_a2 = User.objects.create_user(username="rule_player_a2", password="Password123!")
+        # Same tournament, different teams with same player -> REJECT
+        tourney1 = create_test_tournament(organizer=self.organizer, max_participants=4, team_size=2)
+
+        team_a = Team.objects.create(name="Team A", manager=self.player1)
+        TeamMember.objects.create(team=team_a, user=self.player1, team_role=TeamMember.TeamRole.MANAGER, is_active=True)
+        TeamMember.objects.create(team=team_a, user=player_a2, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+        team_b = Team.objects.create(name="Team B", manager=self.player2)
+        TeamMember.objects.create(team=team_b, user=self.player2, team_role=TeamMember.TeamRole.MANAGER, is_active=True)
+        TeamMember.objects.create(team=team_b, user=self.player1, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+        res_a = register_team(tournament=tourney1, team=team_a, user=self.player1)
+        self.assertTrue(res_a["success"], f"res_a failed: {res_a.get('message')}")
+
+        res_b = register_team(tournament=tourney1, team=team_b, user=self.player2)
+        self.assertFalse(res_b["success"])
+        self.assertIn("already registered", res_b["message"].lower())
+
+        # Different tournament with same player on Team B -> ALLOW
+        tourney2 = create_test_tournament(organizer=self.organizer, max_participants=4, team_size=2)
+        res_b_tourney2 = register_team(tournament=tourney2, team=team_b, user=self.player2)
+        self.assertTrue(res_b_tourney2["success"], f"res_b_tourney2 failed: {res_b_tourney2.get('message')}")
+
+
+
+    def test_solo_registration_behavior(self):
+        tourney_solo = create_test_tournament(organizer=self.organizer, max_participants=4, team_size=1)
+        tourney_solo.participation_type = Tournament.ParticipationType.SOLO
+        tourney_solo.save()
+
+        res = register_solo_player(tournament=tourney_solo, user=self.player1)
+        self.assertTrue(res["success"])
+
+        # Check Joined Tournaments logic
+        joined_regs = TournamentRegistration.objects.filter(user=self.player1)
+        self.assertTrue(joined_regs.exists())
+
+        # Verify internal solo team is NOT listed under player's managed/joined teams
+        managed_teams = Team.objects.filter(manager=self.player1, is_active=True)
+        self.assertFalse(managed_teams.filter(slug__startswith="solo-team-").exists())
+
+
