@@ -122,6 +122,31 @@ class TournamentFormValidationTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("registration_end", form.errors)
 
+    def test_form_invalid_arbitrary_game_rejected(self):
+        now = timezone.now()
+        form_data = {
+            "name": "Invalid Game Test",
+            "game": 99999,  # Arbitrary non-existent game ID
+            "description": "Desc",
+            "rules": "Rules",
+            "tournament_type": Tournament.TournamentType.SINGLE_ELIMINATION,
+            "participation_type": Tournament.ParticipationType.TEAM,
+            "team_size": 5,
+            "max_participants": 8,
+            "registration_fee": 0,
+            "prize_pool": 1000,
+            "registration_start": (now + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
+            "registration_end": (now + timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
+            "start_date": (now + timedelta(days=3)).strftime("%Y-%m-%dT%H:%M"),
+            "end_date": (now + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M"),
+            "contact_email": "org@example.com",
+            "visibility": Tournament.Visibility.PUBLIC,
+        }
+        form = TournamentCreateForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("game", form.errors)
+
+
 
 class TournamentRegistrationBusinessRuleTests(TestCase):
     """

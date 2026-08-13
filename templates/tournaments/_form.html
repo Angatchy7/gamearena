@@ -16,6 +16,26 @@
 
             {{ field }}
 
+            {% if field.name == 'banner' %}
+            <div id="banner-preview-error" class="text-danger small mt-1 d-none fw-medium" style="color: #f87171 !important;"></div>
+            <div id="banner-preview-container" class="mt-2.5 d-none">
+                <div class="preview-box p-2" style="background: #0f172a; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2); max-width: 100%;">
+                    <small class="text-muted d-block mb-1 px-1 fw-semibold">Banner Preview:</small>
+                    <img id="banner-preview-img" src="" alt="Tournament Banner Preview" class="img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: cover; border-radius: 8px;">
+                </div>
+            </div>
+            {% endif %}
+
+            {% if field.name == 'cover_image' %}
+            <div id="cover-preview-error" class="text-danger small mt-1 d-none fw-medium" style="color: #f87171 !important;"></div>
+            <div id="cover-preview-container" class="mt-2.5 d-none">
+                <div class="preview-box p-2" style="background: #0f172a; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2); max-width: 260px;">
+                    <small class="text-muted d-block mb-1 px-1 fw-semibold">Cover Image Preview:</small>
+                    <img id="cover-preview-img" src="" alt="Tournament Cover Preview" class="img-fluid rounded" style="max-height: 180px; width: 100%; object-fit: cover; border-radius: 8px;">
+                </div>
+            </div>
+            {% endif %}
+
             {% if field.help_text %}
             <div class="form-text" style="color: #94a3b8 !important;">
                 {{ field.help_text }}
@@ -41,6 +61,16 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    {% if form.instance.pk and form.instance.banner %}
+    const bannerInput = document.getElementById("id_banner");
+    if (bannerInput) bannerInput.setAttribute("data-initial-url", "{{ form.instance.banner.url }}");
+    {% endif %}
+
+    {% if form.instance.pk and form.instance.cover_image %}
+    const coverInput = document.getElementById("id_cover_image");
+    if (coverInput) coverInput.setAttribute("data-initial-url", "{{ form.instance.cover_image.url }}");
+    {% endif %}
+
     const partSelect = document.getElementById("id_participation_type");
     const teamSizeInput = document.getElementById("id_team_size");
     if (partSelect && teamSizeInput) {
@@ -57,3 +87,5 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
+<script src="{% static 'js/game-combobox.js' %}"></script>
+<script src="{% static 'js/image-preview.js' %}"></script>

@@ -1,40 +1,78 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
-Invite Player
+Invite Player | {{ team.name }} - GameArena
 {% endblock %}
 
 {% block content %}
 
-<div class="container mt-4" style="max-width:600px;">
+<div class="container mt-4 mb-5" style="max-width:600px;" id="team-invite-container" data-team-slug="{{ team.slug }}">
 
-    <div class="card shadow">
+    <div class="card shadow-lg border-0" style="background: #18243a !important; border-radius: 18px;">
 
-        <div class="card-header">
-            <h3>Invite Player</h3>
+        <div class="card-header bg-transparent border-bottom p-4" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="logo-circle" style="width: 48px; height: 48px; font-size: 1.4rem;">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0 text-white fw-bold">Invite Player</h3>
+                    <small class="text-muted">Send an invitation to join {{ team.name }}</small>
+                </div>
+            </div>
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-4">
 
-            <h5 class="mb-3">
-                Team: {{ team.name }}
-            </h5>
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-4" style="background-color: rgba(239, 68, 68, 0.12) !important; border-color: rgba(239, 68, 68, 0.35) !important; color: #f87171 !important;">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
 
             <form method="post">
-
                 {% csrf_token %}
 
-                {{ form.as_p }}
+                <div class="mb-4">
+                    <label for="id_user_search_input" class="form-label text-light fw-semibold mb-1" style="color: #e2e8f0 !important; font-size: 0.95rem;">
+                        Player Username <span class="text-danger">*</span>
+                    </label>
 
-                <button type="submit" class="btn btn-primary">
-                    Send Invitation
-                </button>
+                    <div class="position-relative">
+                        <input type="text" id="id_user_search_input" class="form-control" placeholder="Type username to search..." autocomplete="off" style="background: #162133 !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: #fff !important; border-radius: 14px !important; padding: 0.8rem 1rem;">
+                    </div>
 
-                <a href="{% url 'teams:detail' team.slug %}" class="btn btn-secondary">
+                    <!-- Hidden actual Django select element -->
+                    <select name="receiver" id="id_receiver" class="d-none" required>
+                        <option value="">Select a player</option>
+                        {% for choice in form.receiver.field.queryset %}
+                            <option value="{{ choice.id }}" {% if form.receiver.value|stringformat:"s" == choice.id|stringformat:"s" %}selected{% endif %}>{{ choice.username }}</option>
+                        {% endfor %}
+                    </select>
 
-                    Cancel
+                    {% if form.receiver.help_text %}
+                    <div class="form-text" style="color: #94a3b8 !important;">
+                        {{ form.receiver.help_text }}
+                    </div>
+                    {% endif %}
 
-                </a>
+                    {% if form.receiver.errors %}
+                    <div class="text-danger small mt-1 fw-medium" style="color: #f87171 !important;">
+                        {{ form.receiver.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-2.5 mt-4">
+                    <button type="submit" class="btn btn-primary fw-bold px-4 py-2.5 shadow-sm">
+                        <i class="bi bi-send-fill me-1.5"></i> Send Invitation
+                    </button>
+
+                    <a href="{% url 'teams:detail' team.slug %}" class="btn btn-outline-secondary px-4 py-2.5">
+                        Cancel
+                    </a>
+                </div>
 
             </form>
 
@@ -44,4 +82,5 @@ Invite Player
 
 </div>
 
+<script src="{% static 'js/user-autocomplete.js' %}"></script>
 {% endblock %}

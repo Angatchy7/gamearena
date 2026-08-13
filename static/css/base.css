@@ -402,19 +402,26 @@ SCROLLBAR
 .profile-menu .dropdown-item {
     color: #e2e8f0;
     padding: 12px 18px;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.profile-menu .dropdown-item:hover {
-    background: rgba(37, 99, 235, 0.15);
-    color: #f8fafc;
+.profile-menu .dropdown-item:hover,
+.profile-menu .dropdown-item:focus,
+.profile-menu .dropdown-item:active,
+.profile-menu .dropdown-item.active {
+    background-color: rgba(37, 99, 235, 0.2) !important;
+    color: #ffffff !important;
+    outline: none;
 }
 
 .profile-menu .dropdown-item.text-danger {
     color: #f87171 !important;
 }
 
-.profile-menu .dropdown-item.text-danger:hover {
-    background: rgba(239, 68, 68, 0.12);
+.profile-menu .dropdown-item.text-danger:hover,
+.profile-menu .dropdown-item.text-danger:focus,
+.profile-menu .dropdown-item.text-danger:active {
+    background-color: rgba(239, 68, 68, 0.15) !important;
     color: #fca5a5 !important;
 }
 
