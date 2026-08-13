@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const select = document.getElementById("id_game");
     if (!select) return;
 
-    // Dynamically build options list from select
+    // Dynamically build options list from select element
     function getOptions() {
         const options = [];
         for (let i = 0; i < select.options.length; i++) {
@@ -64,11 +64,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (matched) {
                 selectedOption = matched;
                 input.value = matched.text;
+                input.placeholder = matched.text;
                 return;
             }
         }
         selectedOption = null;
         input.value = "";
+        input.placeholder = "🎮 Search games...";
     }
 
     syncInitialValue();
@@ -78,15 +80,21 @@ document.addEventListener("DOMContentLoaded", function () {
         activeIndex = -1;
         gameOptions = getOptions();
 
-        let query = filterText.toLowerCase().trim();
-        // If filter text matches currently selected game name exactly, show all options on focus
-        if (selectedOption && query === selectedOption.text.toLowerCase().trim()) {
-            query = "";
-        }
+        const query = filterText.toLowerCase().trim();
 
-        const filtered = gameOptions.filter((opt) =>
-            opt.text.toLowerCase().trim().includes(query)
-        );
+        let filtered = [];
+        if (!query) {
+            filtered = gameOptions;
+        } else {
+            const prefixMatches = gameOptions.filter((opt) =>
+                opt.text.toLowerCase().trim().startsWith(query)
+            );
+            filtered = prefixMatches.length
+                ? prefixMatches
+                : gameOptions.filter((opt) =>
+                    opt.text.toLowerCase().trim().includes(query)
+                );
+        }
 
         if (filtered.length === 0) {
             const emptyItem = document.createElement("div");
@@ -148,6 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedOption = opt;
         select.value = opt.value;
         input.value = opt.text;
+        input.placeholder = opt.text;
         closeDropdown();
 
         const event = new Event("change", { bubbles: true });
@@ -163,7 +172,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Input Events
     input.addEventListener("focus", function () {
-        this.select();
+        if (selectedOption) {
+            input.placeholder = selectedOption.text;
+        }
+        input.value = "";
         renderDropdown("");
     });
 
