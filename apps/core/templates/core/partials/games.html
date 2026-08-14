@@ -30,21 +30,10 @@
 
                 <div class="ga-game-image">
 
-                    {% if game.logo %}
-
-                    <img src="{{ game.logo.url }}" alt="{{ game.name }}">
-
-                    {% else %}
-
-                    <div class="ga-game-placeholder">
-
-                        <i class="bi bi-controller"></i>
-
-                    </div>
-
-                    {% endif %}
+                    <img src="{{ game.image_url }}" alt="{{ game.name }}" style="width: 100%; height: 100%; object-fit: cover;">
 
                 </div>
+
 
                 <div class="ga-game-body">
 

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ea-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022c22"/>
+      <stop offset="50%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#ea-bg)"/>
+  <g transform="translate(400, 180)" text-anchor="middle">
+    <polygon points="0,-60 50,30 -50,30" fill="none" stroke="#10b981" stroke-width="6"/>
+    <text y="15" font-family="system-ui, sans-serif" font-weight="900" font-size="28" fill="#10b981">FC</text>
+  </g>
+  <text x="400" y="310" font-family="system-ui, sans-serif" font-weight="900" font-size="34" fill="#ffffff" text-anchor="middle" letter-spacing="4">EA SPORTS FC 26</text>
+  <text x="400" y="345" font-family="system-ui, sans-serif" font-weight="600" font-size="16" fill="#10b981" text-anchor="middle" letter-spacing="6">FOOTBALL SIMULATION</text>
+</svg>

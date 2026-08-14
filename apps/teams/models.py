@@ -70,6 +70,36 @@ class Team(models.Model):
             return self._active_member_count
         return self.members.filter(is_active=True).count()
 
+    @property
+    def display_name(self):
+        """
+        Returns the manager's username for internal solo teams,
+        and team name for regular teams.
+        """
+        if self.description == "__SOLO_INTERNAL__" or (self.name and self.name.startswith("__SOLO_")):
+            if self.manager:
+                return self.manager.username
+        return self.name
+
+    @property
+    def logo_url(self):
+        """
+        Returns uploaded team logo URL if present, otherwise returns default team logo.
+        """
+        if self.logo:
+            try:
+                return self.logo.url
+            except (AttributeError, ValueError):
+                if getattr(self.logo, "name", None):
+                    url_str = str(self.logo.name)
+                    if not url_str.startswith("/") and not url_str.startswith("http"):
+                        return f"{settings.MEDIA_URL}{url_str}"
+                    return url_str
+        return f"{settings.STATIC_URL}images/defaults/team_default.svg"
+
+
+
+
 
 class TeamMember(models.Model):
     """

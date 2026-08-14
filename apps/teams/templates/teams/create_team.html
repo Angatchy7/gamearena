@@ -32,15 +32,17 @@
                 <div class="mb-4 text-center">
                     <label class="form-label text-light fw-semibold d-block mb-2" style="color: #e2e8f0 !important;">Team Logo</label>
 
-                    <div class="logo-preview-box mx-auto mb-3 position-relative" style="width: 130px; height: 130px; border-radius: 50%; border: 3px dashed rgba(56, 189, 248, 0.4); background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
-                        <button type="button" id="logo-remove-btn" class="ga-preview-remove-btn d-none" aria-label="Remove selected image" style="top: 4px; right: 4px;">
+                    <div class="team-logo-wrapper position-relative mx-auto mb-3" style="width: 130px; height: 130px; display: inline-block;">
+                        <div class="logo-preview-box w-100 h-100 position-relative" style="border-radius: 50%; border: 3px dashed rgba(56, 189, 248, 0.4); background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+                            <img id="logo-preview-img" src="" alt="Team Logo Preview" class="d-none w-100 h-100" style="object-fit: cover;">
+                            <div id="logo-placeholder" class="text-center p-2">
+                                <i class="bi bi-shield-shaded fs-1 text-primary d-block mb-1"></i>
+                                <span class="text-muted small" style="font-size: 0.75rem; color: #94a3b8 !important;">Upload Logo</span>
+                            </div>
+                        </div>
+                        <button type="button" id="logo-remove-btn" class="ga-preview-remove-btn d-none" aria-label="Remove selected logo" style="top: -2px; right: -2px; z-index: 20;">
                             <i class="bi bi-x-lg"></i>
                         </button>
-                        <img id="logo-preview-img" src="" alt="Team Logo Preview" class="d-none w-100 h-100" style="object-fit: cover;">
-                        <div id="logo-placeholder" class="text-center p-2">
-                            <i class="bi bi-shield-shaded fs-1 text-primary d-block mb-1"></i>
-                            <span class="text-muted small" style="font-size: 0.75rem; color: #94a3b8 !important;">Upload Logo</span>
-                        </div>
                     </div>
 
                     <input type="file" name="logo" id="id_logo" class="form-control d-none" accept="image/*">

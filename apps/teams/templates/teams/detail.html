@@ -20,15 +20,9 @@
                 
                 <!-- Team Logo & Info -->
                 <div class="col-auto">
-                    {% if team.logo %}
-                        <img src="{{ team.logo.url }}" alt="{{ team.name }}" class="rounded-circle shadow-lg" width="120" height="120" style="object-fit: cover; border: 4px solid rgba(59, 130, 246, 0.5);">
-                    {% else %}
-                        <div class="rounded-circle text-white fw-extrabold d-flex align-items-center justify-content-center shadow-lg" 
-                             style="width: 120px; height: 120px; font-size: 42px; background: linear-gradient(135deg, #2563eb, #3b82f6); border: 4px solid rgba(59, 130, 246, 0.5);">
-                            {{ team.name|slice:":2"|upper }}
-                        </div>
-                    {% endif %}
+                    <img src="{{ team.logo_url }}" alt="{{ team.display_name }}" class="rounded-circle shadow-lg" width="120" height="120" style="object-fit: cover; border: 4px solid rgba(59, 130, 246, 0.5);">
                 </div>
+
 
                 <div class="col">
                     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">

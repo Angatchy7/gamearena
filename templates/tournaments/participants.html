@@ -31,8 +31,8 @@
             <table class="participants-table">
                 <thead>
                     <tr>
-                        <th>Team</th>
-                        <th>Manager</th>
+                        <th>{% if tournament.participation_type == 'SOLO' %}Player{% else %}Team{% endif %}</th>
+                        <th>Manager / Account</th>
                         <th>Players</th>
                         <th>Status</th>
                     </tr>
@@ -43,25 +43,18 @@
                         <td>
                             <div class="participant-team">
                                 {% if tournament.participation_type == 'SOLO' %}
-                                    <span class="participant-avatar">{{ registration.user.username|default:registration.registered_by.username|slice:":2"|upper }}</span>
-                                    <span>{{ registration.user.username|default:registration.registered_by.username }}</span>
+                                    <span class="participant-avatar">{{ registration.display_name|slice:":2"|upper }}</span>
+                                    <span>{{ registration.display_name }}</span>
                                 {% else %}
-                                    {% if registration.team.logo %}
-                                        <img src="{{ registration.team.logo.url }}" alt="{{ registration.team.name }}" class="participant-avatar" style="object-fit:cover;">
-                                    {% else %}
-                                        <span class="participant-avatar">{{ registration.team.name|slice:":2"|upper }}</span>
-                                    {% endif %}
-                                    <span>{{ registration.team.name }}</span>
+                                    <img src="{{ registration.team.logo_url }}" alt="{{ registration.team.display_name }}" class="participant-avatar" style="object-fit:cover;">
+                                    <span>{{ registration.team.display_name }}</span>
                                 {% endif %}
                             </div>
                         </td>
                         <td class="participant-manager">
-                            {% if tournament.participation_type == 'SOLO' %}
-                                <i class="bi bi-person-circle me-1 text-cyan"></i>{{ registration.user.username|default:registration.registered_by.username }}
-                            {% else %}
-                                <i class="bi bi-person-circle me-1 text-cyan"></i>{{ registration.team.manager.username }}
-                            {% endif %}
+                            <i class="bi bi-person-circle me-1 text-cyan"></i>{{ registration.display_name }}
                         </td>
+
                         <td>
                             <span class="participant-count"><i class="bi bi-people-fill"></i>{% if tournament.participation_type == 'SOLO' %}1{% else %}{{ registration.team.active_member_count }}{% endif %}</span>
                         </td>

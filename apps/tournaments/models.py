@@ -56,6 +56,40 @@ class Game(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def image_url(self):
+        """
+        Returns uploaded game logo URL if present, else specific game artwork, else generic game default.
+        """
+        if self.logo:
+            try:
+                return self.logo.url
+            except (AttributeError, ValueError):
+                if getattr(self.logo, "name", None):
+                    url_str = str(self.logo.name)
+                    if not url_str.startswith("/") and not url_str.startswith("http"):
+                        return f"{settings.MEDIA_URL}{url_str}"
+                    return url_str
+
+        slug = (self.slug or "").lower()
+        name = (self.name or "").lower()
+
+
+        if "pubg" in slug or "pubg" in name:
+            return f"{settings.STATIC_URL}images/games/pubg.svg"
+        if "valorant" in slug or "valorant" in name:
+            return f"{settings.STATIC_URL}images/games/valorant.svg"
+        if "ea" in slug or "fc" in slug or "fifa" in slug or "ea" in name or "fc" in name or "fifa" in name:
+            return f"{settings.STATIC_URL}images/games/eafc.svg"
+        if "rocket" in slug or "league" in slug or "rocket" in name:
+            return f"{settings.STATIC_URL}images/games/rocket_league.svg"
+        if "cs2" in slug or "cs2" in name or "counter-strike" in slug or "counter-strike" in name:
+            return f"{settings.STATIC_URL}images/games/cs2.svg"
+
+        return f"{settings.STATIC_URL}images/defaults/game_default.svg"
+
+
+
 
 class Tournament(models.Model):
     """
@@ -258,6 +292,63 @@ class Tournament(models.Model):
 
         return self.Status.COMPLETED
 
+    @property
+    def cover_url(self):
+        """
+        Priority: uploaded cover image -> uploaded banner -> game artwork -> default cover SVG.
+        """
+        if self.cover_image:
+            try:
+                return self.cover_image.url
+            except (AttributeError, ValueError):
+                if getattr(self.cover_image, "name", None):
+                    url_str = str(self.cover_image.name)
+                    if not url_str.startswith("/") and not url_str.startswith("http"):
+                        return f"{settings.MEDIA_URL}{url_str}"
+                    return url_str
+        if self.banner:
+            try:
+                return self.banner.url
+            except (AttributeError, ValueError):
+                if getattr(self.banner, "name", None):
+                    url_str = str(self.banner.name)
+                    if not url_str.startswith("/") and not url_str.startswith("http"):
+                        return f"{settings.MEDIA_URL}{url_str}"
+                    return url_str
+        if self.game:
+            return self.game.image_url
+        return f"{settings.STATIC_URL}images/defaults/tournament_cover.svg"
+
+    @property
+    def banner_url(self):
+        """
+        Priority: uploaded banner -> uploaded cover image -> game artwork -> default banner SVG.
+        """
+        if self.banner:
+            try:
+                return self.banner.url
+            except (AttributeError, ValueError):
+                if getattr(self.banner, "name", None):
+                    url_str = str(self.banner.name)
+                    if not url_str.startswith("/") and not url_str.startswith("http"):
+                        return f"{settings.MEDIA_URL}{url_str}"
+                    return url_str
+        if self.cover_image:
+            try:
+                return self.cover_image.url
+            except (AttributeError, ValueError):
+                if getattr(self.cover_image, "name", None):
+                    url_str = str(self.cover_image.name)
+                    if not url_str.startswith("/") and not url_str.startswith("http"):
+                        return f"{settings.MEDIA_URL}{url_str}"
+                    return url_str
+        if self.game:
+            return self.game.image_url
+        return f"{settings.STATIC_URL}images/defaults/tournament_banner.svg"
+
+
+
+
 class TournamentRegistration(models.Model):
     """
     A team or individual player's registration in a tournament.
@@ -328,12 +419,48 @@ class TournamentRegistration(models.Model):
             ),
         ]
 
-    def __str__(self):
+    @property
+    def display_name(self):
+        """
+        Returns player's username for SOLO registration and team's display_name for TEAM registration.
+        """
+        if self.user and (not self.team or self.team.description == "__SOLO_INTERNAL__" or (self.team.name and self.team.name.startswith("__SOLO_"))):
+            return self.user.username
         if self.team:
-            return f"{self.team.name} - {self.tournament.name}"
+            return self.team.display_name
         if self.user:
-            return f"{self.user.username} - {self.tournament.name}"
-        return f"{self.registered_by.username} - {self.tournament.name}"
+            return self.user.username
+        return self.registered_by.username
+
+    def get_notification_users(self):
+        """
+        Returns User instances associated with this registration for notifications.
+        """
+        from apps.teams.models import TeamMember
+        users = set()
+        if self.user:
+            users.add(self.user)
+        elif self.team:
+            if self.team.description == "__SOLO_INTERNAL__" or (self.team.name and self.team.name.startswith("__SOLO_")):
+                if self.team.manager:
+                    users.add(self.team.manager)
+            else:
+                active_members = TeamMember.objects.filter(team=self.team, is_active=True).select_related("user")
+                for member in active_members:
+                    users.add(member.user)
+        if self.registered_by:
+            users.add(self.registered_by)
+        return list(users)
+
+    def get_notification_emails(self):
+        """
+        Returns email addresses for notification delivery.
+        """
+        return [user.email for user in self.get_notification_users() if user.email]
+
+    def __str__(self):
+        return f"{self.display_name} - {self.tournament.name}"
+
 
 class Round(models.Model):
     """
@@ -424,7 +551,49 @@ class Match(models.Model):
             "match_number",
         ]
 
+    @property
+    def team_one_display(self):
+        if self.team_one:
+            return self.team_one.display_name
+        return "BYE"
+
+    @property
+    def team_two_display(self):
+        if self.team_two:
+            return self.team_two.display_name
+        return "BYE"
+
+    @property
+    def winner_display(self):
+        if self.winner:
+            return self.winner.display_name
+        return None
+
+    def get_participant_users(self):
+        """
+        Returns a list of User instances participating in this match.
+        """
+        from apps.teams.models import TeamMember
+        users = set()
+        for team in [self.team_one, self.team_two]:
+            if not team:
+                continue
+            if team.description == "__SOLO_INTERNAL__" or (team.name and team.name.startswith("__SOLO_")):
+                if team.manager:
+                    users.add(team.manager)
+            else:
+                active_members = TeamMember.objects.filter(team=team, is_active=True).select_related("user")
+                for member in active_members:
+                    users.add(member.user)
+        return list(users)
+
+    def get_participant_emails(self):
+        """
+        Returns email addresses for match notification delivery.
+        """
+        return [user.email for user in self.get_participant_users() if user.email]
+
     def __str__(self):
         return (
             f"{self.round.name} - Match {self.match_number}"
-        )
+        )

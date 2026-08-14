@@ -184,9 +184,9 @@ Dashboard - {{ tournament.name }}
                                 </div>
                                 {% if highest_scoring_match %}
                                 <div class="fw-bold text-white fs-6">
-                                    {{ highest_scoring_match.team_one.name|default:'BYE' }}
+                                    {{ highest_scoring_match.team_one_display }}
                                     <span class="badge bg-warning text-dark mx-1">{{ highest_scoring_match.team_one_score }} - {{ highest_scoring_match.team_two_score }}</span>
-                                    {{ highest_scoring_match.team_two.name|default:'BYE' }}
+                                    {{ highest_scoring_match.team_two_display }}
                                 </div>
                                 <small class="text-muted">{{ highest_scoring_match.round.name }} • Match #{{ highest_scoring_match.match_number }}</small>
                                 {% else %}
@@ -201,7 +201,7 @@ Dashboard - {{ tournament.name }}
                                 <div class="col-6">
                                     <div class="text-muted small text-uppercase fw-bold">First Completed</div>
                                     {% if first_completed_match %}
-                                    <div class="small fw-bold text-truncate">{{ first_completed_match.team_one.name|default:"TBA" }} vs {{ first_completed_match.team_two.name|default:"BYE" }}</div>
+                                    <div class="small fw-bold text-truncate">{{ first_completed_match.team_one_display }} vs {{ first_completed_match.team_two_display }}</div>
                                     <small class="text-muted">Match #{{ first_completed_match.match_number }}</small>
                                     {% else %}
                                     <div class="text-muted small">N/A</div>
@@ -210,12 +210,13 @@ Dashboard - {{ tournament.name }}
                                 <div class="col-6">
                                     <div class="text-muted small text-uppercase fw-bold">Last Completed</div>
                                     {% if last_completed_match %}
-                                    <div class="small fw-bold text-truncate">{{ last_completed_match.team_one.name|default:"TBA" }} vs {{ last_completed_match.team_two.name|default:"BYE" }}</div>
+                                    <div class="small fw-bold text-truncate">{{ last_completed_match.team_one_display }} vs {{ last_completed_match.team_two_display }}</div>
                                     <small class="text-muted">Match #{{ last_completed_match.match_number }}</small>
                                     {% else %}
                                     <div class="text-muted small">N/A</div>
                                     {% endif %}
                                 </div>
+
                             </div>
 
                         </div>

@@ -83,8 +83,8 @@
                             <div class="team-row {% if match.status == 'COMPLETED' and match.winner and match.winner == match.team_one %}is-winner{% endif %}">
                                 <div class="team-info">
                                     {% if match.team_one %}
-                                        <div class="team-avatar">{{ match.team_one.name|first|upper }}</div>
-                                        <span class="team-name">{{ match.team_one.name }}</span>
+                                        <div class="team-avatar">{{ match.team_one_display|first|upper }}</div>
+                                        <span class="team-name">{{ match.team_one_display }}</span>
                                     {% else %}
                                         <div class="team-avatar text-muted">?</div>
                                         <span class="team-placeholder">BYE / TBD</span>
@@ -99,9 +99,10 @@
                             <div class="team-row {% if match.status == 'COMPLETED' and match.winner and match.winner == match.team_two %}is-winner{% endif %}">
                                 <div class="team-info">
                                     {% if match.team_two %}
-                                        <div class="team-avatar">{{ match.team_two.name|first|upper }}</div>
-                                        <span class="team-name">{{ match.team_two.name }}</span>
+                                        <div class="team-avatar">{{ match.team_two_display|first|upper }}</div>
+                                        <span class="team-name">{{ match.team_two_display }}</span>
                                     {% else %}
+
                                         <div class="team-avatar text-muted">?</div>
                                         <span class="team-placeholder">BYE / TBD</span>
                                     {% endif %}

@@ -205,9 +205,9 @@ Statistics - {{ tournament.name }}
                         {% if highest_scoring_match %}
                         <div class="p-3 rounded-3" style="background: #18243a; border: 1px solid rgba(148, 163, 184, 0.2);">
                             <div class="fw-bold fs-6 mb-1" style="color: #f8fafc;">
-                                {{ highest_scoring_match.team_one.name|default:'BYE' }}
+                                {{ highest_scoring_match.team_one_display }}
                                 <span class="badge mx-1.5" style="background: #f59e0b; color: #0b1324; font-weight: 800;">{{ highest_scoring_match.team_one_score }} — {{ highest_scoring_match.team_two_score }}</span>
-                                {{ highest_scoring_match.team_two.name|default:'BYE' }}
+                                {{ highest_scoring_match.team_two_display }}
                             </div>
                             <small style="color: #94a3b8;" class="d-block">{{ highest_scoring_match.round.name }} • Match #{{ highest_scoring_match.match_number }}</small>
                         </div>
@@ -232,7 +232,7 @@ Statistics - {{ tournament.name }}
                             <thead style="border-bottom: 1px solid rgba(148, 163, 184, 0.25);">
                                 <tr>
                                     <th class="ps-4 py-3" style="color: #cbd5e1; font-weight: 700;">#</th>
-                                    <th class="py-3" style="color: #cbd5e1; font-weight: 700;">Team</th>
+                                    <th class="py-3" style="color: #cbd5e1; font-weight: 700;">Team / Player</th>
                                     <th class="text-center py-3" style="color: #cbd5e1; font-weight: 700;">Played</th>
                                     <th class="text-center py-3" style="color: #cbd5e1; font-weight: 700;">Wins</th>
                                     <th class="text-center py-3" style="color: #cbd5e1; font-weight: 700;">Losses</th>
@@ -258,11 +258,12 @@ Statistics - {{ tournament.name }}
                                     <td class="fw-bold" style="color: #f8fafc;">
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 12px; background: linear-gradient(135deg, #2563eb, #3b82f6); flex-shrink: 0;">
-                                                {{ rank.team.name|slice:":2"|upper }}
+                                                {{ rank.team.display_name|slice:":2"|upper }}
                                             </div>
-                                            {{ rank.team.name }}
+                                            {{ rank.team.display_name }}
                                         </div>
                                     </td>
+
                                     <td class="text-center" style="color: #cbd5e1;">{{ rank.matches_played }}</td>
                                     <td class="text-center fw-bold" style="color: #22c55e;">{{ rank.wins }}</td>
                                     <td class="text-center" style="color: #ef4444;">{{ rank.losses }}</td>

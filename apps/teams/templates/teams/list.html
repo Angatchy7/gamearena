@@ -38,17 +38,12 @@ My Teams - GameArena
                         <!-- Header with Avatar & Status -->
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="d-flex align-items-center gap-3">
-                                {% if team.logo %}
-                                    <img src="{{ team.logo.url }}" alt="{{ team.name }}" class="rounded-circle shadow-sm" style="width: 48px; height: 48px; object-fit: cover; border: 2px solid rgba(37, 99, 235, 0.4);">
-                                {% else %}
-                                    <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 18px; background: linear-gradient(135deg, #2563eb, #3b82f6); border: 2px solid rgba(37, 99, 235, 0.4);">
-                                        {{ team.name|slice:":2"|upper }}
-                                    </div>
-                                {% endif %}
+                                <img src="{{ team.logo_url }}" alt="{{ team.display_name }}" class="rounded-circle shadow-sm" style="width: 48px; height: 48px; object-fit: cover; border: 2px solid rgba(37, 99, 235, 0.4);">
                                 <div>
-                                    <h5 class="fw-bold mb-0" style="color: #f8fafc; font-size: 1.1rem;">{{ team.name }}</h5>
+                                    <h5 class="fw-bold mb-0" style="color: #f8fafc; font-size: 1.1rem;">{{ team.display_name }}</h5>
                                     <div class="fs-8 fw-semibold" style="color: #60a5fa;"><i class="bi bi-person-fill me-1"></i>Manager: {{ team.manager.username }}</div>
                                 </div>
+
                             </div>
 
                             {% if team.is_active %}

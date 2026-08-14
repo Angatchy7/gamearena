@@ -87,7 +87,7 @@
 
                     <button type="submit" name="winner" value="{{ match.team_one.id }}" class="team w-100">
 
-                        {{ match.team_one.name }}
+                        {{ match.team_one_display }}
 
                     </button>
 
@@ -111,7 +111,7 @@
 
                     <button type="submit" name="winner" value="{{ match.team_two.id }}" class="team w-100">
 
-                        {{ match.team_two.name }}
+                        {{ match.team_two_display }}
 
                     </button>
 
@@ -130,7 +130,7 @@
                 {% else %}
 
                 <div class="team {% if match.winner == match.team_one %}winner{% endif %}">
-                    {{ match.team_one|default:"BYE" }}
+                    {{ match.team_one_display }}
                 </div>
 
                 <div class="vs">
@@ -138,8 +138,9 @@
                 </div>
 
                 <div class="team {% if match.winner == match.team_two %}winner{% endif %}">
-                    {{ match.team_two|default:"BYE" }}
+                    {{ match.team_two_display }}
                 </div>
+
 
                 {% endif %}
 

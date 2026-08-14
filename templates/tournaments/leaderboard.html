@@ -108,12 +108,13 @@ Leaderboard - {{ tournament.name }}
                             <td>
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; font-size: 14px; background: linear-gradient(135deg, #2563eb, #3b82f6); flex-shrink: 0;">
-                                        {{ rank.team.name|slice:":2"|upper }}
+                                        {{ rank.team.display_name|slice:":2"|upper }}
                                     </div>
                                     <div>
-                                        <div class="fs-6 fw-bold" style="color: #f8fafc;">{{ rank.team.name }}</div>
-                                        <div class="small" style="color: #94a3b8;"><i class="bi bi-person-fill me-1"></i>Manager: <span style="color: #cbd5e1;">{{ rank.team.manager.username }}</span></div>
+                                        <div class="fs-6 fw-bold" style="color: #f8fafc;">{{ rank.team.display_name }}</div>
+                                        <div class="small" style="color: #94a3b8;"><i class="bi bi-person-fill me-1"></i>Player/Manager: <span style="color: #cbd5e1;">{{ rank.team.manager.username }}</span></div>
                                     </div>
+
                                 </div>
                             </td>
 

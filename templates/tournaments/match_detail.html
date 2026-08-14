@@ -55,18 +55,18 @@ Match {{ match.match_number }} — {{ tournament.name }}
                             <div class="col-md-5">
                                 <div class="p-4 rounded-4 text-center h-100 d-flex flex-column align-items-center justify-content-center" style="background: #111827; border: 1px solid rgba(148, 163, 184, 0.2);">
                                     <div class="profile-avatar rounded-circle text-white fw-bold d-flex align-items-center justify-content-center mb-3 shadow" style="width: 64px; height: 64px; font-size: 24px; background: linear-gradient(135deg, #2563eb, #3b82f6);">
-                                        {% if match.team_one %}{{ match.team_one.name|slice:":2"|upper }}{% else %}?{% endif %}
+                                        {% if match.team_one %}{{ match.team_one_display|slice:":2"|upper }}{% else %}?{% endif %}
                                     </div>
                                     <h4 class="fw-bold text-white mb-3">
                                         {% if match.team_one %}
-                                            {{ match.team_one.name }}
+                                            {{ match.team_one_display }}
                                         {% else %}
                                             <span style="color: #94a3b8;" class="opacity-75">BYE / TBD</span>
                                         {% endif %}
                                     </h4>
 
                                     <div class="form-group w-100 px-3">
-                                        <label class="form-label small text-uppercase fw-bold mb-2" style="color: #cbd5e1;">Team 1 Score</label>
+                                        <label class="form-label small text-uppercase fw-bold mb-2" style="color: #cbd5e1;">Participant 1 Score</label>
                                         <input type="number" 
                                                class="form-control form-control-lg text-center fs-2 fw-bold text-white bg-dark border-secondary"
                                                name="team_one_score" 
@@ -94,18 +94,19 @@ Match {{ match.match_number }} — {{ tournament.name }}
                             <div class="col-md-5">
                                 <div class="p-4 rounded-4 text-center h-100 d-flex flex-column align-items-center justify-content-center" style="background: #111827; border: 1px solid rgba(148, 163, 184, 0.2);">
                                     <div class="profile-avatar rounded-circle text-white fw-bold d-flex align-items-center justify-content-center mb-3 shadow" style="width: 64px; height: 64px; font-size: 24px; background: linear-gradient(135deg, #4f46e5, #818cf8);">
-                                        {% if match.team_two %}{{ match.team_two.name|slice:":2"|upper }}{% else %}?{% endif %}
+                                        {% if match.team_two %}{{ match.team_two_display|slice:":2"|upper }}{% else %}?{% endif %}
                                     </div>
                                     <h4 class="fw-bold text-white mb-3">
                                         {% if match.team_two %}
-                                            {{ match.team_two.name }}
+                                            {{ match.team_two_display }}
                                         {% else %}
                                             <span style="color: #94a3b8;" class="opacity-75">BYE / TBD</span>
                                         {% endif %}
                                     </h4>
 
                                     <div class="form-group w-100 px-3">
-                                        <label class="form-label small text-uppercase fw-bold mb-2" style="color: #cbd5e1;">Team 2 Score</label>
+                                        <label class="form-label small text-uppercase fw-bold mb-2" style="color: #cbd5e1;">Participant 2 Score</label>
+
                                         <input type="number" 
                                                class="form-control form-control-lg text-center fs-2 fw-bold text-white bg-dark border-secondary"
                                                name="team_two_score" 
