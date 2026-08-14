@@ -95,7 +95,8 @@ class Team(models.Model):
                     if not url_str.startswith("/") and not url_str.startswith("http"):
                         return f"{settings.MEDIA_URL}{url_str}"
                     return url_str
-        return f"{settings.STATIC_URL}images/defaults/team_default.svg"
+        return "/static/images/defaults/team_default.svg"
+
 
 
 

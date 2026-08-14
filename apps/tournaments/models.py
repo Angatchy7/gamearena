@@ -76,17 +76,17 @@ class Game(models.Model):
 
 
         if "pubg" in slug or "pubg" in name:
-            return f"{settings.STATIC_URL}images/games/pubg.svg"
+            return "/static/images/games/pubg.svg"
         if "valorant" in slug or "valorant" in name:
-            return f"{settings.STATIC_URL}images/games/valorant.svg"
+            return "/static/images/games/valorant.svg"
         if "ea" in slug or "fc" in slug or "fifa" in slug or "ea" in name or "fc" in name or "fifa" in name:
-            return f"{settings.STATIC_URL}images/games/eafc.svg"
+            return "/static/images/games/eafc.svg"
         if "rocket" in slug or "league" in slug or "rocket" in name:
-            return f"{settings.STATIC_URL}images/games/rocket_league.svg"
+            return "/static/images/games/rocket_league.svg"
         if "cs2" in slug or "cs2" in name or "counter-strike" in slug or "counter-strike" in name:
-            return f"{settings.STATIC_URL}images/games/cs2.svg"
+            return "/static/images/games/cs2.svg"
 
-        return f"{settings.STATIC_URL}images/defaults/game_default.svg"
+        return "/static/images/defaults/game_default.svg"
 
 
 
@@ -317,7 +317,7 @@ class Tournament(models.Model):
                     return url_str
         if self.game:
             return self.game.image_url
-        return f"{settings.STATIC_URL}images/defaults/tournament_cover.svg"
+        return "/static/images/defaults/tournament_cover.svg"
 
     @property
     def banner_url(self):
@@ -344,7 +344,7 @@ class Tournament(models.Model):
                     return url_str
         if self.game:
             return self.game.image_url
-        return f"{settings.STATIC_URL}images/defaults/tournament_banner.svg"
+        return "/static/images/defaults/tournament_banner.svg"
 
 
 

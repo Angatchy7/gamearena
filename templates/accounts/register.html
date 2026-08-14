@@ -41,19 +41,19 @@
                         </div>
                         <div class="mb-3">
                             <label for="id_password1" class="form-label text-secondary small fw-bold text-uppercase">Password</label>
-                            <div class="input-group">
-                                <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Create a password" required style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                                <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="id_password1" aria-label="Toggle password visibility" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
-                                    <i class="bi bi-eye"></i>
+                            <div class="pw-wrapper" style="position: relative;">
+                                <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Create a password" required style="padding-right: 44px;">
+                                <button type="button" class="pw-toggle" data-target="id_password1" aria-label="Show password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;line-height:1;z-index:5;">
+                                    <i class="bi bi-eye fs-6"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="mb-4">
                             <label for="id_password2" class="form-label text-secondary small fw-bold text-uppercase">Confirm Password</label>
-                            <div class="input-group">
-                                <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirm password" required style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                                <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="id_password2" aria-label="Toggle password confirmation visibility" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
-                                    <i class="bi bi-eye"></i>
+                            <div class="pw-wrapper" style="position: relative;">
+                                <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirm password" required style="padding-right: 44px;">
+                                <button type="button" class="pw-toggle" data-target="id_password2" aria-label="Show password confirmation" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;line-height:1;z-index:5;">
+                                    <i class="bi bi-eye fs-6"></i>
                                 </button>
                             </div>
                         </div>
@@ -63,22 +63,26 @@
                     </form>
 
                     <script>
-                        document.querySelectorAll('.toggle-password-btn').forEach(function(btn) {
-                            btn.addEventListener('click', function(e) {
-                                e.preventDefault();
+                        document.querySelectorAll('.pw-toggle').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
                                 var targetId = this.getAttribute('data-target');
                                 var input = document.getElementById(targetId);
                                 var icon = this.querySelector('i');
                                 if (input.type === 'password') {
                                     input.type = 'text';
-                                    icon.className = 'bi bi-eye-slash';
+                                    icon.className = 'bi bi-eye-slash fs-6';
+                                    this.setAttribute('aria-label', 'Hide ' + (targetId === 'id_password1' ? 'password' : 'password confirmation'));
                                 } else {
                                     input.type = 'password';
-                                    icon.className = 'bi bi-eye';
+                                    icon.className = 'bi bi-eye fs-6';
+                                    this.setAttribute('aria-label', 'Show ' + (targetId === 'id_password1' ? 'password' : 'password confirmation'));
                                 }
                             });
+                            btn.addEventListener('mouseenter', function() { this.style.color = '#f8fafc'; });
+                            btn.addEventListener('mouseleave', function() { this.style.color = '#94a3b8'; });
                         });
                     </script>
+
 
 
                     <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-10 small text-secondary">

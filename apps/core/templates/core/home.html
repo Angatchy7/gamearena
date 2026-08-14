@@ -62,11 +62,12 @@ GameArena
 
                 <div class="auth-form-group">
                     <label class="auth-form-label" for="login-password">Password</label>
-                    <div class="input-group">
-                        <input type="password" name="password" id="login-password" class="auth-form-input form-control"
-                            placeholder="Enter your password" required autocomplete="current-password" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                        <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="login-password" aria-label="Toggle password visibility" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
-                            <i class="bi bi-eye"></i>
+                    <div class="pw-wrapper" style="position: relative;">
+                        <input type="password" name="password" id="login-password" class="auth-form-input"
+                            placeholder="Enter your password" required autocomplete="current-password" style="padding-right: 44px;">
+                        <button type="button" class="pw-toggle" data-target="login-password" aria-label="Show password"
+                            style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;line-height:1;z-index:5;">
+                            <i class="bi bi-eye fs-6"></i>
                         </button>
                     </div>
                 </div>
@@ -120,22 +121,24 @@ GameArena
 
                 <div class="auth-form-group">
                     <label class="auth-form-label" for="reg-password1">Password</label>
-                    <div class="input-group">
-                        <input type="password" name="password1" id="reg-password1" class="auth-form-input form-control"
-                            placeholder="Create a password" required autocomplete="new-password" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                        <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="reg-password1" aria-label="Toggle password visibility" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
-                            <i class="bi bi-eye"></i>
+                    <div class="pw-wrapper" style="position: relative;">
+                        <input type="password" name="password1" id="reg-password1" class="auth-form-input"
+                            placeholder="Create a password" required autocomplete="new-password" style="padding-right: 44px;">
+                        <button type="button" class="pw-toggle" data-target="reg-password1" aria-label="Show password"
+                            style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;line-height:1;z-index:5;">
+                            <i class="bi bi-eye fs-6"></i>
                         </button>
                     </div>
                 </div>
 
                 <div class="auth-form-group">
                     <label class="auth-form-label" for="reg-password2">Confirm Password</label>
-                    <div class="input-group">
-                        <input type="password" name="password2" id="reg-password2" class="auth-form-input form-control"
-                            placeholder="Confirm your password" required autocomplete="new-password" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                        <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="reg-password2" aria-label="Toggle password confirmation visibility" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
-                            <i class="bi bi-eye"></i>
+                    <div class="pw-wrapper" style="position: relative;">
+                        <input type="password" name="password2" id="reg-password2" class="auth-form-input"
+                            placeholder="Confirm your password" required autocomplete="new-password" style="padding-right: 44px;">
+                        <button type="button" class="pw-toggle" data-target="reg-password2" aria-label="Show password confirmation"
+                            style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;line-height:1;z-index:5;">
+                            <i class="bi bi-eye fs-6"></i>
                         </button>
                     </div>
                 </div>
@@ -147,6 +150,7 @@ GameArena
             </form>
         </div>
 
+
         <div class="auth-modal-footer">
             Already have an account?
             <button type="button" class="auth-modal-switch" data-auth-switch="login">
@@ -156,5 +160,24 @@ GameArena
     </div>
 
 </div>
+
+<script>
+    document.querySelectorAll('.pw-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var targetId = this.getAttribute('data-target');
+            var input = document.getElementById(targetId);
+            var icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash fs-6';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye fs-6';
+            }
+        });
+        btn.addEventListener('mouseenter', function() { this.style.color = '#f8fafc'; });
+        btn.addEventListener('mouseleave', function() { this.style.color = '#94a3b8'; });
+    });
+</script>
 
 {% endblock %}
