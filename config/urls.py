@@ -29,6 +29,7 @@ urlpatterns = [
     path("teams/", include("apps.teams.urls")),
     path("notifications/", include("apps.notifications.urls")),
     path("tournaments/", include("apps.tournaments.urls")),
+    path("api/", include("apps.api.urls")),
 ]
 
 from django.conf import settings

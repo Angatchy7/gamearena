@@ -1,0 +1,46 @@
+from django.urls import path
+from .views import (
+    GameListView,
+    GameDetailView,
+    GameTournamentsView,
+    TournamentListView,
+    TournamentDetailView,
+    TournamentRegistrationAPIView,
+    LeaderboardAPIView,
+    TournamentMatchesAPIView,
+    MatchDetailAPIView,
+    MatchResultAPIView,
+    TeamMembersView,
+    UserAutocompleteAPIView,
+    NotificationListView,
+    NotificationUnreadView,
+    NotificationMarkReadView,
+    NotificationMarkReadAllView,
+    UserProfileAPIView,
+    DashboardAPIView,
+    TournamentStatisticsAPIView,
+)
+
+app_name = "api"
+
+urlpatterns = [
+    path("games/", GameListView.as_view(), name="game_list"),
+    path("games/<slug:slug>/", GameDetailView.as_view(), name="game_detail"),
+    path("games/<slug:slug>/tournaments/", GameTournamentsView.as_view(), name="game_tournaments"),
+    path("tournaments/", TournamentListView.as_view(), name="tournament_list"),
+    path("tournaments/<int:pk>/", TournamentDetailView.as_view(), name="tournament_detail"),
+    path("tournaments/<int:pk>/register/", TournamentRegistrationAPIView.as_view(), name="tournament_register"),
+    path("tournaments/<int:pk>/leaderboard/", LeaderboardAPIView.as_view(), name="tournament_leaderboard"),
+    path("tournaments/<int:pk>/statistics/", TournamentStatisticsAPIView.as_view(), name="tournament_statistics"),
+    path("tournaments/<int:pk>/matches/", TournamentMatchesAPIView.as_view(), name="tournament_matches"),
+    path("matches/<int:pk>/", MatchDetailAPIView.as_view(), name="match_detail"),
+    path("matches/<int:pk>/result/", MatchResultAPIView.as_view(), name="match_result"),
+    path("teams/<slug:slug>/members/", TeamMembersView.as_view(), name="team_members"),
+    path("teams/<slug:slug>/invite/search/", UserAutocompleteAPIView.as_view(), name="user_autocomplete"),
+    path("notifications/", NotificationListView.as_view(), name="notification_list"),
+    path("notifications/unread/", NotificationUnreadView.as_view(), name="notification_unread"),
+    path("notifications/<int:pk>/read/", NotificationMarkReadView.as_view(), name="notification_mark_read"),
+    path("notifications/read-all/", NotificationMarkReadAllView.as_view(), name="notification_mark_read_all"),
+    path("profile/", UserProfileAPIView.as_view(), name="user_profile"),
+    path("dashboard/", DashboardAPIView.as_view(), name="dashboard"),
+]

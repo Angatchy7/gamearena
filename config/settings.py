@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloudinary_storage',
     'cloudinary',
+    'rest_framework',
     # Local apps
     'apps.accounts',
     "apps.core",
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     "apps.teams",
     "apps.notifications",
     "apps.tournaments",
+    "apps.api",
 ]
 
 MIDDLEWARE = [
@@ -258,5 +260,15 @@ LOGGING = {
         },
     },
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
+
 
 

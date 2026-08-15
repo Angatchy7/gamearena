@@ -332,36 +332,36 @@ class UserAutocompleteAndTeamCreationTests(TestCase):
         )
 
     def test_unauthenticated_autocomplete_rejected(self):
-        url = reverse("teams:user_autocomplete", kwargs={"slug": self.team.slug})
+        url = reverse("api:user_autocomplete", kwargs={"slug": self.team.slug})
         response = self.client.get(url, {"q": "alpha"})
         self.assertIn(response.status_code, [302, 401, 403])
 
     def test_non_manager_autocomplete_forbidden(self):
         self.client.login(username="other_mgr", password="Password123!")
-        url = reverse("teams:user_autocomplete", kwargs={"slug": self.team.slug})
+        url = reverse("api:user_autocomplete", kwargs={"slug": self.team.slug})
         response = self.client.get(url, {"q": "alpha"})
         self.assertEqual(response.status_code, 403)
 
     def test_manager_autocomplete_success(self):
         self.client.login(username="autocomp_mgr", password="Password123!")
-        url = reverse("teams:user_autocomplete", kwargs={"slug": self.team.slug})
+        url = reverse("api:user_autocomplete", kwargs={"slug": self.team.slug})
         response = self.client.get(url, {"q": "alpha"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("users", data)
-        usernames = [u["username"] for u in data["users"]]
+        self.assertTrue(isinstance(data, list))
+        usernames = [u["username"] for u in data]
         self.assertIn("alpha_player", usernames)
         self.assertIn("ALPHA_HERO", usernames)
 
     def test_autocomplete_exclusions(self):
         self.client.login(username="autocomp_mgr", password="Password123!")
-        url = reverse("teams:user_autocomplete", kwargs={"slug": self.team.slug})
+        url = reverse("api:user_autocomplete", kwargs={"slug": self.team.slug})
 
         # Query for all users
         response = self.client.get(url, {"q": "a"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        usernames = [u["username"] for u in data["users"]]
+        usernames = [u["username"] for u in data]
 
         # Manager, existing active member, and pending invitee MUST be excluded
         self.assertNotIn("autocomp_mgr", usernames)
@@ -370,11 +370,11 @@ class UserAutocompleteAndTeamCreationTests(TestCase):
 
     def test_autocomplete_security_no_sensitive_fields(self):
         self.client.login(username="autocomp_mgr", password="Password123!")
-        url = reverse("teams:user_autocomplete", kwargs={"slug": self.team.slug})
+        url = reverse("api:user_autocomplete", kwargs={"slug": self.team.slug})
         response = self.client.get(url, {"q": "alpha"})
         data = response.json()
-        self.assertTrue(len(data["users"]) > 0)
-        user_item = data["users"][0]
+        self.assertTrue(len(data) > 0)
+        user_item = data[0]
         # Only id and username allowed
         self.assertEqual(set(user_item.keys()), {"id", "username"})
 
@@ -384,11 +384,11 @@ class UserAutocompleteAndTeamCreationTests(TestCase):
         for i in range(15):
             User.objects.create_user(username=f"limit_user_{i}", password="Password123!")
 
-        url = reverse("teams:user_autocomplete", kwargs={"slug": self.team.slug})
+        url = reverse("api:user_autocomplete", kwargs={"slug": self.team.slug})
         response = self.client.get(url, {"q": "limit_user"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertLessEqual(len(data["users"]), 10)
+        self.assertLessEqual(len(data), 10)
 
     def test_team_creation_page_get(self):
         new_mgr = User.objects.create_user(username="fresh_mgr", password="Password123!")

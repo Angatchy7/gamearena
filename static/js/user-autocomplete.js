@@ -128,11 +128,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         renderLoading();
 
-        const url = `/teams/${encodeURIComponent(teamSlug)}/invite/autocomplete/?q=${encodeURIComponent(query)}`;
+        const url = `/api/teams/${encodeURIComponent(teamSlug)}/invite/search/?q=${encodeURIComponent(query)}`;
 
         fetch(url, {
             headers: {
-                "X-Requested-With": "XMLHttpRequest",
+                "Accept": "application/json",
             },
         })
             .then(res => {
@@ -140,7 +140,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 return res.json();
             })
             .then(data => {
-                renderResults(data.users || []);
+                const users = Array.isArray(data) ? data : (data.users || []);
+                renderResults(users);
             })
             .catch(() => {
                 renderResults([]);
