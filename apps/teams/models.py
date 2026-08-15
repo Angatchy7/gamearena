@@ -77,7 +77,7 @@ class Team(models.Model):
         and team name for regular teams.
         """
         if self.description == "__SOLO_INTERNAL__" or (self.name and self.name.startswith("__SOLO_")):
-            if self.manager:
+            if self.manager_id:
                 return self.manager.username
         return self.name
 
@@ -87,14 +87,14 @@ class Team(models.Model):
         Returns uploaded team logo URL if present and the file physically exists,
         otherwise returns default team logo SVG.
         """
-        if self.logo:
+        if self.logo and self.logo.name:
             try:
-                from django.core.files.storage import default_storage
-                if default_storage.exists(self.logo.name):
+                if self.logo.storage.exists(self.logo.name):
                     return self.logo.url
             except (AttributeError, ValueError):
                 pass
         return "/static/images/defaults/team_default.svg"
+
 
 
 

@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     # Local apps
     'apps.accounts',
     "apps.core",
@@ -165,11 +167,28 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Cloudinary Storage configuration
+CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME')
+CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
+CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET')
+
+USE_CLOUDINARY = bool(CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET)
+
+if USE_CLOUDINARY:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+        'API_KEY': CLOUDINARY_API_KEY,
+        'API_SECRET': CLOUDINARY_API_SECRET,
+    }
+    DEFAULT_FILE_STORAGE_BACKEND = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    DEFAULT_FILE_STORAGE_BACKEND = "django.core.files.storage.FileSystemStorage"
+
 IS_TESTING = 'test' in sys.argv
 
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": DEFAULT_FILE_STORAGE_BACKEND,
     },
     "staticfiles": {
         "BACKEND": (
@@ -179,6 +198,7 @@ STORAGES = {
         ),
     },
 }
+
 
 
 

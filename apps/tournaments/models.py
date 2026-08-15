@@ -70,8 +70,7 @@ class Game(models.Model):
         """
         if self.logo and self.logo.name:
             try:
-                from django.core.files.storage import default_storage
-                if default_storage.exists(self.logo.name):
+                if self.logo.storage.exists(self.logo.name):
                     return self.logo.url
             except (AttributeError, ValueError):
                 pass
@@ -352,22 +351,21 @@ class Tournament(models.Model):
     def cover_url(self):
         """
         Priority: uploaded cover image -> uploaded banner -> game artwork -> default cover SVG.
-        Falls back if the physical file no longer exists (Render ephemeral storage).
+        Falls back if the physical file no longer exists.
         """
-        from django.core.files.storage import default_storage
         if self.cover_image and self.cover_image.name:
             try:
-                if default_storage.exists(self.cover_image.name):
+                if self.cover_image.storage.exists(self.cover_image.name):
                     return self.cover_image.url
             except (AttributeError, ValueError):
                 pass
         if self.banner and self.banner.name:
             try:
-                if default_storage.exists(self.banner.name):
+                if self.banner.storage.exists(self.banner.name):
                     return self.banner.url
             except (AttributeError, ValueError):
                 pass
-        if self.game:
+        if self.game_id:
             return self.game.image_url
         return "/static/images/defaults/tournament_cover.svg"
 
@@ -375,22 +373,21 @@ class Tournament(models.Model):
     def banner_url(self):
         """
         Priority: uploaded banner -> uploaded cover image -> game artwork -> default banner SVG.
-        Falls back if the physical file no longer exists (Render ephemeral storage).
+        Falls back if the physical file no longer exists.
         """
-        from django.core.files.storage import default_storage
         if self.banner and self.banner.name:
             try:
-                if default_storage.exists(self.banner.name):
+                if self.banner.storage.exists(self.banner.name):
                     return self.banner.url
             except (AttributeError, ValueError):
                 pass
         if self.cover_image and self.cover_image.name:
             try:
-                if default_storage.exists(self.cover_image.name):
+                if self.cover_image.storage.exists(self.cover_image.name):
                     return self.cover_image.url
             except (AttributeError, ValueError):
                 pass
-        if self.game:
+        if self.game_id:
             return self.game.image_url
         return "/static/images/defaults/tournament_banner.svg"
 
@@ -472,13 +469,15 @@ class TournamentRegistration(models.Model):
         """
         Returns player's username for SOLO registration and team's display_name for TEAM registration.
         """
-        if self.user and (not self.team or self.team.description == "__SOLO_INTERNAL__" or (self.team.name and self.team.name.startswith("__SOLO_"))):
+        if self.user_id and (not self.team_id or self.team.description == "__SOLO_INTERNAL__" or (self.team.name and self.team.name.startswith("__SOLO_"))):
             return self.user.username
-        if self.team:
+        if self.team_id:
             return self.team.display_name
-        if self.user:
+        if self.user_id:
             return self.user.username
-        return self.registered_by.username
+        if self.registered_by_id:
+            return self.registered_by.username
+        return ""
 
     def get_notification_users(self):
         """
@@ -601,19 +600,19 @@ class Match(models.Model):
 
     @property
     def team_one_display(self):
-        if self.team_one:
+        if self.team_one_id:
             return self.team_one.display_name
         return "BYE"
 
     @property
     def team_two_display(self):
-        if self.team_two:
+        if self.team_two_id:
             return self.team_two.display_name
         return "BYE"
 
     @property
     def winner_display(self):
-        if self.winner:
+        if self.winner_id:
             return self.winner.display_name
         return None
 
