@@ -284,3 +284,51 @@ class MediaStorageTests(TestCase):
         except SystemExit as e:
             self.assertEqual(e.code, 0, "makemigrations --check --dry-run detected pending migrations")
 
+    def test_long_filename_media_upload_succeeds(self):
+        """
+        Regression test: Verify that uploaded files with paths/names exceeding 100 characters
+        (common with Cloudinary public IDs) save successfully on Tournament, Team, and Game models.
+        """
+        user = User.objects.create_user(username="long_path_user", password="Password123!")
+
+        # 150-character filename simulating Cloudinary prefix + timestamp + unique hash
+        long_filename = "a" * 120 + "_cloudinary_upload_test_file_name_exceeding_default_hundred_chars.png"
+        self.assertGreater(len(long_filename), 100)
+
+        # Team logo with long name
+        team = Team.objects.create(name="Long Path Team", manager=user)
+        team.logo = SimpleUploadedFile(long_filename, b"fake_logo_data", content_type="image/png")
+        team.save()
+        team.refresh_from_db()
+        self.assertGreater(len(team.logo.name), 100)
+
+        # Game logo with long name
+        game = Game.objects.create(name="Long Path Game", slug="long-path-game")
+        game.logo = SimpleUploadedFile(long_filename, b"fake_game_logo", content_type="image/png")
+        game.save()
+        game.refresh_from_db()
+        self.assertGreater(len(game.logo.name), 100)
+
+        # Tournament cover and banner with long names
+        now = timezone.now()
+        tourney = Tournament.objects.create(
+            name="Long Path Tournament",
+            game=game,
+            organizer=user,
+            description="Long path test tournament",
+            rules="Standard",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            max_participants=4,
+            registration_start=now,
+            registration_end=now + timedelta(days=1),
+            start_date=now + timedelta(days=2),
+            end_date=now + timedelta(days=3),
+            contact_email="longpath@example.com",
+            cover_image=SimpleUploadedFile("cover_" + long_filename, b"fake_cover", content_type="image/png"),
+            banner=SimpleUploadedFile("banner_" + long_filename, b"fake_banner", content_type="image/png"),
+        )
+        tourney.refresh_from_db()
+        self.assertGreater(len(tourney.cover_image.name), 100)
+        self.assertGreater(len(tourney.banner.name), 100)
+
+

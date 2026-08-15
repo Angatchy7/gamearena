@@ -24,6 +24,7 @@ class Game(models.Model):
 
     logo = models.ImageField(
         upload_to="games/logos/",
+        max_length=255,
         blank=True,
         null=True,
     )
@@ -186,12 +187,14 @@ class Tournament(models.Model):
 
     banner = models.ImageField(
         upload_to="tournaments/banners/",
+        max_length=255,
         blank=True,
         null=True,
     )
 
     cover_image = models.ImageField(
         upload_to="tournaments/covers/",
+        max_length=255,
         blank=True,
         null=True,
     )

@@ -24,6 +24,7 @@ class Team(models.Model):
 
     logo = models.ImageField(
         upload_to="teams/logos/",
+        max_length=255,
         blank=True,
         null=True,
     )
