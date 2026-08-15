@@ -23,8 +23,8 @@
                         <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
                     </span>
 
-                    <span class="badge {% if tournament.status == 'LIVE' %}bg-danger animate-pulse{% elif tournament.status == 'REGISTRATION_OPEN' %}bg-success{% elif tournament.status == 'COMPLETED' %}bg-secondary{% else %}bg-info{% endif %} px-3 py-1.5 fs-7 text-uppercase fw-bold shadow-sm">
-                        {% if tournament.status == 'LIVE' %}🔴 {% endif %}{{ tournament.get_status_display }}
+                    <span class="badge {% if tournament.current_status == 'LIVE' %}bg-danger animate-pulse{% elif tournament.current_status == 'REGISTRATION_OPEN' %}bg-success{% elif tournament.current_status == 'COMPLETED' %}bg-secondary{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}bg-warning text-dark{% else %}bg-info{% endif %} px-3 py-1.5 fs-7 text-uppercase fw-bold shadow-sm">
+                        {% if tournament.current_status == 'LIVE' %}🔴 {% endif %}{% if tournament.current_status == 'REGISTRATION_OPEN' %}Registration Open{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}Registration Closed{% elif tournament.current_status == 'LIVE' %}Live{% elif tournament.current_status == 'COMPLETED' %}Completed{% elif tournament.current_status == 'DRAFT' %}Draft{% else %}{{ tournament.get_status_display }}{% endif %}
                     </span>
 
                     <span class="badge bg-dark bg-opacity-75 border border-secondary px-3 py-1.5 fs-7 fw-semibold text-light shadow-sm">
@@ -98,7 +98,7 @@
                             </form>
                         {% endif %}
 
-                        {% if tournament.status == tournament.Status.REGISTRATION_OPEN and request.user != tournament.organizer %}
+                        {% if tournament.current_status == tournament.Status.REGISTRATION_OPEN and request.user != tournament.organizer %}
                             <a href="{% url 'tournaments:register' tournament.slug %}" class="btn btn-success btn-lg fw-bold py-2.5 shadow-sm">
                                 {% if tournament.participation_type == 'SOLO' %}
                                     <i class="bi bi-person-plus me-1.5"></i> Register

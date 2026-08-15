@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings — GameArena{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 py-2">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="fw-bold mb-1" style="color: #f8fafc;">
+                ⚙️ Account Settings
+            </h1>
+            <p style="color: #cbd5e1;" class="mb-0">Manage your GameArena account.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Left: Account Info -->
+        <div class="col-lg-7">
+
+            <div class="card border-0 shadow-sm text-white mb-4"
+                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-person-circle text-primary me-2"></i> Account Information
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <!-- Username -->
+                    <div class="mb-4">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: #111827; border-color: rgba(148,163,184,0.25); color: #94a3b8;">
+                                <i class="bi bi-person-fill"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ user.username }}"
+                                   readonly
+                                   style="background: #111827; border-color: rgba(148,163,184,0.25); color: #f8fafc; cursor: default;">
+                        </div>
+                        <small class="text-muted">Username cannot be changed to preserve your identity across the platform.</small>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-4">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: #111827; border-color: rgba(148,163,184,0.25); color: #94a3b8;">
+                                <i class="bi bi-envelope-fill"></i>
+                            </span>
+                            <input type="email"
+                                   class="form-control"
+                                   value="{{ user.email|default:'—' }}"
+                                   readonly
+                                   style="background: #111827; border-color: rgba(148,163,184,0.25); color: #f8fafc; cursor: default;">
+                        </div>
+                        <small class="text-muted">Contact support to update your email address.</small>
+                    </div>
+
+                    <!-- Role -->
+                    <div>
+                        <label class="form-label text-muted small text-uppercase fw-bold">Account Role</label>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            {% if user.role == 'ADMIN' %}
+                            <span class="badge px-3 py-2" style="background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35);">
+                                <i class="bi bi-shield-fill-check me-1"></i> Admin
+                            </span>
+                            {% else %}
+                            <span class="badge px-3 py-2" style="background: rgba(37,99,235,0.15); color: #60a5fa; border: 1px solid rgba(37,99,235,0.35);">
+                                <i class="bi bi-person-fill me-1"></i> Player
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right: Security -->
+        <div class="col-lg-5">
+
+            <div class="card border-0 shadow-sm text-white mb-4"
+                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-shield-lock-fill text-warning me-2"></i> Security
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <p class="text-muted small mb-3">Keep your account secure by using a strong password.</p>
+
+                    <a href="{% url 'accounts:password_change' %}"
+                       class="btn btn-primary w-100 py-2.5 fw-bold"
+                       style="border-radius: 12px;">
+                        <i class="bi bi-key-fill me-2"></i> Change Password
+                    </a>
+
+                    <hr class="my-4" style="border-color: rgba(148,163,184,0.15);">
+
+                    <div class="d-flex align-items-start gap-3 p-3 rounded-3"
+                         style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
+                        <i class="bi bi-box-arrow-right text-danger fs-5 mt-1"></i>
+                        <div>
+                            <div class="fw-bold text-white small">Sign Out</div>
+                            <div class="text-muted small mb-2">Sign out of your GameArena account on this device.</div>
+                            <form method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm fw-bold">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card border-0 shadow-sm text-white"
+                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-lightning-charge-fill text-cyan me-2"></i> Quick Links
+                    </h5>
+                </div>
+
+                <div class="card-body p-4 d-grid gap-2">
+                    <a href="{% url 'accounts:profile' user.username %}" class="btn btn-outline-primary py-2 text-start">
+                        <i class="bi bi-person-circle me-2"></i> View My Profile
+                    </a>
+                    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-light py-2 text-start">
+                        <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+                    </a>
+                    <a href="{% url 'teams:list' %}" class="btn btn-outline-light py-2 text-start">
+                        <i class="bi bi-people-fill me-2"></i> My Teams
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

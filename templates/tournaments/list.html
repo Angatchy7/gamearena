@@ -51,7 +51,7 @@ Browse Tournaments
 
     <!-- ================= SEARCH / FILTER ================= -->
 
-    <form method="get" class="tournament-filters mb-5">
+    <form method="get" class="tournament-filters mb-4">
 
         <div class="tournament-filter-search">
             <i class="bi bi-search" aria-hidden="true"></i>
@@ -76,12 +76,17 @@ Browse Tournaments
             </select>
         </div>
 
+        <!-- Preserve existing filters when submitting search -->
+        {% if status_filter %}
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        {% endif %}
+
         <button type="submit" class="btn btn-primary tournament-filter-button">
             <i class="bi bi-search me-1"></i>
             <span>Search</span>
         </button>
 
-        {% if search_query or selected_game %}
+        {% if search_query or selected_game or status_filter %}
         <a href="{{ request.path }}" class="btn btn-outline-light tournament-filter-clear">
             <i class="bi bi-x-lg me-1"></i>
             <span>Clear</span>
@@ -89,6 +94,43 @@ Browse Tournaments
         {% endif %}
 
     </form>
+
+    <!-- ================= STATUS FILTER TABS ================= -->
+
+    <div class="d-flex flex-wrap gap-2 mb-4" role="group" aria-label="Tournament status filter">
+
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_game %}game={{ selected_game }}&{% endif %}"
+           class="btn btn-sm fw-semibold {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+           style="border-radius: 20px; padding: 0.4rem 1.1rem;">
+            All
+        </a>
+
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_game %}game={{ selected_game }}&{% endif %}status=upcoming"
+           class="btn btn-sm fw-semibold {% if status_filter == 'upcoming' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+           style="border-radius: 20px; padding: 0.4rem 1.1rem;">
+            <i class="bi bi-calendar-event me-1"></i> Upcoming
+        </a>
+
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_game %}game={{ selected_game }}&{% endif %}status=registration_open"
+           class="btn btn-sm fw-semibold {% if status_filter == 'registration_open' %}btn-success{% else %}btn-outline-secondary{% endif %}"
+           style="border-radius: 20px; padding: 0.4rem 1.1rem;">
+            <i class="bi bi-clipboard-check me-1"></i> Registration Open
+        </a>
+
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_game %}game={{ selected_game }}&{% endif %}status=live"
+           class="btn btn-sm fw-semibold {% if status_filter == 'live' %}btn-danger{% else %}btn-outline-secondary{% endif %}"
+           style="border-radius: 20px; padding: 0.4rem 1.1rem;">
+            🔴 Live
+        </a>
+
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_game %}game={{ selected_game }}&{% endif %}status=completed"
+           class="btn btn-sm fw-semibold {% if status_filter == 'completed' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+           style="border-radius: 20px; padding: 0.4rem 1.1rem;">
+            <i class="bi bi-check-circle me-1"></i> Completed
+        </a>
+
+    </div>
+
     <!-- ================= TOURNAMENTS ================= -->
 
     <div class="row g-4">
@@ -110,32 +152,47 @@ Browse Tournaments
                                 <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
                             </span>
 
-                            {% if tournament.status == tournament.Status.DRAFT %}
+                            {% with eff=tournament.current_status %}
+                            {% if eff == tournament.Status.DRAFT %}
 
                             <span class="badge px-3 py-1.5 fs-7 fw-bold"
                                 style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
                                 Draft
                             </span>
 
-                            {% elif tournament.status == tournament.Status.REGISTRATION_OPEN %}
+                            {% elif eff == tournament.Status.REGISTRATION_OPEN %}
 
                             <span class="badge px-3 py-1.5 fs-7 fw-bold"
                                 style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35);">
                                 Registration Open
                             </span>
 
-                            {% elif tournament.status == tournament.Status.REGISTRATION_CLOSED %}
+                            {% elif eff == tournament.Status.REGISTRATION_CLOSED %}
 
                             <span class="badge px-3 py-1.5 fs-7 fw-bold"
                                 style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);">
                                 Registration Closed
                             </span>
 
-                            {% elif tournament.status == tournament.Status.LIVE %}
+                            {% elif eff == tournament.Status.LIVE %}
 
                             <span class="badge px-3 py-1.5 fs-7 fw-bold"
                                 style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
                                 🔴 Live
+                            </span>
+
+                            {% elif eff == tournament.Status.COMPLETED %}
+
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold"
+                                style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.25);">
+                                ✓ Completed
+                            </span>
+
+                            {% elif eff == tournament.Status.CANCELLED %}
+
+                            <span class="badge px-3 py-1.5 fs-7 fw-bold"
+                                style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25);">
+                                Cancelled
                             </span>
 
                             {% else %}
@@ -148,6 +205,7 @@ Browse Tournaments
                             </span>
 
                             {% endif %}
+                            {% endwith %}
 
                         </div>
 
@@ -223,9 +281,20 @@ Browse Tournaments
 
                     <p style="color: #cbd5e1;" class="mb-4">
 
-                        Host the first tournament and bring players together.
+                        {% if status_filter %}
+                            No tournaments match the selected filter. Try a different status or browse all.
+                        {% else %}
+                            Host the first tournament and bring players together.
+                        {% endif %}
 
                     </p>
+
+                    {% if status_filter %}
+                    <a href="{{ request.path }}" class="btn btn-outline-light px-4 py-2.5 fw-bold me-2"
+                        style="border-radius: 12px;">
+                        <i class="bi bi-arrow-left me-1"></i> View All
+                    </a>
+                    {% endif %}
 
                     <a href="{% url 'tournaments:create' %}" class="btn btn-primary px-4 py-2.5 fw-bold"
                         style="border-radius: 12px;">

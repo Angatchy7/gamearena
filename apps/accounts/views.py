@@ -3,6 +3,7 @@ import os
 import secrets
 from django.contrib.auth import get_user_model
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
@@ -47,6 +48,18 @@ class PlayerProfileView(View):
         user = get_object_or_404(User, username=username)
         context = get_player_profile(user=user)
         return render(request, self.template_name, context)
+
+
+class SettingsView(LoginRequiredMixin, View):
+    """
+    Account settings page for authenticated users.
+    Displays username, email (read-only), and provides a link to change password.
+    """
+
+    template_name = "accounts/settings.html"
+
+    def get(self, request):
+        return render(request, self.template_name, {"user": request.user})
 
 
 @method_decorator(csrf_exempt, name="dispatch")

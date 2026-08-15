@@ -266,31 +266,60 @@ class Tournament(models.Model):
     @property
     def current_status(self):
         """
-        Returns the current tournament status based on
-        dates while respecting Draft and Cancelled.
+        Returns the effective tournament status derived from datetime fields.
+        Terminal states (DRAFT, CANCELLED, COMPLETED) are always respected.
+        For published tournaments, state is computed from the current time:
+          - Before registration window   → REGISTRATION_CLOSED (not yet open)
+          - During registration window   → REGISTRATION_OPEN
+          - After registration, before start → REGISTRATION_CLOSED
+          - During tournament window     → LIVE
+          - After end_date               → COMPLETED
+        The DB field 'status' is the source-of-truth for DRAFT/CANCELLED/COMPLETED.
         """
-
         if self.status == self.Status.DRAFT:
             return self.Status.DRAFT
 
         if self.status == self.Status.CANCELLED:
             return self.Status.CANCELLED
 
+        # If admin/service explicitly marked COMPLETED (e.g., champion set), keep it.
+        if self.status == self.Status.COMPLETED:
+            return self.Status.COMPLETED
+
+        # Explicitly closed registration (e.g., organizer manually closed)
+        if self.status == self.Status.REGISTRATION_CLOSED:
+            return self.Status.REGISTRATION_CLOSED
+
         now = timezone.now()
 
+        # Registration window has not started yet
         if now < self.registration_start:
-            return self.Status.REGISTRATION_OPEN
+            return self.Status.REGISTRATION_CLOSED
 
+        # Within registration window
         if self.registration_start <= now <= self.registration_end:
             return self.Status.REGISTRATION_OPEN
 
+        # Between registration close and tournament start
         if self.registration_end < now < self.start_date:
             return self.Status.REGISTRATION_CLOSED
 
+        # Tournament is live
         if self.start_date <= now <= self.end_date:
             return self.Status.LIVE
 
+        # Past end date
         return self.Status.COMPLETED
+
+    @property
+    def get_effective_status(self):
+        """Alias for current_status for template compatibility."""
+        return self.current_status
+
+    @property
+    def is_registration_open(self):
+        """True only when registration is currently open."""
+        return self.current_status == self.Status.REGISTRATION_OPEN
 
     @property
     def cover_url(self):

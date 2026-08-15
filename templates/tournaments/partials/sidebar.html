@@ -24,9 +24,11 @@
         </div>
         <div class="d-flex justify-content-between align-items-center py-2">
             <span class="text-muted small">Status</span>
-            <span class="badge {% if tournament.status == 'LIVE' %}bg-danger{% elif tournament.status == 'REGISTRATION_OPEN' %}bg-success{% else %}bg-secondary{% endif %}">
-                {{ tournament.get_status_display }}
+            {% with eff=tournament.current_status %}
+            <span class="badge {% if eff == 'LIVE' %}bg-danger{% elif eff == 'REGISTRATION_OPEN' %}bg-success{% elif eff == 'REGISTRATION_CLOSED' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                {% if eff == 'REGISTRATION_OPEN' %}Registration Open{% elif eff == 'REGISTRATION_CLOSED' %}Registration Closed{% elif eff == 'LIVE' %}🔴 Live{% elif eff == 'COMPLETED' %}Completed{% else %}{{ tournament.get_status_display }}{% endif %}
             </span>
+            {% endwith %}
         </div>
     </div>
 </div>
@@ -44,19 +46,15 @@
             <div class="registered-team-preview">
                 <div class="registered-team-identity">
                     {% if tournament.participation_type == 'SOLO' %}
-                        <span class="registered-team-avatar">{{ registration.user.username|default:registration.registered_by.username|slice:":2"|upper }}</span>
+                        <span class="registered-team-avatar">{{ registration.display_name|slice:":2"|upper }}</span>
                         <div class="registered-team-copy">
-                            <strong>{{ registration.user.username|default:registration.registered_by.username }}</strong>
+                            <strong>{{ registration.display_name }}</strong>
                             <span>Solo Player</span>
                         </div>
                     {% else %}
-                        {% if registration.team.logo %}
-                            <img src="{{ registration.team.logo.url }}" alt="{{ registration.team.name }}" class="registered-team-avatar">
-                        {% else %}
-                            <span class="registered-team-avatar">{{ registration.team.name|slice:":2"|upper }}</span>
-                        {% endif %}
+                        <img src="{{ registration.team.logo_url }}" alt="{{ registration.team.display_name }}" class="registered-team-avatar" style="object-fit:cover;">
                         <div class="registered-team-copy">
-                            <strong>{{ registration.team.name }}</strong>
+                            <strong>{{ registration.team.display_name }}</strong>
                             <span>Manager: {{ registration.team.manager.username }}</span>
                         </div>
                     {% endif %}
@@ -116,8 +114,8 @@
             <a href="{% url 'tournaments:delete' tournament.slug %}" class="btn btn-outline-danger">
                 <i class="bi bi-trash me-1.5"></i> Delete Tournament
             </a>
-        {% else %}
-            {% if tournament.status == tournament.Status.REGISTRATION_OPEN %}
+        {% if request.user != tournament.organizer %}
+            {% if tournament.current_status == tournament.Status.REGISTRATION_OPEN %}
                 <hr class="my-2 border-secondary">
                 <a href="{% url 'tournaments:register' tournament.slug %}" class="btn btn-success fw-bold py-2">
                     {% if tournament.participation_type == 'SOLO' %}

@@ -252,7 +252,7 @@
                                                 {{ item.team_score }} - {{ item.opponent_score }}
                                             </span>
                                             <span class="fw-semibold text-white-50 fs-6">
-                                                {% if item.opponent %}{{ item.opponent.name }}{% else %}BYE{% endif %}
+                                                {% if item.opponent %}{{ item.opponent.display_name }}{% else %}BYE{% endif %}
                                             </span>
                                         </div>
                                     </div>
@@ -348,9 +348,22 @@
                                     <small class="text-muted fs-8">Joined {{ member.joined_at|date:"M Y" }}</small>
                                 </div>
                             </div>
-                            <span class="badge bg-dark text-info border border-info px-2.5 py-1 fs-8">
-                                {{ member.get_team_role_display }}
-                            </span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-dark text-info border border-info px-2.5 py-1 fs-8">
+                                    {{ member.get_team_role_display }}
+                                </span>
+                                {% if request.user == team.manager and member.user != team.manager %}
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm px-2 py-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#removeModal"
+                                        data-member-id="{{ member.user.id }}"
+                                        data-member-name="{{ member.user.username }}"
+                                        title="Remove {{ member.user.username }} from team">
+                                    <i class="bi bi-person-x-fill"></i>
+                                </button>
+                                {% endif %}
+                            </div>
                         </li>
                         {% empty %}
                         <li class="list-group-item bg-transparent text-muted text-center py-4">
@@ -393,4 +406,49 @@
     </div>
 
 </div>
+
+<!-- Remove Member Confirmation Modal (Manager Only) -->
+{% if request.user == team.manager %}
+<div class="modal fade" id="removeModal" tabindex="-1" aria-labelledby="removeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-white fw-bold" id="removeModalLabel">
+                    <i class="bi bi-person-x-fill text-danger me-2"></i> Remove Player
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+                <p class="text-secondary mb-2">Are you sure you want to remove</p>
+                <p class="fw-bold text-white fs-5 mb-2" id="removeModalMemberName"></p>
+                <p class="text-secondary small">from <strong class="text-white">{{ team.name }}</strong>? Their membership record will be kept for history but they will no longer be an active roster member.</p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" id="removeForm" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger fw-bold">
+                        <i class="bi bi-person-x-fill me-1"></i> Remove Player
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var removeModal = document.getElementById('removeModal');
+    if (removeModal) {
+        removeModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            var memberId = button.getAttribute('data-member-id');
+            var memberName = button.getAttribute('data-member-name');
+            document.getElementById('removeModalMemberName').textContent = memberName;
+            document.getElementById('removeForm').action = '/teams/{{ team.slug }}/remove-member/' + memberId + '/';
+        });
+    }
+})();
+</script>
+{% endif %}
 {% endblock %}

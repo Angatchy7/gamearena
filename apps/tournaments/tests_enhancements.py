@@ -202,3 +202,252 @@ class ProductionUXAndEnhancementsTest(TestCase):
         self.assertEqual(response_reg.status_code, 200)
         self.assertContains(response_reg, 'data-target="id_password1"')
         self.assertContains(response_reg, 'data-target="id_password2"')
+
+
+class TournamentLifecycleStatusTests(TestCase):
+    """
+    Tests for the current_status property and tournament status filters.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.organizer = User.objects.create_user(username="lifecycle_org", password="Password123!")
+        self.game = Game.objects.create(name="Lifecycle Game", slug="lifecycle-game", description="Test")
+
+    def _make_tournament(self, name, slug, reg_start_offset, reg_end_offset, start_offset, end_offset, status=None):
+        now = timezone.now()
+        t = Tournament.objects.create(
+            name=name,
+            slug=slug,
+            game=self.game,
+            organizer=self.organizer,
+            description="Test",
+            rules="Rules",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=4,
+            registration_fee=0,
+            prize_pool=500,
+            registration_start=now + timedelta(seconds=reg_start_offset),
+            registration_end=now + timedelta(seconds=reg_end_offset),
+            start_date=now + timedelta(seconds=start_offset),
+            end_date=now + timedelta(seconds=end_offset),
+            contact_email="lifecycle@example.com",
+            status=status or Tournament.Status.REGISTRATION_OPEN,
+        )
+        return t
+
+    def test_current_status_before_registration_window(self):
+        """Tournament not yet in registration window returns REGISTRATION_CLOSED."""
+        t = self._make_tournament(
+            "Pre-Reg", "pre-reg",
+            reg_start_offset=3600,   # starts in 1 hour
+            reg_end_offset=7200,
+            start_offset=10800,
+            end_offset=14400,
+        )
+        self.assertEqual(t.current_status, Tournament.Status.REGISTRATION_CLOSED)
+
+    def test_current_status_during_registration_window(self):
+        """Tournament in active registration window returns REGISTRATION_OPEN."""
+        t = self._make_tournament(
+            "Reg Open", "reg-open",
+            reg_start_offset=-3600,   # started 1 hour ago
+            reg_end_offset=3600,      # ends in 1 hour
+            start_offset=7200,
+            end_offset=14400,
+        )
+        self.assertEqual(t.current_status, Tournament.Status.REGISTRATION_OPEN)
+
+    def test_current_status_after_registration_before_start(self):
+        """Tournament past reg end but before start is REGISTRATION_CLOSED."""
+        t = self._make_tournament(
+            "Reg Closed", "reg-closed",
+            reg_start_offset=-7200,
+            reg_end_offset=-3600,   # ended 1 hour ago
+            start_offset=3600,
+            end_offset=14400,
+        )
+        self.assertEqual(t.current_status, Tournament.Status.REGISTRATION_CLOSED)
+
+    def test_current_status_live(self):
+        """Tournament in live window returns LIVE."""
+        t = self._make_tournament(
+            "Live Tourney", "live-tourney",
+            reg_start_offset=-14400,
+            reg_end_offset=-7200,
+            start_offset=-3600,   # started 1 hour ago
+            end_offset=3600,      # ends in 1 hour
+        )
+        self.assertEqual(t.current_status, Tournament.Status.LIVE)
+
+    def test_current_status_completed(self):
+        """Tournament past end date returns COMPLETED."""
+        t = self._make_tournament(
+            "Done Tourney", "done-tourney",
+            reg_start_offset=-14400,
+            reg_end_offset=-10800,
+            start_offset=-7200,
+            end_offset=-3600,   # ended 1 hour ago
+        )
+        self.assertEqual(t.current_status, Tournament.Status.COMPLETED)
+
+    def test_current_status_draft_unchanged(self):
+        """DRAFT tournaments always stay DRAFT regardless of dates."""
+        t = self._make_tournament(
+            "Draft T", "draft-t",
+            reg_start_offset=-3600,
+            reg_end_offset=3600,
+            start_offset=7200,
+            end_offset=14400,
+            status=Tournament.Status.DRAFT,
+        )
+        self.assertEqual(t.current_status, Tournament.Status.DRAFT)
+
+    def test_current_status_cancelled_unchanged(self):
+        """CANCELLED tournaments always stay CANCELLED."""
+        t = self._make_tournament(
+            "Cancelled T", "cancelled-t",
+            reg_start_offset=-3600,
+            reg_end_offset=3600,
+            start_offset=7200,
+            end_offset=14400,
+            status=Tournament.Status.CANCELLED,
+        )
+        self.assertEqual(t.current_status, Tournament.Status.CANCELLED)
+
+    def test_registration_blocked_after_deadline(self):
+        """register_solo_player and register_team are blocked when registration_end has passed."""
+        t_solo = self._make_tournament(
+            "Closed Reg Solo", "closed-reg-solo",
+            reg_start_offset=-7200,
+            reg_end_offset=-3600,
+            start_offset=3600,
+            end_offset=14400,
+        )
+        player = User.objects.create_user(username="lc_blocked_solo", password="Password123!")
+        from apps.tournaments.services import register_solo_player, register_team
+        result_solo = register_solo_player(tournament=t_solo, user=player)
+        self.assertFalse(result_solo["success"])
+        self.assertEqual(result_solo["message"], "Tournament registration is closed.")
+
+        now = timezone.now()
+        t_team = Tournament.objects.create(
+            name="Closed Reg Team",
+            slug="closed-reg-team",
+            game=self.game,
+            organizer=self.organizer,
+            description="Test",
+            rules="Rules",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.TEAM,
+            team_size=2,
+            max_participants=4,
+            registration_start=now - timedelta(hours=2),
+            registration_end=now - timedelta(hours=1),
+            start_date=now + timedelta(hours=1),
+            end_date=now + timedelta(hours=4),
+            contact_email="lifecycle@example.com",
+            status=Tournament.Status.REGISTRATION_OPEN,
+        )
+        mgr = User.objects.create_user(username="team_mgr_closed", password="Password123!")
+        p2 = User.objects.create_user(username="team_p2_closed", password="Password123!")
+        team = Team.objects.create(name="Closed Team", manager=mgr)
+        TeamMember.objects.create(team=team, user=mgr, is_active=True)
+        TeamMember.objects.create(team=team, user=p2, is_active=True)
+
+        result_team = register_team(tournament=t_team, team=team, user=mgr)
+        self.assertFalse(result_team["success"])
+        self.assertEqual(result_team["message"], "Tournament registration is closed.")
+
+    def test_registration_succeeds_when_window_active_before_start(self):
+        """Registration succeeds for active window even if tournament start_date is in the future (Upcoming)."""
+        now = timezone.now()
+        t_team = Tournament.objects.create(
+            name="Active Window Team",
+            slug="active-window-team",
+            game=self.game,
+            organizer=self.organizer,
+            description="Test",
+            rules="Rules",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.TEAM,
+            team_size=2,
+            max_participants=4,
+            registration_start=now - timedelta(hours=1),
+            registration_end=now + timedelta(hours=1),
+            start_date=now + timedelta(hours=2),
+            end_date=now + timedelta(hours=5),
+            contact_email="lifecycle@example.com",
+            status=Tournament.Status.REGISTRATION_OPEN,
+        )
+        mgr = User.objects.create_user(username="team_mgr_open", password="Password123!")
+        p2 = User.objects.create_user(username="team_p2_open", password="Password123!")
+        team = Team.objects.create(name="Open Team", manager=mgr)
+        TeamMember.objects.create(team=team, user=mgr, is_active=True)
+        TeamMember.objects.create(team=team, user=p2, is_active=True)
+
+        from apps.tournaments.services import register_team, register_solo_player
+        result_team = register_team(tournament=t_team, team=team, user=mgr)
+        self.assertTrue(result_team["success"])
+
+        t_solo = self._make_tournament(
+            "Active Window Solo", "active-window-solo",
+            reg_start_offset=-3600,
+            reg_end_offset=3600,
+            start_offset=7200,
+            end_offset=14400,
+        )
+        solo_player = User.objects.create_user(username="solo_open_player", password="Password123!")
+        result_solo = register_solo_player(tournament=t_solo, user=solo_player)
+        self.assertTrue(result_solo["success"])
+
+    def test_registration_fails_when_db_status_explicitly_closed(self):
+        """Explicit DB status REGISTRATION_CLOSED rejects registration even within date window."""
+        t_solo = self._make_tournament(
+            "Explicit Closed Solo", "explicit-closed-solo",
+            reg_start_offset=-3600,
+            reg_end_offset=3600,
+            start_offset=7200,
+            end_offset=14400,
+            status=Tournament.Status.REGISTRATION_CLOSED,
+        )
+        player = User.objects.create_user(username="exp_closed_player", password="Password123!")
+        from apps.tournaments.services import register_solo_player
+        res = register_solo_player(tournament=t_solo, user=player)
+        self.assertFalse(res["success"])
+        self.assertEqual(res["message"], "Tournament registration is closed.")
+
+    def test_tournament_list_status_filter_live(self):
+        """?status=live returns only live tournaments."""
+        self.client.login(username="lifecycle_org", password="Password123!")
+        live = self._make_tournament(
+            "Live Filter T", "live-filter-t",
+            reg_start_offset=-14400,
+            reg_end_offset=-7200,
+            start_offset=-3600,
+            end_offset=3600,
+        )
+        url = reverse("tournaments:list") + "?status=live"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        slugs = [t.slug for t in response.context["tournaments"]]
+        self.assertIn(live.slug, slugs)
+
+    def test_tournament_list_status_filter_upcoming(self):
+        """?status=upcoming returns future tournaments."""
+        self.client.login(username="lifecycle_org", password="Password123!")
+        upcoming = self._make_tournament(
+            "Upcoming Filter T", "upcoming-filter-t",
+            reg_start_offset=3600,
+            reg_end_offset=7200,
+            start_offset=10800,
+            end_offset=14400,
+        )
+        url = reverse("tournaments:list") + "?status=upcoming"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        slugs = [t.slug for t in response.context["tournaments"]]
+        self.assertIn(upcoming.slug, slugs)
+

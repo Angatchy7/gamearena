@@ -3,6 +3,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
+from django.utils import timezone
 # pyrefly: ignore [missing-import]
 from apps.tournaments.models import Match, Round
 from .permissions import require_tournament_manager
@@ -32,7 +33,7 @@ from .services import (
 
 class TournamentListView(View):
     """
-    Browse all tournaments.
+    Browse all tournaments with optional status/game/search filtering.
     """
 
     template_name = "tournaments/list.html"
@@ -41,6 +42,9 @@ class TournamentListView(View):
 
         query = request.GET.get("q", "").strip()
         game_slug = request.GET.get("game", "").strip()
+        status_filter = request.GET.get("status", "").strip().lower()
+
+        now = timezone.now()
 
         tournaments = (
             Tournament.objects
@@ -62,6 +66,30 @@ class TournamentListView(View):
         if game_slug:
             tournaments = tournaments.filter(game__slug=game_slug)
 
+        # Server-side status filter using ORM date comparisons
+        if status_filter == "upcoming":
+            # Published tournaments whose start hasn't arrived yet
+            tournaments = tournaments.filter(
+                start_date__gt=now,
+            ).exclude(status__in=[Tournament.Status.CANCELLED, Tournament.Status.DRAFT])
+        elif status_filter == "registration_open":
+            # Registration window is active AND not cancelled
+            tournaments = tournaments.filter(
+                registration_start__lte=now,
+                registration_end__gte=now,
+                status=Tournament.Status.REGISTRATION_OPEN,
+            )
+        elif status_filter == "live":
+            # Tournament has started but not ended, not cancelled
+            tournaments = tournaments.filter(
+                start_date__lte=now,
+                end_date__gte=now,
+            ).exclude(status__in=[Tournament.Status.CANCELLED, Tournament.Status.DRAFT])
+        elif status_filter == "completed":
+            tournaments = tournaments.filter(
+                Q(status=Tournament.Status.COMPLETED) | Q(end_date__lt=now)
+            ).exclude(status=Tournament.Status.CANCELLED)
+
         return render(
             request,
             self.template_name,
@@ -71,8 +99,10 @@ class TournamentListView(View):
                 "games": Game.objects.filter(is_active=True).order_by("name"),
                 "search_query": query,
                 "selected_game": game_slug,
+                "status_filter": status_filter,
             },
         )
+
 
 class MyTournamentListView(LoginRequiredMixin, View):
     """

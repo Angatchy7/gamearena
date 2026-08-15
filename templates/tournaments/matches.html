@@ -13,9 +13,11 @@ Matches - {{ tournament.name }}
             <div class="row align-items-center">
                 <div class="col-lg-8 mb-3 mb-lg-0">
                     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                        <span class="badge bg-primary px-3 py-2 fs-7 fw-semibold text-uppercase">
-                            {{ tournament.get_status_display }}
+                        {% with eff=tournament.current_status %}
+                        <span class="badge {% if eff == 'LIVE' %}bg-danger{% elif eff == 'REGISTRATION_OPEN' %}bg-success{% elif eff == 'REGISTRATION_CLOSED' %}bg-warning text-dark{% else %}bg-primary{% endif %} px-3 py-2 fs-7 fw-semibold text-uppercase">
+                            {% if eff == 'LIVE' %}🔴 Live{% elif eff == 'REGISTRATION_OPEN' %}Registration Open{% elif eff == 'REGISTRATION_CLOSED' %}Registration Closed{% elif eff == 'COMPLETED' %}Completed{% else %}{{ tournament.get_status_display }}{% endif %}
                         </span>
+                        {% endwith %}
                         <span class="badge bg-secondary px-3 py-2 fs-7 fw-semibold">
                             <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
                         </span>

@@ -411,3 +411,147 @@ class UserAutocompleteAndTeamCreationTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Team.objects.filter(name="Brand New Team", manager=new_mgr).exists())
 
+
+class RemoveTeamMemberTests(TestCase):
+    """
+    Tests for the Remove Player (RemoveTeamMemberView) feature.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.manager = User.objects.create_user(username="rm_manager", password="Password123!")
+        self.player = User.objects.create_user(username="rm_player", password="Password123!")
+        self.outsider = User.objects.create_user(username="rm_outsider", password="Password123!")
+
+        self.team = Team.objects.create(name="Removal Test Team", manager=self.manager)
+        TeamMember.objects.create(team=self.team, user=self.manager, team_role=TeamMember.TeamRole.MANAGER, is_active=True)
+        self.membership = TeamMember.objects.create(team=self.team, user=self.player, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+    def _remove_url(self, user_id=None):
+        uid = user_id or self.player.pk
+        return reverse("teams:remove_member", kwargs={"slug": self.team.slug, "member_id": uid})
+
+    def test_manager_can_remove_player(self):
+        self.client.login(username="rm_manager", password="Password123!")
+        response = self.client.post(self._remove_url())
+        self.assertEqual(response.status_code, 302)
+        self.membership.refresh_from_db()
+        self.assertFalse(self.membership.is_active)
+        self.assertIsNotNone(self.membership.left_at)
+
+    def test_non_manager_gets_403(self):
+        self.client.login(username="rm_outsider", password="Password123!")
+        response = self.client.post(self._remove_url())
+        self.assertEqual(response.status_code, 403)
+        self.membership.refresh_from_db()
+        self.assertTrue(self.membership.is_active)
+
+    def test_manager_cannot_remove_themselves(self):
+        from apps.teams.services import remove_team_member
+        result = remove_team_member(team=self.team, manager=self.manager, member_user=self.manager)
+        self.assertFalse(result["success"])
+        self.assertIn("manager cannot remove", result["message"].lower())
+
+    def test_removed_member_excluded_from_active_count(self):
+        self.assertEqual(self.team.active_member_count, 2)
+        self.membership.is_active = False
+        self.membership.save()
+        team = Team.objects.get(pk=self.team.pk)
+        self.assertEqual(team.active_member_count, 1)
+
+    def test_remove_nonexistent_member_returns_error(self):
+        from apps.teams.services import remove_team_member
+        ghost = User.objects.create_user(username="ghost_user_rm", password="Password123!")
+        result = remove_team_member(team=self.team, manager=self.manager, member_user=ghost)
+        self.assertFalse(result["success"])
+        self.assertIn("not an active member", result["message"].lower())
+
+
+class MyTeamsAndJoinedTeamsViewTests(TestCase):
+    """
+    Tests that MyTeamsView shows only managed teams and
+    JoinedTeamsView shows only joined-not-managed teams.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.manager = User.objects.create_user(username="view_mgr", password="Password123!")
+        self.player = User.objects.create_user(username="view_player", password="Password123!")
+        self.other_manager = User.objects.create_user(username="other_mgr_vt", password="Password123!")
+
+        self.managed_team = Team.objects.create(name="Managed Team View", manager=self.manager)
+        TeamMember.objects.create(team=self.managed_team, user=self.manager, team_role=TeamMember.TeamRole.MANAGER, is_active=True)
+
+        self.joined_team = Team.objects.create(name="Joined Team View", manager=self.other_manager)
+        TeamMember.objects.create(team=self.joined_team, user=self.other_manager, team_role=TeamMember.TeamRole.MANAGER, is_active=True)
+        TeamMember.objects.create(team=self.joined_team, user=self.player, team_role=TeamMember.TeamRole.PLAYER, is_active=True)
+
+    def test_my_teams_only_shows_managed(self):
+        self.client.login(username="view_mgr", password="Password123!")
+        response = self.client.get(reverse("teams:list"))
+        self.assertEqual(response.status_code, 200)
+        teams = list(response.context["teams"])
+        self.assertIn(self.managed_team, teams)
+        self.assertNotIn(self.joined_team, teams)
+
+    def test_joined_teams_only_shows_joined_not_managed(self):
+        self.client.login(username="view_player", password="Password123!")
+        response = self.client.get(reverse("teams:joined"))
+        self.assertEqual(response.status_code, 200)
+        teams = list(response.context["teams"])
+        self.assertIn(self.joined_team, teams)
+        self.assertNotIn(self.managed_team, teams)
+
+    def test_joined_teams_does_not_show_managed_teams(self):
+        self.client.login(username="view_mgr", password="Password123!")
+        response = self.client.get(reverse("teams:joined"))
+        self.assertEqual(response.status_code, 200)
+        teams = list(response.context["teams"])
+        self.assertNotIn(self.managed_team, teams)
+
+    def test_joined_teams_unauthenticated_redirects(self):
+        response = self.client.get(reverse("teams:joined"))
+        self.assertEqual(response.status_code, 302)
+
+
+class SettingsViewTests(TestCase):
+    """
+    Tests for the account settings and password change views.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="settings_user",
+            email="settings@example.com",
+            password="Password123!",
+        )
+
+    def test_settings_unauthenticated_redirects(self):
+        response = self.client.get(reverse("accounts:settings"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_settings_authenticated_200(self):
+        self.client.login(username="settings_user", password="Password123!")
+        response = self.client.get(reverse("accounts:settings"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "accounts/settings.html")
+
+    def test_password_change_get_authenticated(self):
+        self.client.login(username="settings_user", password="Password123!")
+        response = self.client.get(reverse("accounts:password_change"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_password_change_flow(self):
+        self.client.login(username="settings_user", password="Password123!")
+        response = self.client.post(
+            reverse("accounts:password_change"),
+            {
+                "old_password": "Password123!",
+                "new_password1": "N3wS3cur3Pass!",
+                "new_password2": "N3wS3cur3Pass!",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("done", response.url)

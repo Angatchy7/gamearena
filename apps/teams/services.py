@@ -166,6 +166,7 @@ def accept_team_invitation(invitation):
     }
 
 
+
 def reject_team_invitation(invitation):
     """
     Reject a pending invitation.
@@ -184,8 +185,53 @@ def reject_team_invitation(invitation):
     )
 
 
+@transaction.atomic
+def remove_team_member(*, team, manager, member_user):
+    """
+    Soft-removes a player from a team by deactivating their TeamMember record.
+    Only the team manager can perform this action.
+    The manager cannot remove themselves.
+    Returns a dict with 'success' and 'message'.
+    """
+    from django.utils import timezone as tz
+
+    if manager != team.manager:
+        return {
+            "success": False,
+            "message": "Only the team manager can remove players.",
+        }
+
+    if member_user == team.manager:
+        return {
+            "success": False,
+            "message": "The manager cannot remove themselves from the team.",
+        }
+
+    try:
+        membership = TeamMember.objects.get(
+            team=team,
+            user=member_user,
+            is_active=True,
+        )
+    except TeamMember.DoesNotExist:
+        return {
+            "success": False,
+            "message": "This user is not an active member of the team.",
+        }
+
+    membership.is_active = False
+    membership.left_at = tz.now()
+    membership.save(update_fields=["is_active", "left_at"])
+
+    return {
+        "success": True,
+        "message": f"{member_user.username} has been removed from the team.",
+    }
+
+
 from django.db.models import Q
 from apps.tournaments.models import TournamentRegistration, Match, Tournament
+
 
 
 def get_team_profile_data(*, team):

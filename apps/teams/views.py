@@ -1,12 +1,17 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth import get_user_model
 from django.views import View
 from django.views.generic import ListView
+from django.contrib import messages
 
 from .forms import TeamCreateForm, TeamUpdateForm, TeamInvitationForm
-from .models import Team
-from .services import create_team, update_team, send_team_invitation, get_team_profile_data
+from .models import Team, TeamMember
+from .services import create_team, update_team, send_team_invitation, get_team_profile_data, remove_team_member
+
+User = get_user_model()
 
 
 class CreateTeamView(LoginRequiredMixin, View):
@@ -54,22 +59,21 @@ class CreateTeamView(LoginRequiredMixin, View):
             {"form": form},
         )
 
-class TeamListView(LoginRequiredMixin, ListView):
+
+class MyTeamsView(LoginRequiredMixin, ListView):
     """
-    Shows all teams where the logged-in user is a member.
+    Shows all teams where the logged-in user is the manager.
     """
 
     model = Team
-
     template_name = "teams/list.html"
-
     context_object_name = "teams"
 
     def get_queryset(self):
         return (
             Team.objects.filter(
-                members__user=self.request.user,
-                members__is_active=True,
+                manager=self.request.user,
+                is_active=True,
             )
             .exclude(description="__SOLO_INTERNAL__")
             .annotate(
@@ -79,6 +83,47 @@ class TeamListView(LoginRequiredMixin, ListView):
             .distinct()
             .order_by("-created_at")
         )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "My Teams"
+        context["page_subtitle"] = "Teams you manage and own."
+        context["empty_title"] = "You don't manage any teams yet."
+        context["empty_subtitle"] = "Create your first esports team and start competing."
+        context["is_my_teams"] = True
+        return context
+
+
+# Backward-compatible alias used by existing URL name "list"
+TeamListView = MyTeamsView
+
+
+class JoinedTeamsView(LoginRequiredMixin, ListView):
+    """
+    Shows teams where the user is an active member but NOT the manager.
+    """
+
+    model = Team
+    template_name = "teams/joined.html"
+    context_object_name = "teams"
+
+    def get_queryset(self):
+        return (
+            Team.objects.filter(
+                members__user=self.request.user,
+                members__is_active=True,
+                is_active=True,
+            )
+            .exclude(manager=self.request.user)
+            .exclude(description="__SOLO_INTERNAL__")
+            .annotate(
+                _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
+            )
+            .prefetch_related("members__user")
+            .distinct()
+            .order_by("-created_at")
+        )
+
 
 class TeamDetailView(View):
     """
@@ -241,10 +286,33 @@ class TeamInviteView(LoginRequiredMixin, View):
         )
 
 
-from django.http import JsonResponse
-from django.contrib.auth import get_user_model
+class RemoveTeamMemberView(LoginRequiredMixin, View):
+    """
+    Allows the team manager to soft-remove an active member.
+    POST only. Manager cannot remove themselves.
+    Returns 403 if the requester is not the manager.
+    """
 
-User = get_user_model()
+    def post(self, request, slug, member_id):
+        team = get_object_or_404(Team, slug=slug)
+
+        if request.user != team.manager:
+            return HttpResponseForbidden("Only the team manager can remove members.")
+
+        member_user = get_object_or_404(User, pk=member_id)
+
+        result = remove_team_member(
+            team=team,
+            manager=request.user,
+            member_user=member_user,
+        )
+
+        if result["success"]:
+            messages.success(request, result["message"])
+        else:
+            messages.error(request, result["message"])
+
+        return redirect("teams:detail", slug=team.slug)
 
 
 class UserAutocompleteView(LoginRequiredMixin, View):
@@ -296,4 +364,4 @@ class UserAutocompleteView(LoginRequiredMixin, View):
             for u in users_qs
         ]
 
-        return JsonResponse({"users": users_data})
+        return JsonResponse({"users": users_data})

@@ -131,21 +131,10 @@ def register_team(
             "message": "This is not a team tournament.",
         }
 
-    if tournament.status != Tournament.Status.REGISTRATION_OPEN:
+    if not tournament.is_registration_open:
         return {
             "success": False,
             "message": "Tournament registration is closed.",
-        }
-
-    now = timezone.now()
-
-    if (
-        now < tournament.registration_start
-        or now > tournament.registration_end
-    ):
-        return {
-            "success": False,
-            "message": "Registration period has ended.",
         }
 
     if team.manager != user:
@@ -244,21 +233,10 @@ def register_solo_player(
             "message": "This is not a solo tournament.",
         }
 
-    if tournament.status != Tournament.Status.REGISTRATION_OPEN:
+    if not tournament.is_registration_open:
         return {
             "success": False,
             "message": "Tournament registration is closed.",
-        }
-
-    now = timezone.now()
-
-    if (
-        now < tournament.registration_start
-        or now > tournament.registration_end
-    ):
-        return {
-            "success": False,
-            "message": "Registration period has ended.",
         }
 
     # Lock tournament row for atomic capacity check & race condition safety

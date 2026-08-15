@@ -30,20 +30,30 @@
             <span>Home</span>
         </a>
 
+        <a href="{% url 'dashboard:home' %}" class="sidebar-link {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
+
         <hr>
 
-        <!-- ARENA -->
+        <!-- TEAMS -->
         <small class="menu-title" style="color: #94a3b8; font-weight: 700; letter-spacing: 0.1em;">
-            ⚡ ARENA
+            TEAMS
         </small>
 
-        <a href="{% url 'tournaments:create' %}" class="sidebar-link sidebar-action {% if request.resolver_match.namespace == 'tournaments' and request.resolver_match.url_name == 'create' %}active{% endif %}">
-            <i class="bi bi-plus-circle-fill"></i>
-            <span>Create Tournament</span>
+        <a href="{% url 'teams:list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'teams' and request.resolver_match.url_name == 'list' %}active{% endif %}">
+            <i class="bi bi-shield-fill"></i>
+            <span>My Teams</span>
+        </a>
+
+        <a href="{% url 'teams:joined' %}" class="sidebar-link {% if request.resolver_match.namespace == 'teams' and request.resolver_match.url_name == 'joined' %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+            <span>Joined Teams</span>
         </a>
 
         <a href="{% url 'teams:create' %}" class="sidebar-link sidebar-action {% if request.resolver_match.namespace == 'teams' and request.resolver_match.url_name == 'create' %}active{% endif %}">
-            <i class="bi bi-people-fill"></i>
+            <i class="bi bi-plus-circle-fill"></i>
             <span>Create Team</span>
         </a>
 
@@ -56,7 +66,7 @@
 
         <a href="{% url 'tournaments:list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'tournaments' and request.resolver_match.url_name == 'list' %}active{% endif %}">
             <i class="bi bi-trophy-fill"></i>
-            <span>Discover</span>
+            <span>Browse</span>
         </a>
 
         <a href="{% url 'tournaments:my_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'tournaments' and request.resolver_match.url_name == 'my_list' %}active{% endif %}">
@@ -64,35 +74,35 @@
             <span>My Tournaments</span>
         </a>
 
-        <hr>
-
-        <!-- TEAMS -->
-        <small class="menu-title" style="color: #94a3b8; font-weight: 700; letter-spacing: 0.1em;">
-            TEAMS
-        </small>
-
-        <a href="{% url 'teams:list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'teams' and request.resolver_match.url_name == 'list' %}active{% endif %}">
-            <i class="bi bi-people-fill"></i>
-            <span>My Teams</span>
+        <a href="{% url 'tournaments:create' %}" class="sidebar-link sidebar-action {% if request.resolver_match.namespace == 'tournaments' and request.resolver_match.url_name == 'create' %}active{% endif %}">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Create Tournament</span>
         </a>
 
         <hr>
 
-        <!-- PLATFORM -->
+        <!-- ACCOUNT -->
         <small class="menu-title" style="color: #94a3b8; font-weight: 700; letter-spacing: 0.1em;">
-            PLATFORM
+            ACCOUNT
         </small>
-
-        <a href="{% url 'dashboard:home' %}" class="sidebar-link {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
-            <i class="bi bi-speedometer2"></i>
-            <span>Dashboard</span>
-        </a>
 
         <a href="{% url 'notifications:list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'notifications' %}active{% endif %}">
             <i class="bi bi-bell-fill"></i>
             <span>Notifications</span>
         </a>
 
+        <a href="{% url 'accounts:settings' %}" class="sidebar-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'settings' %}active{% endif %}">
+            <i class="bi bi-gear-fill"></i>
+            <span>Settings</span>
+        </a>
+
+        <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="sidebar-link sidebar-action border-0 bg-transparent w-100 text-start" style="cursor: pointer;">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </button>
+        </form>
 
     </div>
 
