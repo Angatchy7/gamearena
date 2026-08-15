@@ -108,12 +108,14 @@
 
                 <div class="ga-stat col-4 text-center">
 
-                    <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Organizer</small>
+                    <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Entry</small>
 
-                    <strong style="color: #cbd5e1;" class="fs-8">
-
-                        {{ tournament.organizer.username }}
-
+                    <strong class="fs-8">
+                        {% if tournament.registration_fee and tournament.registration_fee > 0 %}
+                            <span style="color: #f59e0b;">NPR {{ tournament.registration_fee }}</span>
+                        {% else %}
+                            <span style="color: #22c55e;">Free</span>
+                        {% endif %}
                     </strong>
 
                 </div>

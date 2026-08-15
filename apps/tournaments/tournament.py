@@ -25,14 +25,22 @@ class TournamentListView(ListView):
 
     paginate_by = 12
 
-    queryset = (
-        Tournament.objects
-        .select_related("organizer")
-        .annotate(
-            total_registrations=Count("registrations")
+    def get_queryset(self):
+        qs = (
+            Tournament.objects
+            .select_related("organizer", "game")
+            .annotate(total_registrations=Count("registrations"))
+            .order_by("-created_at")
         )
-        .order_by("-created_at")
-    )
+        game_slug = self.request.GET.get("game", "").strip()
+        if game_slug:
+            qs = qs.filter(game__slug=game_slug)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["active_game_slug"] = self.request.GET.get("game", "").strip()
+        return ctx
 
 
 class MyTournamentListView(LoginRequiredMixin, ListView):

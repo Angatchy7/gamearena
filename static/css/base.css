@@ -522,3 +522,165 @@ form.tournament-form .form-label {
     filter: invert(0.8) !important;
     cursor: pointer;
 }
+
+/*==============================
+  LIGHT MODE THEME
+==============================*/
+[data-theme="light"] {
+    --ga-bg: #f0f4f8;
+    --ga-bg-dark: #e2e8f0;
+    --ga-surface: #ffffff;
+    --ga-surface-2: #f8fafc;
+    --ga-surface-3: #f1f5f9;
+
+    --ga-text: #0f172a;
+    --ga-text-main: #0f172a;
+    --ga-text-secondary: #1e293b;
+    --ga-text-muted: #475569;
+    --ga-text-subtle: #64748b;
+
+    --ga-border: rgba(15, 23, 42, 0.15);
+    --ga-border-strong: rgba(15, 23, 42, 0.25);
+}
+
+[data-theme="light"] body {
+    background: var(--ga-bg);
+    color: var(--ga-text-secondary);
+}
+
+/* Navbar */
+[data-theme="light"] .ga-navbar {
+    background: #1e293b !important;
+}
+
+/* Sidebar */
+[data-theme="light"] .ga-sidebar {
+    background: #1e293b !important;
+}
+
+/* Cards */
+[data-theme="light"] .card {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: rgba(15, 23, 42, 0.12) !important;
+}
+[data-theme="light"] .card .card-body,
+[data-theme="light"] .card .card-header {
+    background: transparent !important;
+    color: #0f172a !important;
+}
+[data-theme="light"] .card .text-white,
+[data-theme="light"] .card .text-white-50 {
+    color: #1e293b !important;
+}
+[data-theme="light"] .card .text-muted {
+    color: #475569 !important;
+}
+
+/* Dashboard panels */
+[data-theme="light"] .dashboard-panel,
+[data-theme="light"] .section-card {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.12) !important;
+}
+[data-theme="light"] .competition-table,
+[data-theme="light"] .competition-row,
+[data-theme="light"] .competition-header {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+}
+[data-theme="light"] .competition-row:hover {
+    background: #f1f5f9 !important;
+}
+
+/* Forms */
+[data-theme="light"] .form-control,
+[data-theme="light"] .form-select {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+[data-theme="light"] .form-control:focus,
+[data-theme="light"] .form-select:focus {
+    background: #ffffff !important;
+    border-color: #2563eb !important;
+    color: #0f172a !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+[data-theme="light"] .input-group-text {
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+}
+
+/* Settings card overrides */
+[data-theme="light"] .card[style*="background: #1e293b"],
+[data-theme="light"] .card[style*="background:#1e293b"] {
+    background: #ffffff !important;
+}
+
+/* Dropdowns */
+[data-theme="light"] .dropdown-menu,
+[data-theme="light"] .profile-menu {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.12) !important;
+}
+[data-theme="light"] .dropdown-item {
+    color: #1e293b !important;
+}
+[data-theme="light"] .dropdown-item:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+[data-theme="light"] .dropdown-divider {
+    border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* Tournament pages */
+[data-theme="light"] .tournament-hero-card,
+[data-theme="light"] .tournament-sidebar-card {
+    background: #f8fafc !important;
+    border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Modals */
+[data-theme="light"] .modal-content {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: rgba(15, 23, 42, 0.15) !important;
+}
+[data-theme="light"] .modal-header,
+[data-theme="light"] .modal-footer {
+    border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* Badge/table overrides in light mode */
+[data-theme="light"] .table {
+    color: #1e293b !important;
+}
+[data-theme="light"] .table thead th {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: rgba(15, 23, 42, 0.12) !important;
+}
+[data-theme="light"] .table tbody td {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Page background override */
+[data-theme="light"] .app-container {
+    background: var(--ga-bg) !important;
+}
+
+/* Tournament form */
+[data-theme="light"] .tournament-form-card {
+    background: #ffffff !important;
+}
+[data-theme="light"] .tournament-form input,
+[data-theme="light"] .tournament-form textarea,
+[data-theme="light"] .tournament-form select {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+}
+

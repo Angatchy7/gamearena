@@ -191,6 +191,20 @@ class TournamentCreateForm(forms.ModelForm):
                 )
             cleaned_data["team_size"] = 1
 
+        # Free / Paid fee validation
+        fee_type = self.data.get("fee_type", "free")
+        registration_fee = cleaned_data.get("registration_fee")
+        if fee_type == "paid":
+            if registration_fee is None or registration_fee <= 0:
+                self.add_error(
+                    "registration_fee",
+                    "A paid tournament requires an entry fee greater than 0.",
+                )
+        else:
+            # Free — zero out the fee regardless of what was submitted
+            from decimal import Decimal
+            cleaned_data["registration_fee"] = Decimal("0.00")
+
         registration_start = cleaned_data.get("registration_start")
         registration_end = cleaned_data.get("registration_end")
 

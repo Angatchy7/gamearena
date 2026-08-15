@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Browse Games — GameArena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 py-2">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-5 flex-wrap">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-controller fs-5 text-cyan"></i>
+                <span class="text-muted text-uppercase fw-bold small letter-spacing-2">Game Catalog</span>
+            </div>
+            <h1 class="fw-bold mb-1" style="color: #f8fafc; font-size: 2rem;">Browse Games</h1>
+            <p class="text-muted mb-0">Explore all game types on GameArena and find your next tournament.</p>
+        </div>
+        <a href="{% url 'tournaments:list' %}" class="btn btn-outline-primary px-4 fw-semibold">
+            <i class="bi bi-trophy me-2"></i>All Tournaments
+        </a>
+    </div>
+
+    <!-- Games Grid -->
+    {% if games %}
+    <div class="row g-4">
+        {% for game in games %}
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <div class="card border-0 shadow-sm h-100"
+                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148,163,184,0.15) !important;
+                        transition: transform 0.2s ease, box-shadow 0.2s ease; overflow: hidden;">
+
+                <!-- Game Artwork -->
+                <div class="position-relative overflow-hidden" style="height: 160px; background: #0f172a;">
+                    <img src="{{ game.image_url }}"
+                         alt="{{ game.name }}"
+                         class="w-100 h-100"
+                         style="object-fit: cover; transition: transform 0.3s ease;"
+                         loading="lazy"
+                         onerror="this.src='/static/images/defaults/game_default.svg'">
+                    <div class="position-absolute top-0 start-0 w-100 h-100"
+                         style="background: linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.8));"></div>
+
+                    <!-- Tournament count badge -->
+                    <div class="position-absolute bottom-0 end-0 m-3">
+                        <span class="badge px-3 py-1" style="background: rgba(37,99,235,0.9); border-radius: 20px; font-size: 0.78rem;">
+                            <i class="bi bi-trophy-fill me-1"></i>
+                            {{ game.total_tournaments }} tournament{{ game.total_tournaments|pluralize }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-4 d-flex flex-column">
+                    <h5 class="fw-bold mb-1" style="color: #f8fafc;">{{ game.name }}</h5>
+                    <p class="text-muted small mb-3 flex-grow-1" style="line-height: 1.5;">
+                        {% if game.description %}
+                            {{ game.description|truncatewords:16 }}
+                        {% else %}
+                            Compete in {{ game.name }} tournaments and prove your skill.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'tournaments:list' %}?game={{ game.slug }}"
+                       class="btn btn-primary w-100 fw-semibold py-2"
+                       style="border-radius: 12px;">
+                        <i class="bi bi-trophy me-2"></i>Explore Tournaments
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-controller display-4 text-muted d-block mb-3"></i>
+        <h3 class="fw-bold mb-2" style="color: #f8fafc;">No Games Yet</h3>
+        <p class="text-muted">Games will appear here once administrators add them to the platform.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35) !important;
+}
+.card:hover img {
+    transform: scale(1.04);
+}
+</style>
+{% endblock %}

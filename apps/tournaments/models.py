@@ -59,32 +59,59 @@ class Game(models.Model):
     @property
     def image_url(self):
         """
-        Returns uploaded game logo URL if present, else specific game artwork, else generic game default.
+        Returns uploaded game logo URL if present and file exists,
+        else returns a game-specific default artwork,
+        else returns the generic game default.
+
+        Priority ordering for slug/name matching is intentionally ordered to
+        avoid accidental cross-matches (e.g. Rocket League must NOT match
+        the 'fc' or 'ea' patterns; PUBG Mobile must not match 'mobile'
+        strings from other games, etc.).
         """
-        if self.logo:
+        if self.logo and self.logo.name:
             try:
-                return self.logo.url
+                from django.core.files.storage import default_storage
+                if default_storage.exists(self.logo.name):
+                    return self.logo.url
             except (AttributeError, ValueError):
-                if getattr(self.logo, "name", None):
-                    url_str = str(self.logo.name)
-                    if not url_str.startswith("/") and not url_str.startswith("http"):
-                        return f"{settings.MEDIA_URL}{url_str}"
-                    return url_str
+                pass
 
         slug = (self.slug or "").lower()
         name = (self.name or "").lower()
 
+        # Exact slug matches first — most reliable
+        _SLUG_MAP = {
+            "pubg": "/static/images/games/pubg.svg",
+            "pubg-mobile": "/static/images/games/pubg.svg",
+            "battlegrounds-mobile-india": "/static/images/games/pubg.svg",
+            "valorant": "/static/images/games/valorant.svg",
+            "rocket-league": "/static/images/games/rocket_league.svg",
+            "ea-sports-fc": "/static/images/games/eafc.svg",
+            "ea-fc": "/static/images/games/eafc.svg",
+            "fifa": "/static/images/games/eafc.svg",
+            "cs2": "/static/images/games/cs2.svg",
+            "counter-strike-2": "/static/images/games/cs2.svg",
+            "counter-strike": "/static/images/games/cs2.svg",
+            "free-fire": "/static/images/games/free_fire.svg",
+            "garena-free-fire": "/static/images/games/free_fire.svg",
+        }
+        if slug in _SLUG_MAP:
+            return _SLUG_MAP[slug]
 
-        if "pubg" in slug or "pubg" in name:
+        # Name substring fallback — ordered so 'rocket league' is caught
+        # BEFORE the generic 'league' or 'fc' checks.
+        if "pubg" in name or "battlegrounds" in name:
             return "/static/images/games/pubg.svg"
-        if "valorant" in slug or "valorant" in name:
+        if "valorant" in name:
             return "/static/images/games/valorant.svg"
-        if "ea" in slug or "fc" in slug or "fifa" in slug or "ea" in name or "fc" in name or "fifa" in name:
-            return "/static/images/games/eafc.svg"
-        if "rocket" in slug or "league" in slug or "rocket" in name:
+        if "rocket league" in name or "rocket-league" in slug:
             return "/static/images/games/rocket_league.svg"
-        if "cs2" in slug or "cs2" in name or "counter-strike" in slug or "counter-strike" in name:
+        if "free fire" in name or "freefire" in name:
+            return "/static/images/games/free_fire.svg"
+        if "counter-strike" in slug or "cs2" in slug or "counter-strike" in name or "cs2" in name:
             return "/static/images/games/cs2.svg"
+        if "ea fc" in name or "ea sports fc" in name or "fifa" in name or "eafc" in slug:
+            return "/static/images/games/eafc.svg"
 
         return "/static/images/defaults/game_default.svg"
 
@@ -325,25 +352,21 @@ class Tournament(models.Model):
     def cover_url(self):
         """
         Priority: uploaded cover image -> uploaded banner -> game artwork -> default cover SVG.
+        Falls back if the physical file no longer exists (Render ephemeral storage).
         """
-        if self.cover_image:
+        from django.core.files.storage import default_storage
+        if self.cover_image and self.cover_image.name:
             try:
-                return self.cover_image.url
+                if default_storage.exists(self.cover_image.name):
+                    return self.cover_image.url
             except (AttributeError, ValueError):
-                if getattr(self.cover_image, "name", None):
-                    url_str = str(self.cover_image.name)
-                    if not url_str.startswith("/") and not url_str.startswith("http"):
-                        return f"{settings.MEDIA_URL}{url_str}"
-                    return url_str
-        if self.banner:
+                pass
+        if self.banner and self.banner.name:
             try:
-                return self.banner.url
+                if default_storage.exists(self.banner.name):
+                    return self.banner.url
             except (AttributeError, ValueError):
-                if getattr(self.banner, "name", None):
-                    url_str = str(self.banner.name)
-                    if not url_str.startswith("/") and not url_str.startswith("http"):
-                        return f"{settings.MEDIA_URL}{url_str}"
-                    return url_str
+                pass
         if self.game:
             return self.game.image_url
         return "/static/images/defaults/tournament_cover.svg"
@@ -352,25 +375,21 @@ class Tournament(models.Model):
     def banner_url(self):
         """
         Priority: uploaded banner -> uploaded cover image -> game artwork -> default banner SVG.
+        Falls back if the physical file no longer exists (Render ephemeral storage).
         """
-        if self.banner:
+        from django.core.files.storage import default_storage
+        if self.banner and self.banner.name:
             try:
-                return self.banner.url
+                if default_storage.exists(self.banner.name):
+                    return self.banner.url
             except (AttributeError, ValueError):
-                if getattr(self.banner, "name", None):
-                    url_str = str(self.banner.name)
-                    if not url_str.startswith("/") and not url_str.startswith("http"):
-                        return f"{settings.MEDIA_URL}{url_str}"
-                    return url_str
-        if self.cover_image:
+                pass
+        if self.cover_image and self.cover_image.name:
             try:
-                return self.cover_image.url
+                if default_storage.exists(self.cover_image.name):
+                    return self.cover_image.url
             except (AttributeError, ValueError):
-                if getattr(self.cover_image, "name", None):
-                    url_str = str(self.cover_image.name)
-                    if not url_str.startswith("/") and not url_str.startswith("http"):
-                        return f"{settings.MEDIA_URL}{url_str}"
-                    return url_str
+                pass
         if self.game:
             return self.game.image_url
         return "/static/images/defaults/tournament_banner.svg"

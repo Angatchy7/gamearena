@@ -79,6 +79,11 @@
             <span>Create Tournament</span>
         </a>
 
+        <a href="{% url 'core:games' %}" class="sidebar-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'games' %}active{% endif %}">
+            <i class="bi bi-controller"></i>
+            <span>Games</span>
+        </a>
+
         <hr>
 
         <!-- ACCOUNT -->

@@ -151,5 +151,94 @@
 
         </div>
     </div>
+
+    <!-- Appearance Section -->
+    <div class="row g-4 mt-0">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm text-white"
+                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-moon-stars-fill text-primary me-2"></i> Appearance
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-4">Choose your preferred color scheme. Your choice is saved locally in this browser.</p>
+                    <div class="d-flex flex-wrap gap-3" id="theme-selector">
+                        <label class="theme-option" for="theme-dark" style="cursor:pointer;">
+                            <input type="radio" name="ga_theme" id="theme-dark" value="dark" class="d-none theme-radio">
+                            <div class="p-3 rounded-3 d-flex align-items-center gap-3 theme-card"
+                                 style="background:#0f172a; border:2px solid transparent; min-width:150px; transition:border .2s;">
+                                <i class="bi bi-moon-fill text-primary fs-4"></i>
+                                <div>
+                                    <div class="fw-bold text-white">Dark</div>
+                                    <small class="text-muted">GameArena default</small>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="theme-option" for="theme-light" style="cursor:pointer;">
+                            <input type="radio" name="ga_theme" id="theme-light" value="light" class="d-none theme-radio">
+                            <div class="p-3 rounded-3 d-flex align-items-center gap-3 theme-card"
+                                 style="background:#f8fafc; border:2px solid transparent; min-width:150px; transition:border .2s;">
+                                <i class="bi bi-sun-fill text-warning fs-4"></i>
+                                <div>
+                                    <div class="fw-bold" style="color:#0f172a;">Light</div>
+                                    <small style="color:#64748b;">High contrast</small>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="theme-option" for="theme-system" style="cursor:pointer;">
+                            <input type="radio" name="ga_theme" id="theme-system" value="system" class="d-none theme-radio">
+                            <div class="p-3 rounded-3 d-flex align-items-center gap-3 theme-card"
+                                 style="background:#1e293b; border:2px solid transparent; min-width:150px; transition:border .2s;">
+                                <i class="bi bi-display fs-4 text-cyan"></i>
+                                <div>
+                                    <div class="fw-bold text-white">System</div>
+                                    <small class="text-muted">Follow OS setting</small>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<script>
+(function() {
+    var saved = localStorage.getItem('ga_theme') || 'dark';
+    // Mark the active radio
+    var radios = document.querySelectorAll('.theme-radio');
+    radios.forEach(function(r) {
+        var card = r.closest('label').querySelector('.theme-card');
+        if (r.value === saved) {
+            r.checked = true;
+            card.style.borderColor = '#2563eb';
+        }
+    });
+
+    function applyTheme(pref) {
+        var effective = pref;
+        if (pref === 'system') {
+            effective = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', effective);
+        localStorage.setItem('ga_theme', pref);
+    }
+
+    radios.forEach(function(r) {
+        r.addEventListener('change', function() {
+            applyTheme(this.value);
+            // Update card borders
+            radios.forEach(function(rr) {
+                var c = rr.closest('label').querySelector('.theme-card');
+                c.style.borderColor = rr.checked ? '#2563eb' : 'transparent';
+            });
+        });
+    });
+})();
+</script>
 {% endblock %}
+

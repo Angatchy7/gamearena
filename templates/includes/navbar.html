@@ -139,7 +139,7 @@
 
                         <li>
 
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="{% url 'accounts:profile' user.username %}">
 
                                 <i class="bi bi-person-circle me-2"></i>
 
@@ -151,7 +151,7 @@
 
                         <li>
 
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="{% url 'accounts:settings' %}">
 
                                 <i class="bi bi-gear me-2"></i>
 

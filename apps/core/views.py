@@ -226,3 +226,27 @@ class SearchAjaxView(View):
             ],
 
         })
+
+
+class GameCatalogView(View):
+    """
+    Standalone Games catalog page listing all registered game types,
+    with artwork, tournament counts, and direct Explore links.
+    """
+
+    template_name = "core/games.html"
+
+    def get(self, request):
+        games = (
+            Game.objects
+            .annotate(total_tournaments=Count("tournaments"))
+            .order_by("-total_tournaments", "name")
+        )
+        return render(
+            request,
+            self.template_name,
+            {
+                "games": games,
+                "show_sidebar": True,
+            },
+        )

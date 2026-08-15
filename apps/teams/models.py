@@ -84,17 +84,16 @@ class Team(models.Model):
     @property
     def logo_url(self):
         """
-        Returns uploaded team logo URL if present, otherwise returns default team logo.
+        Returns uploaded team logo URL if present and the file physically exists,
+        otherwise returns default team logo SVG.
         """
         if self.logo:
             try:
-                return self.logo.url
+                from django.core.files.storage import default_storage
+                if default_storage.exists(self.logo.name):
+                    return self.logo.url
             except (AttributeError, ValueError):
-                if getattr(self.logo, "name", None):
-                    url_str = str(self.logo.name)
-                    if not url_str.startswith("/") and not url_str.startswith("http"):
-                        return f"{settings.MEDIA_URL}{url_str}"
-                    return url_str
+                pass
         return "/static/images/defaults/team_default.svg"
 
 

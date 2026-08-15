@@ -12,6 +12,12 @@ urlpatterns = [
     ),
 
     path(
+        "games/",
+        views.GameCatalogView.as_view(),
+        name="games",
+    ),
+
+    path(
         "search/",
         views.SearchView.as_view(),
         name="search",

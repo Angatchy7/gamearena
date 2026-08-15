@@ -6,6 +6,45 @@
 
         {% for field in form %}
 
+        {% if field.name == 'registration_fee' %}
+        <!-- Free / Paid Toggle — shown just before the registration_fee field -->
+        <div class="mb-3" id="fee-type-row">
+            <label class="form-label text-light fw-semibold mb-2" style="color: #e2e8f0 !important; font-size: 0.95rem;">
+                Participation Fee
+            </label>
+            <div class="d-flex gap-3">
+                <label class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" id="fee-free-label"
+                       style="background: rgba(34,197,94,0.1); border: 2px solid #22c55e; cursor:pointer; transition: all 0.2s;">
+                    <input type="radio" name="fee_type" id="fee-free" value="free" style="accent-color:#22c55e;">
+                    <span class="fw-semibold text-success">Free</span>
+                </label>
+                <label class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" id="fee-paid-label"
+                       style="background: rgba(255,255,255,0.04); border: 2px solid transparent; cursor:pointer; transition: all 0.2s;">
+                    <input type="radio" name="fee_type" id="fee-paid" value="paid" style="accent-color:#f59e0b;">
+                    <span class="fw-semibold text-warning">Paid</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="registration-fee-row" class="mb-3.5" style="display:none;">
+            <label for="{{ field.id_for_label }}" class="form-label text-light fw-semibold mb-1" style="color: #e2e8f0 !important; font-size: 0.95rem;">
+                Entry Fee (NPR)
+                <span class="text-danger ms-0.5">*</span>
+            </label>
+            <div class="input-group">
+                <span class="input-group-text" style="background:#0f172a; border-color:rgba(148,163,184,0.25); color:#94a3b8;">NPR</span>
+                {{ field }}
+            </div>
+            {% if field.help_text %}
+            <div class="form-text" style="color: #94a3b8 !important;">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+            <div class="text-danger small mt-1 fw-medium" style="color: #f87171 !important;">{{ field.errors }}</div>
+            {% endif %}
+        </div>
+
+        {% else %}
+
         <div class="mb-3.5">
 
             <label for="{{ field.id_for_label }}" class="form-label text-light fw-semibold mb-1" style="color: #e2e8f0 !important; font-size: 0.95rem;">
@@ -57,6 +96,8 @@
 
         </div>
 
+        {% endif %}
+
         {% endfor %}
 
         <button type="submit" class="btn btn-primary btn-lg fw-bold px-4 py-2.5 mt-3 shadow-sm">
@@ -92,7 +133,46 @@ document.addEventListener("DOMContentLoaded", function() {
         partSelect.addEventListener("change", updateTeamSize);
         updateTeamSize();
     }
+
+    // Free / Paid toggle
+    const feeField = document.getElementById("id_registration_fee");
+    const feeRow = document.getElementById("registration-fee-row");
+    const freeLbl = document.getElementById("fee-free-label");
+    const paidLbl = document.getElementById("fee-paid-label");
+    const freeRadio = document.getElementById("fee-free");
+    const paidRadio = document.getElementById("fee-paid");
+
+    function updateFeeToggle(isFree) {
+        if (isFree) {
+            feeRow.style.display = "none";
+            if (feeField) { feeField.value = "0"; feeField.removeAttribute("required"); }
+            freeLbl.style.borderColor = "#22c55e";
+            freeLbl.style.background = "rgba(34,197,94,0.15)";
+            paidLbl.style.borderColor = "transparent";
+            paidLbl.style.background = "rgba(255,255,255,0.04)";
+        } else {
+            feeRow.style.display = "block";
+            if (feeField) feeField.setAttribute("required", "required");
+            paidLbl.style.borderColor = "#f59e0b";
+            paidLbl.style.background = "rgba(245,158,11,0.15)";
+            freeLbl.style.borderColor = "transparent";
+            freeLbl.style.background = "rgba(255,255,255,0.04)";
+        }
+    }
+
+    // Determine initial state from existing fee value
+    var initialFee = parseFloat(feeField ? feeField.value : "0") || 0;
+    if (initialFee > 0) {
+        paidRadio.checked = true;
+        updateFeeToggle(false);
+    } else {
+        freeRadio.checked = true;
+        updateFeeToggle(true);
+    }
+
+    if (freeRadio) freeRadio.addEventListener("change", function() { if (this.checked) updateFeeToggle(true); });
+    if (paidRadio) paidRadio.addEventListener("change", function() { if (this.checked) updateFeeToggle(false); });
 });
 </script>
 <script src="{% static 'js/game-combobox.js' %}"></script>
-<script src="{% static 'js/image-preview.js' %}"></script>
+<script src="{% static 'js/image-preview.js' %}"></script>

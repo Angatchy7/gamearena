@@ -557,9 +557,11 @@ def get_tournament_statistics(*, tournament):
     first_completed_match = played_matches[0] if played_matches else None
     last_completed_match = played_matches[-1] if played_matches else None
 
-    # Team Rankings
+    # Team Rankings — skip SOLO registrations that have no team object
     team_stats = {}
     for reg in registrations:
+        if not reg.team:
+            continue
         team_stats[reg.team.id] = {
             "team": reg.team,
             "wins": 0,

@@ -114,8 +114,8 @@
             <a href="{% url 'tournaments:delete' tournament.slug %}" class="btn btn-outline-danger">
                 <i class="bi bi-trash me-1.5"></i> Delete Tournament
             </a>
-        {% if request.user != tournament.organizer %}
-            {% if tournament.current_status == tournament.Status.REGISTRATION_OPEN %}
+        {% else %}
+            {% if tournament.current_status == 'REGISTRATION_OPEN' %}
                 <hr class="my-2 border-secondary">
                 <a href="{% url 'tournaments:register' tournament.slug %}" class="btn btn-success fw-bold py-2">
                     {% if tournament.participation_type == 'SOLO' %}

@@ -327,37 +327,31 @@
 
                             <div class="competition-team">
                                 <i class="bi bi-shield-fill"></i>
-                                {{ reg.team.name }}
+                                {{ reg.display_name }}
                             </div>
 
                             <div>
 
-                                {% if reg.tournament.status == "LIVE" %}
-
+                                {% with cs=reg.tournament.current_status %}
+                                {% if cs == "LIVE" %}
                                 <span class="dashboard-badge badge-live">
                                     <span class="status-dot"></span>
                                     LIVE
                                 </span>
-
-                                {% elif reg.tournament.status == "COMPLETED" %}
-
+                                {% elif cs == "COMPLETED" %}
                                 <span class="dashboard-badge badge-completed">
                                     COMPLETED
                                 </span>
-
-                                {% elif reg.tournament.status == "REGISTRATION_OPEN" %}
-
+                                {% elif cs == "REGISTRATION_OPEN" %}
                                 <span class="dashboard-badge badge-open">
                                     REGISTRATION OPEN
                                 </span>
-
                                 {% else %}
-
                                 <span class="dashboard-badge">
                                     {{ reg.tournament.get_status_display }}
                                 </span>
-
                                 {% endif %}
+                                {% endwith %}
 
                             </div>
 

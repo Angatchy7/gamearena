@@ -49,6 +49,17 @@
 
     {% endblock %}
 
+    <!-- Theme early-init: apply saved preference before first paint to prevent FOUC -->
+    <script>
+    (function() {
+        var pref = localStorage.getItem('ga_theme') || 'dark';
+        if (pref === 'system') {
+            pref = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', pref);
+    })();
+    </script>
+
 </head>
 
 <body>
