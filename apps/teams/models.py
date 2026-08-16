@@ -37,11 +37,19 @@ class Team(models.Model):
         default=True,
     )
 
+    game = models.ForeignKey(
+        "tournaments.Game",
+        on_delete=models.SET_NULL,
+        related_name="teams",
+        null=True,
+        blank=True,
+    )
+
     manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="managed_teams",
-)
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True,

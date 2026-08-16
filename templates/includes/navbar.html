@@ -167,6 +167,44 @@
 
                         </li>
 
+                        <li class="px-3 py-2 ga-theme-dropdown-item">
+
+                            <div class="d-flex align-items-center justify-content-between mb-2 small fw-bold text-muted" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
+
+                                <span><i class="bi bi-palette me-1"></i> Appearance</span>
+
+                            </div>
+
+                            <div class="btn-group btn-group-sm w-100 ga-theme-selector" role="group" aria-label="Appearance theme toggle">
+
+                                <button type="button" class="btn ga-theme-btn" data-theme-val="dark" title="Dark theme">
+
+                                    <i class="bi bi-moon-fill"></i> Dark
+
+                                </button>
+
+                                <button type="button" class="btn ga-theme-btn" data-theme-val="light" title="Light theme">
+
+                                    <i class="bi bi-sun-fill"></i> Light
+
+                                </button>
+
+                                <button type="button" class="btn ga-theme-btn" data-theme-val="system" title="Follow system theme">
+
+                                    <i class="bi bi-display"></i> System
+
+                                </button>
+
+                            </div>
+
+                        </li>
+
+                        <li>
+
+                            <hr class="dropdown-divider">
+
+                        </li>
+
                         <li>
 
                             <form method="post" action="{% url 'accounts:logout' %}">

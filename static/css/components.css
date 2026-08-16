@@ -10,19 +10,15 @@
 .card {
     position: relative;
 
-    background:
-        linear-gradient(180deg,
-            #26354d 0%,
-            #1f2b40 100%);
+    background: var(--ga-card-bg);
 
-    border: 1px solid rgba(255, 255, 255, .08);
+    border: 1px solid var(--ga-card-border);
 
     border-radius: 18px;
 
     overflow: hidden;
 
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, .28);
+    box-shadow: var(--ga-shadow-sm);
 
     transition:
         all .28s ease;
@@ -378,12 +374,7 @@
     padding: 1.35rem;
     overflow: hidden;
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(38, 53, 77, 0.98),
-            rgba(27, 39, 56, 0.98)
-        );
+    background: var(--ga-card-bg);
 
     border: 1px solid var(--ga-border);
     border-radius: var(--ga-radius-lg);
@@ -479,19 +470,12 @@
 
     padding: 1.35rem;
 
-    background:
-        linear-gradient(
-            155deg,
-            #26354d 0%,
-            #1f2b40 55%,
-            #182337 100%
-        );
+    background: var(--ga-card-bg);
 
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--ga-card-border);
     border-radius: 18px;
 
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--ga-shadow-sm);
 
     transition:
         transform 0.28s ease,

@@ -143,6 +143,12 @@ def register_team(
             "message": "Only the team manager can register the team.",
         }
 
+    if team.game_id and tournament.game_id and team.game_id != tournament.game_id:
+        return {
+            "success": False,
+            "message": "Team game does not match tournament game.",
+        }
+
     # Lock tournament row for atomic capacity check & race condition safety
     Tournament.objects.select_for_update().get(pk=tournament.pk)
 
@@ -272,6 +278,7 @@ def register_solo_player(
         name=f"__SOLO_{user.username}_{tournament.pk}__",
         manager=user,
         defaults={
+            "game": tournament.game,
             "description": "__SOLO_INTERNAL__",
             "is_active": False,  # Hide from public team listings
             "max_players": 1,

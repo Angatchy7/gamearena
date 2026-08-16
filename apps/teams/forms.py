@@ -2,20 +2,28 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from .models import Team, TeamInvitation
+from apps.tournaments.models import Game
 
 User = get_user_model()
 
 
 class TeamCreateForm(forms.ModelForm):
     """
-    Form for creating a team.
+    Form for creating a team. Requires selecting a game.
     """
+    game = forms.ModelChoiceField(
+        queryset=Game.objects.filter(is_active=True),
+        required=True,
+        empty_label="Select a game",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
 
     class Meta:
         model = Team
 
         fields = [
             "name",
+            "game",
             "description",
             "logo",
             "max_players",

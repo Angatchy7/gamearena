@@ -74,6 +74,20 @@
                     {% endif %}
                 </div>
 
+                <!-- GAME SELECTION -->
+                <div class="mb-3.5">
+                    <label for="id_game" class="form-label text-light fw-semibold mb-1" style="color: #e2e8f0 !important; font-size: 0.95rem;">
+                        Game <span class="text-danger">*</span>
+                    </label>
+                    {{ form.game }}
+
+                    {% if form.game.errors %}
+                    <div class="text-danger small mt-1 fw-medium" style="color: #f87171 !important;">
+                        {{ form.game.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
                 <!-- DESCRIPTION -->
                 <div class="mb-3.5">
                     <label for="id_description" class="form-label text-light fw-semibold mb-1" style="color: #e2e8f0 !important; font-size: 0.95rem;">

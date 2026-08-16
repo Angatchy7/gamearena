@@ -116,3 +116,78 @@
     function hide(el) { if (el) el.style.display = 'none'; }
 
 })();
+
+/* ==========================================================
+   GAMEARENA — Centralized Theme Controller
+   ========================================================== */
+(function () {
+    'use strict';
+
+    function getSavedTheme() {
+        return localStorage.getItem('gamearena-theme') || localStorage.getItem('ga_theme') || 'dark';
+    }
+
+    function resolveSystemTheme() {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+
+    function updateActiveThemeButtons(themeChoice) {
+        var buttons = document.querySelectorAll('[data-theme-val]');
+        buttons.forEach(function (btn) {
+            var val = btn.getAttribute('data-theme-val');
+            if (val === themeChoice) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+            } else {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+            }
+        });
+    }
+
+    function applyTheme(choice) {
+        var effectiveTheme = choice;
+        if (choice === 'system') {
+            effectiveTheme = resolveSystemTheme();
+        }
+        document.documentElement.setAttribute('data-theme', effectiveTheme);
+        try {
+            localStorage.setItem('gamearena-theme', choice);
+            localStorage.setItem('ga_theme', choice);
+        } catch (e) {
+            // Silently handle quota or disabled localStorage
+        }
+        updateActiveThemeButtons(choice);
+    }
+
+    // Initialize theme state on DOM ready
+    document.addEventListener('DOMContentLoaded', function () {
+        var currentChoice = getSavedTheme();
+        applyTheme(currentChoice);
+
+        // Bind theme selector clicks
+        document.addEventListener('click', function (e) {
+            var themeBtn = e.target.closest('[data-theme-val]');
+            if (themeBtn) {
+                var choice = themeBtn.getAttribute('data-theme-val');
+                applyTheme(choice);
+            }
+        });
+
+        // Listen for OS color scheme changes if system mode is selected
+        if (window.matchMedia) {
+            var mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+            var handleMediaChange = function () {
+                if (getSavedTheme() === 'system') {
+                    applyTheme('system');
+                }
+            };
+            if (mediaQuery.addEventListener) {
+                mediaQuery.addEventListener('change', handleMediaChange);
+            } else if (mediaQuery.addListener) {
+                mediaQuery.addListener(handleMediaChange);
+            }
+        }
+    });
+})();
+

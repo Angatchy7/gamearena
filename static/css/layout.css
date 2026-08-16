@@ -25,17 +25,30 @@
    NAVBAR
 ==================================*/
 
+/* ===============================
+   NAVBAR
+==================================*/
+
 .ga-navbar {
 
     height: 72px;
-    background: var(--bg2);
+    background: var(--ga-navbar-bg);
 
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--ga-navbar-border);
 
     position: sticky;
     top: 0;
     z-index: 999;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 
+}
+
+.ga-navbar .navbar-brand {
+    color: var(--ga-navbar-text) !important;
+}
+
+.ga-navbar .navbar-toggler i {
+    color: var(--ga-navbar-text) !important;
 }
 
 .logo-circle {
@@ -66,31 +79,31 @@
 
 .search-wrapper .input-group-text {
 
-    background: #1f2937;
-    border: 1px solid var(--border);
-    color: var(--muted);
+    background: var(--ga-input-bg);
+    border: 1px solid var(--ga-input-border);
+    color: var(--ga-text-muted);
 
 }
 
 .search-wrapper input {
 
-    background: #1f2937;
-    border: 1px solid var(--border);
+    background: var(--ga-input-bg);
+    border: 1px solid var(--ga-input-border);
 
-    color: white;
+    color: var(--ga-input-text);
 
 }
 
 .search-wrapper input::placeholder {
 
-    color: #94a3b8;
+    color: var(--ga-input-placeholder);
 
 }
 
 .search-wrapper input:focus {
 
-    background: #1f2937;
-    color: white;
+    background: var(--ga-input-bg);
+    color: var(--ga-input-text);
 
     box-shadow: none;
     border-color: #2563eb;
@@ -99,7 +112,7 @@
 
 .nav-icon {
 
-    color: white;
+    color: var(--ga-navbar-text);
     text-decoration: none;
 
     font-size: 22px;
@@ -130,13 +143,13 @@
     top: 0;
     right: 0;
 
-    border: 2px solid var(--bg2);
+    border: 2px solid var(--ga-navbar-bg);
 
 }
 
 .profile-btn {
 
-    color: white !important;
+    color: var(--ga-navbar-text) !important;
     text-decoration: none;
 
 }
@@ -172,11 +185,13 @@
 
     line-height: 1;
 
+    color: var(--ga-navbar-text);
+
 }
 
 .profile-menu {
 
-    width: 260px;
+    width: 270px;
 
     border-radius: 14px;
 
@@ -220,7 +235,7 @@
 
     min-height: calc(100vh - 72px);
 
-    background: var(--bg);
+    background: var(--ga-bg);
 
 }
 
@@ -233,17 +248,16 @@
     width: 280px;
     min-width: 280px;
 
-    background: linear-gradient(180deg,
-            #111827 0%,
-            #0f172a 100%);
+    background: var(--ga-sidebar-bg);
 
-    border-right: 1px solid rgba(255, 255, 255, .05);
+    border-right: 1px solid var(--ga-sidebar-border);
 
     padding: 24px;
 
     overflow-y: auto;
 
     scrollbar-width: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 
 }
 
@@ -251,6 +265,14 @@
 
     display: none;
 
+}
+
+.sidebar-brand-title {
+    color: var(--ga-sidebar-title);
+}
+
+.sidebar-subtitle {
+    color: var(--ga-sidebar-muted);
 }
 
 .sidebar-logo {
@@ -289,7 +311,7 @@
 
     letter-spacing: 2px;
 
-    color: #94a3b8;
+    color: var(--ga-sidebar-muted);
 
     font-weight: 700;
 
@@ -309,7 +331,7 @@
 
     border-radius: 14px;
 
-    color: #d1d5db;
+    color: var(--ga-sidebar-text);
 
     text-decoration: none;
 
@@ -331,9 +353,9 @@
 
 .sidebar-link:hover {
 
-    background: #1e40af;
+    background: rgba(37, 99, 235, 0.15);
 
-    color: white;
+    color: var(--ga-primary);
 
     transform: translateX(6px);
 
@@ -343,7 +365,7 @@
 
     background: #2563eb;
 
-    color: white;
+    color: white !important;
 
 }
 
@@ -697,13 +719,13 @@
 
     width: 100%;
 
-    background: #111827;
+    background: var(--ga-dropdown-bg);
 
-    border: 1px solid rgba(255, 255, 255, .08);
+    border: 1px solid var(--ga-dropdown-border);
 
     border-radius: 18px;
 
-    box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+    box-shadow: var(--ga-shadow-lg);
 
     overflow: hidden;
 
@@ -741,13 +763,13 @@
 
     padding: 18px;
 
-    border-bottom: 1px solid rgba(255, 255, 255, .05);
+    border-bottom: 1px solid var(--ga-border);
 
 }
 
 .search-heading {
 
-    color: #94a3b8;
+    color: var(--ga-text-muted);
 
     font-size: .72rem;
 
@@ -765,9 +787,9 @@
 
     text-decoration: none;
 
-    color: white;
+    color: var(--ga-text-main);
 
-    background: #1f2937;
+    background: var(--ga-surface-3);
 
     border-radius: 14px;
 
@@ -777,20 +799,25 @@
 
     transition: .25s;
 
-    border: 1px solid transparent;
+    border: 1px solid var(--ga-border);
 
 }
 
 .search-card:hover {
 
-    color: white;
+    color: white !important;
 
-    background: #2563eb;
+    background: #2563eb !important;
 
     transform: translateY(-2px);
 
-    border-color: #3b82f6;
+    border-color: #3b82f6 !important;
 
+}
+
+.search-card:hover .search-game,
+.search-card:hover .search-info {
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .search-card-header {
@@ -811,11 +838,13 @@
 
     font-weight: 700;
 
+    color: inherit;
+
 }
 
 .search-game {
 
-    color: #cbd5e1;
+    color: var(--ga-text-muted);
 
     font-size: .85rem;
 
@@ -835,7 +864,7 @@
 
     font-size: .82rem;
 
-    color: #e2e8f0;
+    color: var(--ga-text-secondary);
 
 }
 
@@ -845,7 +874,7 @@
 
     text-align: center;
 
-    color: #94a3b8;
+    color: var(--ga-text-muted);
 
 }
 
@@ -855,7 +884,7 @@
 
     text-align: center;
 
-    color: #94a3b8;
+    color: var(--ga-text-muted);
 
 }
 
@@ -869,7 +898,7 @@
 
     background: #2563eb;
 
-    color: white;
+    color: white !important;
 
     text-decoration: none;
 
@@ -881,6 +910,6 @@
 
     background: #1d4ed8;
 
-    color: white;
+    color: white !important;
 
 }

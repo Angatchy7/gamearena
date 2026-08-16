@@ -71,8 +71,8 @@
 
     padding: 16px;
 
-    background: #111b2e;
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--ga-card-bg);
+    border: 1px solid var(--ga-card-border);
     border-radius: 14px;
 
     box-sizing: border-box;
@@ -100,7 +100,7 @@
 
     transform: translateY(-50%);
 
-    color: #94a3b8;
+    color: var(--ga-text-muted);
     font-size: 16px;
 
     pointer-events: none;
@@ -114,10 +114,10 @@
     margin: 0;
     padding: 0 15px 0 44px;
 
-    background: #18243a !important;
-    color: #f8fafc !important;
+    background: var(--ga-input-bg) !important;
+    color: var(--ga-input-text) !important;
 
-    border: 1px solid rgba(148, 163, 184, 0.20) !important;
+    border: 1px solid var(--ga-input-border) !important;
     border-radius: 10px;
 
     font-size: 14px;
@@ -126,17 +126,17 @@
 }
 
 .tournament-filter-search .form-control::placeholder {
-    color: #94a3b8;
+    color: var(--ga-input-placeholder);
     opacity: 1;
 }
 
 .tournament-filter-search .form-control:hover {
-    border-color: rgba(148, 163, 184, 0.35) !important;
+    border-color: var(--ga-border-strong) !important;
 }
 
 .tournament-filter-search .form-control:focus {
-    background: #18243a !important;
-    color: #f8fafc !important;
+    background: var(--ga-input-bg) !important;
+    color: var(--ga-input-text) !important;
 
     border-color: #3b82f6 !important;
 

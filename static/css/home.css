@@ -4,19 +4,19 @@
 
 .ga-tournament-card {
 
-    background: #1b2435;
+    background: var(--ga-card-bg);
 
     border-radius: 18px;
 
-    border: 1px solid rgba(255, 255, 255, .06);
+    border: 1px solid var(--ga-card-border);
 
     overflow: hidden;
 
     transition: .3s;
 
-    color: white;
+    color: var(--ga-text-main);
 
-    box-shadow: 0 8px 25px rgba(0, 0, 0, .25);
+    box-shadow: var(--ga-shadow-sm);
 
 }
 
@@ -310,21 +310,21 @@
 
     width: 250px;
 
-    background: #1b2435;
+    background: var(--ga-card-bg);
 
     border-radius: 18px;
 
     padding: 18px;
 
-    border: 1px solid rgba(255, 255, 255, .08);
+    border: 1px solid var(--ga-card-border);
 
-    box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+    box-shadow: var(--ga-shadow-md);
 
 }
 
 .hero-floating-card h6 {
 
-    color: white;
+    color: var(--ga-text-main);
 
     font-weight: 700;
 
@@ -332,7 +332,7 @@
 
 .hero-floating-card small {
 
-    color: #cbd5e1;
+    color: var(--ga-text-muted);
 
 }
 
@@ -396,17 +396,19 @@
 
 .ga-game-card {
 
-    background: #1b2435;
+    background: var(--ga-card-bg);
 
     border-radius: 20px;
 
     overflow: hidden;
 
-    border: 1px solid rgba(255, 255, 255, .06);
+    border: 1px solid var(--ga-card-border);
 
     transition: .35s;
 
     height: 100%;
+
+    box-shadow: var(--ga-shadow-sm);
 
 }
 
@@ -416,7 +418,7 @@
 
     border-color: #2563eb;
 
-    box-shadow: 0 20px 50px rgba(0, 0, 0, .40);
+    box-shadow: var(--ga-shadow-md);
 
 }
 
@@ -426,7 +428,7 @@
 
     overflow: hidden;
 
-    background: #24344d;
+    background: var(--ga-surface-3);
 
 }
 
@@ -464,7 +466,7 @@
 
     color: #3b82f6;
 
-    background: linear-gradient(135deg, #24344d, #1b2435);
+    background: var(--ga-surface-3);
 
 }
 
@@ -476,7 +478,7 @@
 
 .ga-game-body h5 {
 
-    color: white;
+    color: var(--ga-text-main);
 
     font-weight: 700;
 
@@ -486,7 +488,7 @@
 
 .ga-game-body p {
 
-    color: #94a3b8;
+    color: var(--ga-text-muted);
 
     font-size: .9rem;
 
@@ -504,7 +506,7 @@
 
     padding-top: 16px;
 
-    border-top: 1px solid rgba(255, 255, 255, .06);
+    border-top: 1px solid var(--ga-border);
 
 }
 
@@ -518,7 +520,7 @@
 
     display: block;
 
-    color: white;
+    color: var(--ga-text-main);
 
     font-size: 1rem;
 
@@ -526,7 +528,7 @@
 
 .ga-game-stats small {
 
-    color: #94a3b8;
+    color: var(--ga-text-muted);
 
 }
 

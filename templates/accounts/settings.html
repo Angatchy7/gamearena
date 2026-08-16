@@ -8,10 +8,10 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h1 class="fw-bold mb-1" style="color: #f8fafc;">
+            <h1 class="fw-bold mb-1">
                 ⚙️ Account Settings
             </h1>
-            <p style="color: #cbd5e1;" class="mb-0">Manage your GameArena account.</p>
+            <p class="text-muted mb-0">Manage your GameArena account.</p>
         </div>
     </div>
 
@@ -20,8 +20,7 @@
         <!-- Left: Account Info -->
         <div class="col-lg-7">
 
-            <div class="card border-0 shadow-sm text-white mb-4"
-                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <div class="card border-0 shadow-sm mb-4">
 
                 <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
                     <h5 class="fw-bold mb-0">
@@ -35,14 +34,14 @@
                     <div class="mb-4">
                         <label class="form-label text-muted small text-uppercase fw-bold">Username</label>
                         <div class="input-group">
-                            <span class="input-group-text" style="background: #111827; border-color: rgba(148,163,184,0.25); color: #94a3b8;">
+                            <span class="input-group-text">
                                 <i class="bi bi-person-fill"></i>
                             </span>
                             <input type="text"
                                    class="form-control"
                                    value="{{ user.username }}"
                                    readonly
-                                   style="background: #111827; border-color: rgba(148,163,184,0.25); color: #f8fafc; cursor: default;">
+                                   style="cursor: default;">
                         </div>
                         <small class="text-muted">Username cannot be changed to preserve your identity across the platform.</small>
                     </div>
@@ -51,14 +50,14 @@
                     <div class="mb-4">
                         <label class="form-label text-muted small text-uppercase fw-bold">Email Address</label>
                         <div class="input-group">
-                            <span class="input-group-text" style="background: #111827; border-color: rgba(148,163,184,0.25); color: #94a3b8;">
+                            <span class="input-group-text">
                                 <i class="bi bi-envelope-fill"></i>
                             </span>
                             <input type="email"
                                    class="form-control"
                                    value="{{ user.email|default:'—' }}"
                                    readonly
-                                   style="background: #111827; border-color: rgba(148,163,184,0.25); color: #f8fafc; cursor: default;">
+                                   style="cursor: default;">
                         </div>
                         <small class="text-muted">Contact support to update your email address.</small>
                     </div>
@@ -87,8 +86,7 @@
         <!-- Right: Security -->
         <div class="col-lg-5">
 
-            <div class="card border-0 shadow-sm text-white mb-4"
-                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <div class="card border-0 shadow-sm mb-4">
 
                 <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
                     <h5 class="fw-bold mb-0">
@@ -98,21 +96,137 @@
 
                 <div class="card-body p-4">
 
-                    <p class="text-muted small mb-3">Keep your account secure by using a strong password.</p>
+                    <p class="text-muted small mb-3">Keep your account secure by updating your password or verifying via email.</p>
+
+                    <!-- Email-Verified Password Change Box -->
+                    <div id="pw-verify-container" class="mb-3 p-3 rounded-3" style="border: 1px solid var(--ga-border); background: var(--ga-surface-2);">
+                        <div id="pw-step-1">
+                            <div class="fw-bold small mb-1"><i class="bi bi-shield-check text-cyan me-1"></i> Email-Verified Password Change</div>
+                            <div class="text-muted small mb-3">Request a secure verification code to your email (<b>{{ user.email|default:user.username }}</b>) before updating.</div>
+                            <button type="button" id="btn-request-pw-verify" class="btn btn-outline-cyan btn-sm fw-bold">
+                                <i class="bi bi-send me-1"></i> Send Verification Email
+                            </button>
+                        </div>
+
+                        <div id="pw-step-2" class="d-none">
+                            <div class="alert alert-success p-2 small mb-3">
+                                <i class="bi bi-check-circle me-1"></i> Verification code sent! Check your inbox.
+                            </div>
+                            <div class="mb-2">
+                                <label for="pw-verify-token" class="form-label text-muted small fw-bold">Verification Token</label>
+                                <input type="text" id="pw-verify-token" class="form-control form-control-sm" placeholder="Paste token from email">
+                            </div>
+                            <div class="mb-2">
+                                <label for="pw-verify-new" class="form-label text-muted small fw-bold">New Password</label>
+                                <input type="password" id="pw-verify-new" class="form-control form-control-sm" placeholder="Min 8 characters">
+                            </div>
+                            <div class="mb-3">
+                                <label for="pw-verify-confirm" class="form-label text-muted small fw-bold">Confirm New Password</label>
+                                <input type="password" id="pw-verify-confirm" class="form-control form-control-sm" placeholder="Repeat new password">
+                            </div>
+                            <div id="pw-verify-msg" class="d-none alert p-2 small mb-3"></div>
+                            <div class="d-flex gap-2">
+                                <button type="button" id="btn-submit-pw-verify" class="btn btn-cyan btn-sm fw-bold">
+                                    <i class="bi bi-key me-1"></i> Update Password
+                                </button>
+                                <button type="button" id="btn-cancel-pw-verify" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
 
                     <a href="{% url 'accounts:password_change' %}"
-                       class="btn btn-primary w-100 py-2.5 fw-bold"
+                       class="btn btn-outline-primary w-100 py-2 fw-bold"
                        style="border-radius: 12px;">
-                        <i class="bi bi-key-fill me-2"></i> Change Password
+                        <i class="bi bi-key-fill me-2"></i> Standard Password Change
                     </a>
 
-                    <hr class="my-4" style="border-color: rgba(148,163,184,0.15);">
+                    <script>
+                        document.getElementById('btn-request-pw-verify')?.addEventListener('click', function() {
+                            var btn = this;
+                            btn.disabled = true;
+                            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
+                            fetch('/api/auth/change-password/request/', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                    'Content-Type': 'application/json'
+                                }
+                            }).then(function(res) { return res.json(); }).then(function(data) {
+                                document.getElementById('pw-step-1').classList.add('d-none');
+                                document.getElementById('pw-step-2').classList.remove('d-none');
+                            }).catch(function(err) {
+                                alert('Error requesting verification email.');
+                            }).finally(function() {
+                                btn.disabled = false;
+                                btn.innerHTML = '<i class="bi bi-send me-1"></i> Send Verification Email';
+                            });
+                        });
 
-                    <div class="d-flex align-items-start gap-3 p-3 rounded-3"
-                         style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
+                        document.getElementById('btn-cancel-pw-verify')?.addEventListener('click', function() {
+                            document.getElementById('pw-step-2').classList.add('d-none');
+                            document.getElementById('pw-step-1').classList.remove('d-none');
+                        });
+
+                        document.getElementById('btn-submit-pw-verify')?.addEventListener('click', function() {
+                            var token = document.getElementById('pw-verify-token').value;
+                            var newPw = document.getElementById('pw-verify-new').value;
+                            var confirmPw = document.getElementById('pw-verify-confirm').value;
+                            var msgBox = document.getElementById('pw-verify-msg');
+
+                            msgBox.classList.add('d-none');
+                            msgBox.className = 'd-none alert p-2 small mb-3';
+
+                            if (!token || !newPw || !confirmPw) {
+                                msgBox.className = 'alert alert-danger p-2 small mb-3';
+                                msgBox.textContent = 'Please fill in all verification fields.';
+                                msgBox.classList.remove('d-none');
+                                return;
+                            }
+
+                            fetch('/api/auth/change-password/verify/', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    token: token,
+                                    new_password: newPw,
+                                    confirm_password: confirmPw
+                                })
+                            }).then(function(res) {
+                                return res.json().then(function(data) {
+                                    return { status: res.status, data: data };
+                                });
+                            }).then(function(result) {
+                                if (result.status === 200) {
+                                    msgBox.className = 'alert alert-success p-2 small mb-3';
+                                    msgBox.textContent = result.data.detail || 'Password updated successfully!';
+                                    msgBox.classList.remove('d-none');
+                                    setTimeout(function() {
+                                        document.getElementById('pw-step-2').classList.add('d-none');
+                                        document.getElementById('pw-step-1').classList.remove('d-none');
+                                    }, 2000);
+                                } else {
+                                    msgBox.className = 'alert alert-danger p-2 small mb-3';
+                                    var detail = result.data.detail;
+                                    msgBox.textContent = Array.isArray(detail) ? detail.join(' ') : (detail || 'Failed to update password.');
+                                    msgBox.classList.remove('d-none');
+                                }
+                            }).catch(function() {
+                                msgBox.className = 'alert alert-danger p-2 small mb-3';
+                                msgBox.textContent = 'An error occurred while verifying.';
+                                msgBox.classList.remove('d-none');
+                            });
+                        });
+                    </script>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex align-items-start gap-3 p-3 rounded-3 ga-signout-box">
                         <i class="bi bi-box-arrow-right text-danger fs-5 mt-1"></i>
                         <div>
-                            <div class="fw-bold text-white small">Sign Out</div>
+                            <div class="fw-bold small mb-1">Sign Out</div>
                             <div class="text-muted small mb-2">Sign out of your GameArena account on this device.</div>
                             <form method="post" action="{% url 'accounts:logout' %}">
                                 {% csrf_token %}
@@ -127,8 +241,7 @@
             </div>
 
             <!-- Quick Links -->
-            <div class="card border-0 shadow-sm text-white"
-                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <div class="card border-0 shadow-sm">
 
                 <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
                     <h5 class="fw-bold mb-0">
@@ -140,10 +253,10 @@
                     <a href="{% url 'accounts:profile' user.username %}" class="btn btn-outline-primary py-2 text-start">
                         <i class="bi bi-person-circle me-2"></i> View My Profile
                     </a>
-                    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-light py-2 text-start">
+                    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary py-2 text-start">
                         <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
                     </a>
-                    <a href="{% url 'teams:list' %}" class="btn btn-outline-light py-2 text-start">
+                    <a href="{% url 'teams:list' %}" class="btn btn-outline-secondary py-2 text-start">
                         <i class="bi bi-people-fill me-2"></i> My Teams
                     </a>
                 </div>
@@ -152,93 +265,6 @@
         </div>
     </div>
 
-    <!-- Appearance Section -->
-    <div class="row g-4 mt-0">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm text-white"
-                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
-                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-moon-stars-fill text-primary me-2"></i> Appearance
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <p class="text-muted small mb-4">Choose your preferred color scheme. Your choice is saved locally in this browser.</p>
-                    <div class="d-flex flex-wrap gap-3" id="theme-selector">
-                        <label class="theme-option" for="theme-dark" style="cursor:pointer;">
-                            <input type="radio" name="ga_theme" id="theme-dark" value="dark" class="d-none theme-radio">
-                            <div class="p-3 rounded-3 d-flex align-items-center gap-3 theme-card"
-                                 style="background:#0f172a; border:2px solid transparent; min-width:150px; transition:border .2s;">
-                                <i class="bi bi-moon-fill text-primary fs-4"></i>
-                                <div>
-                                    <div class="fw-bold text-white">Dark</div>
-                                    <small class="text-muted">GameArena default</small>
-                                </div>
-                            </div>
-                        </label>
-                        <label class="theme-option" for="theme-light" style="cursor:pointer;">
-                            <input type="radio" name="ga_theme" id="theme-light" value="light" class="d-none theme-radio">
-                            <div class="p-3 rounded-3 d-flex align-items-center gap-3 theme-card"
-                                 style="background:#f8fafc; border:2px solid transparent; min-width:150px; transition:border .2s;">
-                                <i class="bi bi-sun-fill text-warning fs-4"></i>
-                                <div>
-                                    <div class="fw-bold" style="color:#0f172a;">Light</div>
-                                    <small style="color:#64748b;">High contrast</small>
-                                </div>
-                            </div>
-                        </label>
-                        <label class="theme-option" for="theme-system" style="cursor:pointer;">
-                            <input type="radio" name="ga_theme" id="theme-system" value="system" class="d-none theme-radio">
-                            <div class="p-3 rounded-3 d-flex align-items-center gap-3 theme-card"
-                                 style="background:#1e293b; border:2px solid transparent; min-width:150px; transition:border .2s;">
-                                <i class="bi bi-display fs-4 text-cyan"></i>
-                                <div>
-                                    <div class="fw-bold text-white">System</div>
-                                    <small class="text-muted">Follow OS setting</small>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
-
-<script>
-(function() {
-    var saved = localStorage.getItem('ga_theme') || 'dark';
-    // Mark the active radio
-    var radios = document.querySelectorAll('.theme-radio');
-    radios.forEach(function(r) {
-        var card = r.closest('label').querySelector('.theme-card');
-        if (r.value === saved) {
-            r.checked = true;
-            card.style.borderColor = '#2563eb';
-        }
-    });
-
-    function applyTheme(pref) {
-        var effective = pref;
-        if (pref === 'system') {
-            effective = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-        }
-        document.documentElement.setAttribute('data-theme', effective);
-        localStorage.setItem('ga_theme', pref);
-    }
-
-    radios.forEach(function(r) {
-        r.addEventListener('change', function() {
-            applyTheme(this.value);
-            // Update card borders
-            radios.forEach(function(rr) {
-                var c = rr.closest('label').querySelector('.theme-card');
-                c.style.borderColor = rr.checked ? '#2563eb' : 'transparent';
-            });
-        });
-    });
-})();
-</script>
 {% endblock %}
 

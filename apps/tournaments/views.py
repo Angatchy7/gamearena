@@ -466,6 +466,7 @@ class TournamentRegisterView(LoginRequiredMixin, View):
 
         form = TournamentRegistrationForm(
             user=request.user,
+            tournament=tournament,
         )
 
         return render(
@@ -512,6 +513,7 @@ class TournamentRegisterView(LoginRequiredMixin, View):
         form = TournamentRegistrationForm(
             request.POST,
             user=request.user,
+            tournament=tournament,
         )
 
         if form.is_valid():

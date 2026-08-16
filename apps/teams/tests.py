@@ -14,6 +14,7 @@ from apps.teams.services import (
     get_team_profile_data,
 )
 from apps.notifications.models import Notification
+from apps.tournaments.models import Game
 
 User = get_user_model()
 
@@ -34,10 +35,11 @@ class TeamModelAndCrudTests(TestCase):
             username="player2",
             password="Password123!",
         )
+        self.game = Game.objects.create(name="PUBG Mobile", slug="pubg-mobile-crud", is_active=True)
 
     def test_team_creation_service(self):
-        form = TeamCreateForm(data={"name": "Team Phoenix", "description": "Rise above", "max_players": 5})
-        self.assertTrue(form.is_valid())
+        form = TeamCreateForm(data={"name": "Team Phoenix", "game": self.game.pk, "description": "Rise above", "max_players": 5})
+        self.assertTrue(form.is_valid(), form.errors)
         result = create_team(manager=self.manager, form=form)
         self.assertTrue(result["success"])
         team = result["team"]
@@ -51,15 +53,23 @@ class TeamModelAndCrudTests(TestCase):
         self.assertTrue(member.is_active)
 
     def test_manager_single_team_constraint(self):
-        form1 = TeamCreateForm(data={"name": "First Team", "description": "One", "max_players": 5})
+        game2 = Game.objects.create(name="Valorant", slug="valorant-crud", is_active=True)
+        form1 = TeamCreateForm(data={"name": "First Team", "game": self.game.pk, "description": "One", "max_players": 5})
         form1.is_valid()
         create_team(manager=self.manager, form=form1)
 
-        form2 = TeamCreateForm(data={"name": "Second Team", "description": "Two", "max_players": 5})
+        # Creating a second team for the SAME game should fail
+        form2 = TeamCreateForm(data={"name": "Second Team", "game": self.game.pk, "description": "Two", "max_players": 5})
         form2.is_valid()
         result2 = create_team(manager=self.manager, form=form2)
         self.assertFalse(result2["success"])
-        self.assertEqual(result2["message"], "You already manage a team.")
+        self.assertIn("already manage a team", result2["message"])
+
+        # Creating a team for a DIFFERENT game should succeed
+        form3 = TeamCreateForm(data={"name": "Third Team", "game": game2.pk, "description": "Three", "max_players": 5})
+        form3.is_valid()
+        result3 = create_team(manager=self.manager, form=form3)
+        self.assertTrue(result3["success"])
 
     def test_duplicate_team_name_db_constraint(self):
         Team.objects.create(name="Unique Name", manager=self.manager)
@@ -399,11 +409,13 @@ class UserAutocompleteAndTeamCreationTests(TestCase):
         self.assertTemplateUsed(response, "teams/create_team.html")
 
     def test_team_creation_page_post_success(self):
+        game = Game.objects.create(name="Test Game Post", slug="test-game-post", is_active=True)
         new_mgr = User.objects.create_user(username="fresh_mgr2", password="Password123!")
         self.client.login(username="fresh_mgr2", password="Password123!")
         url = reverse("teams:create")
         post_data = {
             "name": "Brand New Team",
+            "game": game.pk,
             "description": "Awesome team description",
             "max_players": 5,
         }

@@ -1,5 +1,6 @@
 from datetime import timezone
 from django import forms
+from django.db import models
 # pyrefly: ignore [missing-import]
 from apps.teams.models import Team
 from .models import Match, Tournament, TournamentRegistration
@@ -260,13 +261,19 @@ class TournamentRegistrationForm(forms.Form):
         empty_label="Select Team",
     )
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, tournament=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["team"].queryset = Team.objects.filter(
+        qs = Team.objects.filter(
             manager=user,
             is_active=True,
-        ).exclude(description="__SOLO_INTERNAL__").order_by("name")
+        ).exclude(description="__SOLO_INTERNAL__")
+
+        if tournament and tournament.game_id:
+            # Filter teams that belong to the tournament's game or legacy unassigned teams
+            qs = qs.filter(models.Q(game=tournament.game) | models.Q(game__isnull=True))
+
+        self.fields["team"].queryset = qs.order_by("name")
 
 
 class MatchResultForm(forms.ModelForm):

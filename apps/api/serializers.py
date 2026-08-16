@@ -95,7 +95,7 @@ class GameDetailSerializer(serializers.ModelSerializer):
 
 class GameSimpleSerializer(serializers.ModelSerializer):
     """
-    Simple nested Game serializer for Tournaments.
+    Simple nested Game serializer for Tournaments and Teams.
     """
 
     image_url = serializers.CharField(read_only=True)
@@ -103,6 +103,75 @@ class GameSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
         fields = ["id", "name", "slug", "image_url"]
+
+
+class TeamSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing and summary of teams.
+    """
+
+    game = GameSimpleSerializer(read_only=True)
+    manager = serializers.CharField(source="manager.username", read_only=True)
+    logo_url = serializers.CharField(read_only=True)
+    active_member_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Team
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "logo_url",
+            "max_players",
+            "is_active",
+            "game",
+            "manager",
+            "active_member_count",
+            "created_at",
+        ]
+
+
+class TeamAPIDetailSerializer(serializers.ModelSerializer):
+    """
+    Detailed Team serializer including roster.
+    """
+
+    game = GameSimpleSerializer(read_only=True)
+    manager = serializers.CharField(source="manager.username", read_only=True)
+    logo_url = serializers.CharField(read_only=True)
+    active_member_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Team
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "logo_url",
+            "max_players",
+            "is_active",
+            "game",
+            "manager",
+            "active_member_count",
+            "created_at",
+        ]
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class ChangePasswordVerifySerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True, min_length=8)
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+        return attrs
 
 
 class TournamentListSerializer(serializers.ModelSerializer):

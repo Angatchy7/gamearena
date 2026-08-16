@@ -110,7 +110,70 @@ Returns detailed tournament information.
 
 ---
 
-### 3. Teams & Autocomplete API
+### 3. Multi-Team & Management API
+
+#### `GET /api/my-teams/`
+Returns collection of active teams managed by `request.user`.
+- **Auth Required**: Yes (`IsAuthenticated`)
+- **Query Parameters**:
+  - `game`: Game slug (e.g. `pubg-mobile`, `valorant`) to filter teams by game
+- **Response**: `200 OK`
+```json
+[
+  {
+    "id": 5,
+    "name": "Alpha PUBG Squad",
+    "slug": "alpha-pubg-squad",
+    "description": "PUBG Mobile Competitive Team",
+    "logo_url": "/static/images/defaults/team_default.svg",
+    "max_players": 5,
+    "is_active": true,
+    "game": {
+      "id": 1,
+      "name": "PUBG Mobile",
+      "slug": "pubg-mobile",
+      "image_url": "/static/images/games/pubg.svg"
+    },
+    "manager": "aadar",
+    "active_member_count": 5,
+    "created_at": "2026-08-16T12:00:00Z"
+  }
+]
+```
+
+#### `POST /api/teams/`
+Creates a new team for a specific game managed by the authenticated user.
+- **Auth Required**: Yes (`IsAuthenticated`)
+- **Rules**:
+  - A user may manage multiple teams, but at most **one team per game**.
+  - If the user already manages a team for the selected game, the request is rejected with `400 Bad Request`.
+- **Body**:
+```json
+{
+  "name": "Alpha Valorant",
+  "game": "valorant",
+  "description": "Valorant Roster",
+  "max_players": 5
+}
+```
+- **Response**: `201 Created` or `400 Bad Request`
+
+#### `GET /api/teams/{slug}/`
+Returns detail for team `{slug}` including roster.
+- **Auth Required**: No
+- **Response**: `200 OK` or `404 Not Found`
+
+#### `PATCH /api/teams/{slug}/`
+Updates editable details of team `{slug}`.
+- **Auth Required**: Yes (`IsAuthenticated` + `IsTeamManager`)
+- **Body**: `name`, `description`, `logo`, `max_players`
+- **Response**: `200 OK` or `403 Forbidden`
+
+#### `POST /api/teams/{slug}/members/{id}/remove/`
+Soft-removes a player from team `{slug}` by deactivating their membership record (`is_active=False`).
+- **Auth Required**: Yes (`IsAuthenticated` + `IsTeamManager`)
+- **Behavior**: Preserves historical membership and tournament registration records. Manager cannot remove themselves.
+- **Response**: `200 OK` or `400 Bad Request`
 
 #### `GET /api/teams/{slug}/members/`
 Returns active team members for team `{slug}`.
@@ -129,18 +192,55 @@ Returns active team members for team `{slug}`.
 
 #### `GET /api/teams/{slug}/invite/search/?q={username}`
 Asynchronously searches candidate players to invite to team `{slug}`.
-- **Auth Required**: Yes (`IsAuthenticated`)
-- **Permission**: Must be the Manager of team `{slug}` (`IsTeamManager`)
+- **Auth Required**: Yes (`IsAuthenticated` + `IsTeamManager`)
 - **Behavior**: Case-insensitive search excluding manager, active members, and pending invitees. Limited to 10 results.
 - **Response**: `200 OK` or `403 Forbidden`
+
+---
+
+### 3b. Password Security & Recovery API
+
+#### `POST /api/auth/forgot-password/`
+Sends a password reset email link using Django's secure password reset token infrastructure.
+- **Auth Required**: No
+- **Body**:
 ```json
-[
-  {
-    "id": 12,
-    "username": "aadar"
-  }
-]
+{
+  "email": "user@example.com"
+}
 ```
+- **Security Safeguard**: Always returns a generic response regardless of whether the email exists in the database to prevent account enumeration.
+- **Response**: `200 OK`
+```json
+{
+  "detail": "If an account exists for this email, a password reset link has been sent."
+}
+```
+
+#### `POST /api/auth/change-password/request/`
+Requests a secure, expiring password change verification token sent to the authenticated user's email address.
+- **Auth Required**: Yes (`IsAuthenticated`)
+- **Security Safeguard**: Does **NOT** reveal verification tokens or secrets in the API response.
+- **Response**: `200 OK`
+```json
+{
+  "detail": "Verification email sent to your registered email address."
+}
+```
+
+#### `POST /api/auth/change-password/verify/`
+Verifies the signed token and updates the authenticated user's password.
+- **Auth Required**: Yes (`IsAuthenticated`)
+- **Body**:
+```json
+{
+  "token": "1a2b3c...:signature",
+  "new_password": "NewStrongPassword123!",
+  "confirm_password": "NewStrongPassword123!"
+}
+```
+- **Validation**: Enforces token signature, 1-hour expiration window, matching confirmation password, and Django password strength validators (`AUTH_PASSWORD_VALIDATORS`).
+- **Response**: `200 OK` or `400 Bad Request`
 
 ---
 

@@ -3,8 +3,18 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.contrib.auth import update_session_auth_hash, get_user_model
 
 from apps.teams.models import Team, TeamMember, TeamInvitation
+from apps.teams.services import create_team, update_team, remove_team_member
 from apps.tournaments.models import Game, Tournament, TournamentRegistration, Match, Round
 from apps.notifications.models import Notification
 from apps.notifications.services import (
@@ -18,7 +28,6 @@ from apps.tournaments.services import (
     get_tournament_statistics,
     advance_winner,
 )
-from django.contrib.auth import get_user_model
 
 from .permissions import IsTeamManager, IsTournamentOrganizer
 from .serializers import (
@@ -27,6 +36,10 @@ from .serializers import (
     TournamentListSerializer,
     TournamentDetailSerializer,
     TeamMemberSerializer,
+    TeamSerializer,
+    TeamAPIDetailSerializer,
+    ForgotPasswordSerializer,
+    ChangePasswordVerifySerializer,
     UserAutocompleteSerializer,
     TournamentRegistrationSerializer,
     MatchSerializer,
@@ -565,4 +578,276 @@ class TournamentStatisticsAPIView(APIView):
         }
 
         return Response(payload)
+
+
+signer = TimestampSigner(salt="gamearena.change_password")
+
+
+class MyTeamsAPIView(APIView):
+    """
+    GET /api/my-teams/
+    Returns collection of teams managed by request.user.
+    Supports ?game=<slug> to filter by game slug.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        queryset = (
+            Team.objects.filter(manager=request.user, is_active=True)
+            .exclude(description="__SOLO_INTERNAL__")
+            .select_related("game", "manager")
+            .order_by("-created_at")
+        )
+
+        game_slug = request.GET.get("game", "").strip()
+        if game_slug:
+            queryset = queryset.filter(game__slug=game_slug)
+
+        serializer = TeamSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class TeamListCreateAPIView(APIView):
+    """
+    POST /api/teams/
+    Creates a new team managed by the authenticated user.
+    Enforces game selection and one team per game per manager constraint.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        name = str(request.data.get("name") or "").strip()
+        game_slug = request.data.get("game") or request.data.get("game_slug")
+        game_id = request.data.get("game_id")
+        description = str(request.data.get("description") or "").strip()
+        logo = request.FILES.get("logo") or request.data.get("logo")
+        max_players = request.data.get("max_players", 5)
+
+        game_obj = None
+        if game_slug:
+            game_obj = Game.objects.filter(slug=game_slug, is_active=True).first()
+        elif game_id:
+            game_obj = Game.objects.filter(pk=game_id, is_active=True).first()
+
+        if not game_obj:
+            return Response(
+                {"detail": "A valid active Game selection is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            max_players = int(max_players)
+        except (TypeError, ValueError):
+            max_players = 5
+
+        result = create_team(
+            manager=request.user,
+            name=name,
+            game=game_obj,
+            description=description,
+            logo=logo if hasattr(logo, "read") else None,
+            max_players=max_players,
+        )
+
+        if result["success"]:
+            serializer = TeamSerializer(result["team"])
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                {"detail": result["message"]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class TeamDetailAPIView(APIView):
+    """
+    GET /api/teams/<slug>/
+    PATCH /api/teams/<slug>/
+    PUT /api/teams/<slug>/
+    """
+
+    def get_permissions(self):
+        if self.request.method in ["PATCH", "PUT"]:
+            return [permissions.IsAuthenticated(), IsTeamManager()]
+        return [permissions.AllowAny()]
+
+    def get(self, request, slug):
+        team = get_object_or_404(
+            Team.objects.select_related("game", "manager"),
+            slug=slug,
+        )
+        serializer = TeamAPIDetailSerializer(team)
+        return Response(serializer.data)
+
+    def patch(self, request, slug):
+        team = get_object_or_404(Team, slug=slug)
+        self.check_object_permissions(request, team)
+
+        name = request.data.get("name")
+        description = request.data.get("description")
+        logo = request.FILES.get("logo")
+        max_players = request.data.get("max_players")
+
+        result = update_team(
+            team=team,
+            name=name,
+            description=description,
+            logo=logo if hasattr(logo, "read") else None,
+            max_players=max_players,
+        )
+
+        if result["success"]:
+            serializer = TeamAPIDetailSerializer(result["team"])
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"detail": result["message"]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def put(self, request, slug):
+        return self.patch(request, slug)
+
+
+class TeamMemberRemoveAPIView(APIView):
+    """
+    POST /api/teams/<slug>/members/<id>/remove/
+    Soft-removes a player from a team. Requires manager authorization.
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsTeamManager]
+
+    def post(self, request, slug, member_id):
+        team = get_object_or_404(Team, slug=slug)
+        self.check_object_permissions(request, team)
+
+        member_user = get_object_or_404(User, pk=member_id)
+
+        result = remove_team_member(
+            team=team,
+            manager=request.user,
+            member_user=member_user,
+        )
+
+        if result["success"]:
+            return Response({"detail": result["message"]}, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": result["message"]}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ForgotPasswordAPIView(APIView):
+    """
+    POST /api/auth/forgot-password/
+    Sends password reset email link using Django's password reset token infrastructure.
+    Always returns a generic response to prevent account enumeration.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"].strip().lower()
+
+        generic_message = "If an account exists for this email, a password reset link has been sent."
+
+        user = User.objects.filter(email__iexact=email, is_active=True).first()
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_path = reverse("accounts:password_reset_confirm", kwargs={"uidb64": uid, "token": token})
+            reset_url = request.build_absolute_uri(reset_path)
+
+            subject = "GameArena Password Reset"
+            message = (
+                f"Hello {user.username},\n\n"
+                f"You requested a password reset for your GameArena account.\n"
+                f"Please use the link below to set a new password:\n\n"
+                f"{reset_url}\n\n"
+                f"If you did not request this, please ignore this email.\n\n"
+                f"Best regards,\nGameArena Team"
+            )
+            try:
+                send_mail(subject, message, None, [user.email], fail_silently=True)
+            except Exception:
+                pass
+
+        return Response({"detail": generic_message}, status=status.HTTP_200_OK)
+
+
+class ChangePasswordRequestAPIView(APIView):
+    """
+    POST /api/auth/change-password/request/
+    Sends verification email token to the authenticated user before allowing password change.
+    Does NOT expose verification secrets or tokens in the API response.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        token = signer.sign(f"{user.pk}:{user.email}")
+
+        subject = "GameArena Password Change Verification"
+        message = (
+            f"Hello {user.username},\n\n"
+            f"You requested to change your password.\n"
+            f"Your verification token is:\n\n"
+            f"{token}\n\n"
+            f"This verification code will expire in 1 hour.\n\n"
+            f"GameArena Team"
+        )
+        try:
+            send_mail(subject, message, None, [user.email], fail_silently=True)
+        except Exception:
+            pass
+
+        return Response(
+            {"detail": "Verification email sent to your registered email address."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class ChangePasswordVerifyAPIView(APIView):
+    """
+    POST /api/auth/change-password/verify/
+    Verifies signed token and updates authenticated user password.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token = serializer.validated_data["token"].strip()
+        new_password = serializer.validated_data["new_password"]
+
+        try:
+            unsigned = signer.unsign(token, max_age=3600)
+            user_pk, user_email = unsigned.split(":", 1)
+            if str(request.user.pk) != user_pk or request.user.email != user_email:
+                return Response(
+                    {"detail": "Invalid or expired verification token."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except (BadSignature, SignatureExpired, ValueError):
+            return Response(
+                {"detail": "Invalid or expired verification token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            validate_password(new_password, user=request.user)
+        except ValidationError as e:
+            return Response({"detail": list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.set_password(new_password)
+        request.user.save()
+        update_session_auth_hash(request, request.user)
+
+        return Response({"detail": "Password changed successfully."}, status=status.HTTP_200_OK)
 

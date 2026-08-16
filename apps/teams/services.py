@@ -6,26 +6,53 @@ from .models import Team, TeamMember, TeamInvitation
 from apps.notifications.models import Notification
 
 @transaction.atomic
-def create_team(*, manager, form):
+def create_team(*, manager, form=None, name=None, game=None, description="", logo=None, max_players=5):
     """
-    Creates a new team and automatically
-    adds the manager as the first member.
+    Creates a new team and automatically adds the manager as the first member.
+    Enforces one active team per game per manager.
+    Can be invoked with a Django form or raw keyword args.
     """
+    if form is not None:
+        team = form.save(commit=False)
+        team.manager = manager
+        if not team.game_id and form.cleaned_data.get("game"):
+            team.game = form.cleaned_data["game"]
+    else:
+        if not name:
+            return {
+                "success": False,
+                "message": "Team name is required.",
+            }
+        team = Team(
+            name=name,
+            game=game,
+            description=description or "",
+            logo=logo,
+            max_players=max_players or 5,
+            manager=manager,
+        )
 
-    if Team.objects.filter(manager=manager).exclude(description="__SOLO_INTERNAL__").exists():
+    if not team.game_id:
         return {
             "success": False,
-            "message": "You already manage a team.",
+            "message": "Game selection is required for team creation.",
         }
 
-    team = form.save(commit=False)
-    team.manager = manager
+    if Team.objects.filter(manager=manager, game=team.game, is_active=True).exclude(description="__SOLO_INTERNAL__").exists():
+        return {
+            "success": False,
+            "message": f"You already manage a team for {team.game.name}.",
+        }
+
     team.save()
 
-    TeamMember.objects.create(
+    TeamMember.objects.get_or_create(
         team=team,
         user=manager,
-        team_role=TeamMember.TeamRole.MANAGER,
+        defaults={
+            "team_role": TeamMember.TeamRole.MANAGER,
+            "is_active": True,
+        },
     )
 
     return {
@@ -36,17 +63,31 @@ def create_team(*, manager, form):
 
 
 @transaction.atomic
-def update_team(*, team, form):
+def update_team(*, team, form=None, name=None, description=None, logo=None, max_players=None, is_active=None):
     """
-    Updates an existing team.
+    Updates an existing team. Accepts either a Django form or keyword arguments.
     """
-
-    team.name = form.cleaned_data["name"]
-    team.description = form.cleaned_data["description"]
-    team.max_players = form.cleaned_data["max_players"]
-
-    if form.cleaned_data.get("logo"):
-        team.logo = form.cleaned_data["logo"]
+    if form is not None:
+        team.name = form.cleaned_data["name"]
+        team.description = form.cleaned_data["description"]
+        team.max_players = form.cleaned_data["max_players"]
+        if "game" in form.cleaned_data and form.cleaned_data["game"]:
+            team.game = form.cleaned_data["game"]
+        if form.cleaned_data.get("logo"):
+            team.logo = form.cleaned_data["logo"]
+        if "is_active" in form.cleaned_data:
+            team.is_active = form.cleaned_data["is_active"]
+    else:
+        if name is not None:
+            team.name = name
+        if description is not None:
+            team.description = description
+        if max_players is not None:
+            team.max_players = max_players
+        if logo is not None:
+            team.logo = logo
+        if is_active is not None:
+            team.is_active = is_active
 
     team.save()
 

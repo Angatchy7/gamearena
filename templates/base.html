@@ -52,11 +52,12 @@
     <!-- Theme early-init: apply saved preference before first paint to prevent FOUC -->
     <script>
     (function() {
-        var pref = localStorage.getItem('ga_theme') || 'dark';
+        var pref = localStorage.getItem('gamearena-theme') || localStorage.getItem('ga_theme') || 'dark';
+        var effective = pref;
         if (pref === 'system') {
-            pref = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+            effective = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         }
-        document.documentElement.setAttribute('data-theme', pref);
+        document.documentElement.setAttribute('data-theme', effective);
     })();
     </script>
 

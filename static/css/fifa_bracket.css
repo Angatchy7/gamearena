@@ -565,3 +565,24 @@
         justify-content: center;
     }
 }
+
+/* Light Mode Bracket Overrides */
+[data-theme="light"] .bracket-page-container {
+    --bracket-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --card-border: rgba(15, 23, 42, 0.12);
+    --card-hover-border: #2563eb;
+    --header-bg: #f1f5f9;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --connector-color: #cbd5e1;
+}
+
+[data-theme="light"] .bracket-page-container .team-name {
+    color: #0f172a;
+}
+
+[data-theme="light"] .bracket-page-container .team-score {
+    background: #e2e8f0;
+    color: #0f172a;
+}
