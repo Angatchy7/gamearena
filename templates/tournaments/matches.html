@@ -183,8 +183,10 @@ Matches - {{ tournament.name }}
                                 </div>
                             </div>
                             {% empty %}
-                            <div class="col-12 text-center text-muted py-4">
-                                No matches scheduled for this round yet.
+                            <div class="col-12 text-center py-4">
+                                <i class="bi bi-calendar-event fs-3 text-muted mb-2 d-block"></i>
+                                <div class="fw-bold text-main mb-1">No matches scheduled for this round yet</div>
+                                <small class="text-muted">Fixtures for this round will appear once scheduled.</small>
                             </div>
                             {% endfor %}
                         </div>
@@ -194,11 +196,11 @@ Matches - {{ tournament.name }}
             {% endfor %}
         </div>
     {% else %}
-        <div class="card bg-dark text-white border-0 shadow-sm py-5 text-center" style="border-radius: 16px;">
+        <div class="card border-0 shadow-sm py-5 text-center" style="border-radius: 16px; background: var(--ga-card-bg); border: 1px solid var(--ga-border);">
             <div class="card-body">
                 <i class="bi bi-calendar-x text-muted display-4 mb-3 d-block"></i>
-                <h4 class="fw-bold text-white mb-2">No Matches Generated</h4>
-                <p class="text-muted max-w-md mx-auto mb-4">
+                <h4 class="fw-bold text-main mb-2">No Matches Generated</h4>
+                <p class="text-secondary max-w-md mx-auto mb-4">
                     The bracket and fixture matches have not been generated for this tournament yet.
                 </p>
                 {% if request.user == tournament.organizer %}

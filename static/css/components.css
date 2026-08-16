@@ -111,49 +111,120 @@
 .btn-primary {
     background-color: var(--ga-primary);
     border-color: var(--ga-primary);
-    color: white;
+    color: var(--ga-primary-text) !important;
 }
 
 .btn-primary:hover {
     background-color: var(--ga-primary-hover);
     border-color: var(--ga-primary-hover);
+    color: var(--ga-primary-text) !important;
     box-shadow: var(--ga-shadow-glow);
 }
 
 .btn-success {
     background-color: var(--ga-success);
     border-color: var(--ga-success);
-    color: white;
+    color: var(--ga-success-text) !important;
 }
 
 .btn-success:hover {
     background-color: var(--ga-success-hover);
     border-color: var(--ga-success-hover);
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+    color: var(--ga-success-text) !important;
+    box-shadow: 0 0 20px rgba(22, 163, 74, 0.35);
 }
 
 .btn-danger {
     background-color: var(--ga-danger);
     border-color: var(--ga-danger);
-    color: white;
+    color: var(--ga-danger-text) !important;
 }
 
 .btn-danger:hover {
     background-color: var(--ga-danger-hover);
     border-color: var(--ga-danger-hover);
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.35);
+    color: var(--ga-danger-text) !important;
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.35);
 }
 
 .btn-warning {
     background-color: var(--ga-warning);
     border-color: var(--ga-warning);
-    color: #0f172a;
+    color: var(--ga-warning-text) !important;
 }
 
 .btn-warning:hover {
-    background-color: #d97706;
-    border-color: #d97706;
-    color: white;
+    background-color: var(--ga-warning-hover);
+    border-color: var(--ga-warning-hover);
+    color: var(--ga-warning-text) !important;
+}
+
+.btn-outline-primary {
+    border-color: var(--ga-primary);
+    color: var(--ga-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--ga-primary);
+    border-color: var(--ga-primary);
+    color: var(--ga-primary-text) !important;
+}
+
+.btn-outline-success {
+    border-color: var(--ga-success);
+    color: var(--ga-success);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--ga-success);
+    border-color: var(--ga-success);
+    color: var(--ga-success-text) !important;
+}
+
+.btn-outline-warning {
+    border-color: var(--ga-warning);
+    color: var(--ga-warning);
+}
+
+.btn-outline-warning:hover {
+    background-color: var(--ga-warning);
+    border-color: var(--ga-warning);
+    color: var(--ga-warning-text) !important;
+}
+
+.btn-outline-danger {
+    border-color: var(--ga-danger);
+    color: var(--ga-danger);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--ga-danger);
+    border-color: var(--ga-danger);
+    color: var(--ga-danger-text) !important;
+}
+
+.btn-outline-info,
+.btn-outline-cyan {
+    border-color: var(--ga-cyan);
+    color: var(--ga-cyan);
+}
+
+.btn-outline-info:hover,
+.btn-outline-cyan:hover {
+    background-color: var(--ga-cyan);
+    border-color: var(--ga-cyan);
+    color: #ffffff !important;
+}
+
+.btn-outline-secondary {
+    border-color: var(--ga-border-strong);
+    color: var(--ga-text-secondary);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--ga-surface-3);
+    border-color: var(--ga-border-strong);
+    color: var(--ga-text-main);
 }
 
 .btn-outline-light {
@@ -162,31 +233,9 @@
 }
 
 .btn-outline-light:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-color: white;
-    color: white;
-}
-
-.btn-outline-primary {
-    border-color: var(--ga-primary);
-    color: var(--ga-primary-light);
-}
-
-.btn-outline-primary:hover {
-    background-color: var(--ga-primary);
-    border-color: var(--ga-primary);
-    color: white;
-}
-
-.btn-outline-secondary {
+    background-color: var(--ga-surface-3);
     border-color: var(--ga-border-strong);
-    color: var(--ga-text-muted);
-}
-
-.btn-outline-secondary:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: var(--ga-accent-cyan);
-    color: var(--ga-accent-cyan);
+    color: var(--ga-text-main);
 }
 
 /* --- Badge System --- */

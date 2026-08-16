@@ -1,3 +1,5 @@
+import logging
+from django.conf import settings
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
@@ -12,6 +14,8 @@ from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth import update_session_auth_hash, get_user_model
+
+logger = logging.getLogger(__name__)
 
 from apps.teams.models import Team, TeamMember, TeamInvitation
 from apps.teams.services import create_team, update_team, remove_team_member
@@ -770,10 +774,11 @@ class ForgotPasswordAPIView(APIView):
                 f"If you did not request this, please ignore this email.\n\n"
                 f"Best regards,\nGameArena Team"
             )
+            from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
             try:
-                send_mail(subject, message, None, [user.email], fail_silently=True)
-            except Exception:
-                pass
+                send_mail(subject, message, from_email, [user.email], fail_silently=False)
+            except Exception as e:
+                logger.exception("Failed to send password reset email to %s: %s", user.email, e)
 
         return Response({"detail": generic_message}, status=status.HTTP_200_OK)
 
@@ -797,13 +802,18 @@ class ChangePasswordRequestAPIView(APIView):
             f"You requested to change your password.\n"
             f"Your verification token is:\n\n"
             f"{token}\n\n"
-            f"This verification code will expire in 1 hour.\n\n"
+            f"This verification token will expire in 1 hour.\n\n"
             f"GameArena Team"
         )
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
         try:
-            send_mail(subject, message, None, [user.email], fail_silently=True)
-        except Exception:
-            pass
+            send_mail(subject, message, from_email, [user.email], fail_silently=False)
+        except Exception as e:
+            logger.exception("Failed to send change-password verification email to %s: %s", user.email, e)
+            return Response(
+                {"detail": "Failed to send verification email. Please try again later or check system configuration."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return Response(
             {"detail": "Verification email sent to your registered email address."},

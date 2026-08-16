@@ -14,13 +14,18 @@
     --ga-primary: #2563eb;
     --ga-primary-hover: #1d4ed8;
     --ga-primary-light: #60a5fa;
+    --ga-primary-text: #ffffff;
 
     --ga-cyan: #22d3ee;
-    --ga-success: #22c55e;
-    --ga-success-hover: #16a34a;
-    --ga-warning: #f59e0b;
-    --ga-danger: #ef4444;
-    --ga-danger-hover: #dc2626;
+    --ga-success: #16a34a;
+    --ga-success-hover: #15803d;
+    --ga-success-text: #ffffff;
+    --ga-warning: #d97706;
+    --ga-warning-hover: #b45309;
+    --ga-warning-text: #ffffff;
+    --ga-danger: #dc2626;
+    --ga-danger-hover: #b91c1c;
+    --ga-danger-text: #ffffff;
     --ga-purple: #a855f7;
 
     /* Component Aliases */
@@ -528,18 +533,34 @@ form.tournament-form .form-label {
     --ga-bg: #f8fafc;
     --ga-bg-dark: #f1f5f9;
     --ga-surface: #ffffff;
-    --ga-surface-2: #ffffff;
+    --ga-surface-2: #f8fafc;
     --ga-surface-3: #f1f5f9;
+
+    --ga-primary: #2563eb;
+    --ga-primary-hover: #1d4ed8;
+    --ga-primary-light: #2563eb;
+    --ga-primary-text: #ffffff;
+
+    --ga-cyan: #0284c7;
+    --ga-success: #16a34a;
+    --ga-success-hover: #15803d;
+    --ga-success-text: #ffffff;
+    --ga-warning: #d97706;
+    --ga-warning-hover: #b45309;
+    --ga-warning-text: #ffffff;
+    --ga-danger: #dc2626;
+    --ga-danger-hover: #b91c1c;
+    --ga-danger-text: #ffffff;
 
     --ga-text: #0f172a;
     --ga-text-main: #0f172a;
     --ga-text-secondary: #334155;
     --ga-text-muted: #64748b;
     --ga-text-subtle: #64748b;
-    --ga-text-inverse: #f8fafc;
+    --ga-text-inverse: #ffffff;
 
-    --ga-border: rgba(15, 23, 42, 0.12);
-    --ga-border-strong: rgba(15, 23, 42, 0.22);
+    --ga-border: rgba(15, 23, 42, 0.15);
+    --ga-border-strong: rgba(15, 23, 42, 0.28);
 
     --ga-shadow-sm: 0 2px 8px rgba(15, 23, 42, .06);
     --ga-shadow-md: 0 8px 24px rgba(15, 23, 42, .09);
@@ -556,7 +577,7 @@ form.tournament-form .form-label {
     --ga-sidebar-muted: #64748b;
 
     --ga-card-bg: #ffffff;
-    --ga-card-border: rgba(15, 23, 42, 0.12);
+    --ga-card-border: rgba(15, 23, 42, 0.15);
 
     --ga-input-bg: #ffffff;
     --ga-input-border: #cbd5e1;

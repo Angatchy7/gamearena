@@ -1,6 +1,8 @@
+from unittest.mock import patch
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth.tokens import default_token_generator
@@ -61,6 +63,8 @@ class PasswordRecoveryAndChangeTests(TestCase):
         req_res = self.client.post("/api/auth/change-password/request/", format="json")
         self.assertEqual(req_res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 1)
+        # Token must NOT be in API response
+        self.assertNotIn("token", req_res.data)
 
         token = signer.sign(f"{self.user.pk}:{self.user.email}")
 
@@ -107,3 +111,25 @@ class PasswordRecoveryAndChangeTests(TestCase):
             format="json",
         )
         self.assertEqual(verify_res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch("apps.api.views.send_mail")
+    def test_change_password_request_email_failure_handled(self, mock_send_mail):
+        mock_send_mail.side_effect = Exception("SMTP connection refused")
+        self.client.force_authenticate(user=self.user)
+
+        req_res = self.client.post("/api/auth/change-password/request/", format="json")
+        self.assertEqual(req_res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("Failed to send verification email", req_res.data["detail"])
+
+    def test_password_reset_web_views(self):
+        # Reset form view
+        res = self.client.get(reverse("accounts:password_reset"))
+        self.assertEqual(res.status_code, 200)
+
+        # Submit reset request via web form
+        res_post = self.client.post(
+            reverse("accounts:password_reset"),
+            {"email": "testuser@example.com"},
+        )
+        self.assertEqual(res_post.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)

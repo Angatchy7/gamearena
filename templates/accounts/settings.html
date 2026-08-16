@@ -102,7 +102,8 @@
                     <div id="pw-verify-container" class="mb-3 p-3 rounded-3" style="border: 1px solid var(--ga-border); background: var(--ga-surface-2);">
                         <div id="pw-step-1">
                             <div class="fw-bold small mb-1"><i class="bi bi-shield-check text-cyan me-1"></i> Email-Verified Password Change</div>
-                            <div class="text-muted small mb-3">Request a secure verification code to your email (<b>{{ user.email|default:user.username }}</b>) before updating.</div>
+                            <div class="text-muted small mb-3">Request a secure verification token to your email (<b>{{ user.email|default:user.username }}</b>) before updating.</div>
+                            <div id="pw-request-msg" class="d-none alert p-2 small mb-3"></div>
                             <button type="button" id="btn-request-pw-verify" class="btn btn-outline-cyan btn-sm fw-bold">
                                 <i class="bi bi-send me-1"></i> Send Verification Email
                             </button>
@@ -110,7 +111,7 @@
 
                         <div id="pw-step-2" class="d-none">
                             <div class="alert alert-success p-2 small mb-3">
-                                <i class="bi bi-check-circle me-1"></i> Verification code sent! Check your inbox.
+                                <i class="bi bi-check-circle me-1"></i> Verification token sent! Check your email inbox.
                             </div>
                             <div class="mb-2">
                                 <label for="pw-verify-token" class="form-label text-muted small fw-bold">Verification Token</label>
@@ -126,7 +127,7 @@
                             </div>
                             <div id="pw-verify-msg" class="d-none alert p-2 small mb-3"></div>
                             <div class="d-flex gap-2">
-                                <button type="button" id="btn-submit-pw-verify" class="btn btn-cyan btn-sm fw-bold">
+                                <button type="button" id="btn-submit-pw-verify" class="btn btn-primary btn-sm fw-bold">
                                     <i class="bi bi-key me-1"></i> Update Password
                                 </button>
                                 <button type="button" id="btn-cancel-pw-verify" class="btn btn-outline-secondary btn-sm">Cancel</button>
@@ -143,6 +144,8 @@
                     <script>
                         document.getElementById('btn-request-pw-verify')?.addEventListener('click', function() {
                             var btn = this;
+                            var reqMsg = document.getElementById('pw-request-msg');
+                            if (reqMsg) reqMsg.classList.add('d-none');
                             btn.disabled = true;
                             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
                             fetch('/api/auth/change-password/request/', {
@@ -151,11 +154,31 @@
                                     'X-CSRFToken': '{{ csrf_token }}',
                                     'Content-Type': 'application/json'
                                 }
-                            }).then(function(res) { return res.json(); }).then(function(data) {
-                                document.getElementById('pw-step-1').classList.add('d-none');
-                                document.getElementById('pw-step-2').classList.remove('d-none');
+                            }).then(function(res) {
+                                return res.json().then(function(data) {
+                                    return { status: res.status, data: data };
+                                });
+                            }).then(function(result) {
+                                if (result.status === 200) {
+                                    document.getElementById('pw-step-1').classList.add('d-none');
+                                    document.getElementById('pw-step-2').classList.remove('d-none');
+                                } else {
+                                    if (reqMsg) {
+                                        reqMsg.className = 'alert alert-danger p-2 small mb-3';
+                                        reqMsg.textContent = result.data.detail || 'Failed to send verification email.';
+                                        reqMsg.classList.remove('d-none');
+                                    } else {
+                                        alert(result.data.detail || 'Failed to send verification email.');
+                                    }
+                                }
                             }).catch(function(err) {
-                                alert('Error requesting verification email.');
+                                if (reqMsg) {
+                                    reqMsg.className = 'alert alert-danger p-2 small mb-3';
+                                    reqMsg.textContent = 'Error requesting verification email.';
+                                    reqMsg.classList.remove('d-none');
+                                } else {
+                                    alert('Error requesting verification email.');
+                                }
                             }).finally(function() {
                                 btn.disabled = false;
                                 btn.innerHTML = '<i class="bi bi-send me-1"></i> Send Verification Email';

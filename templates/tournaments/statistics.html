@@ -8,13 +8,13 @@ Statistics - {{ tournament.name }}
 <div class="container-fluid px-0 py-2">
 
     <!-- Header Section -->
-    <div class="card bg-dark text-white border-0 shadow-lg mb-4 overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--border) !important;">
+    <div class="card border-0 shadow-lg mb-4 overflow-hidden" style="background: var(--ga-card-bg); border: 1px solid var(--ga-border) !important;">
         <div class="card-body p-4 p-lg-5">
             <div class="row align-items-center">
                 <div class="col-lg-8 mb-3 mb-lg-0">
                     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                         {% with eff=tournament.current_status %}
-                        <span class="badge {% if eff == 'LIVE' %}bg-danger{% elif eff == 'REGISTRATION_OPEN' %}bg-success{% elif eff == 'REGISTRATION_CLOSED' %}bg-warning text-dark{% else %}bg-primary{% endif %} px-3 py-2 fs-7 fw-semibold text-uppercase">
+                        <span class="badge {% if eff == 'LIVE' %}bg-danger{% elif eff == 'REGISTRATION_OPEN' %}bg-success{% elif eff == 'REGISTRATION_CLOSED' %}bg-warning{% else %}bg-primary{% endif %} px-3 py-2 fs-7 fw-semibold text-uppercase">
                             {% if eff == 'LIVE' %}🔴 Live{% elif eff == 'REGISTRATION_OPEN' %}Registration Open{% elif eff == 'REGISTRATION_CLOSED' %}Registration Closed{% elif eff == 'COMPLETED' %}Completed{% else %}{{ tournament.get_status_display }}{% endif %}
                         </span>
                         {% endwith %}
@@ -22,19 +22,19 @@ Statistics - {{ tournament.name }}
                             <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
                         </span>
                     </div>
-                    <h1 class="fw-bold text-white mb-2 display-6">
+                    <h1 class="fw-bold text-main mb-2 display-6">
                         📊 {{ tournament.name }} — Statistics
                     </h1>
-                    <p class="text-muted mb-0">
+                    <p class="text-secondary mb-0">
                         Detailed tournament performance, match progress, and team standings.
                     </p>
                 </div>
                 <div class="col-lg-4 text-lg-end">
                     <div class="d-flex flex-wrap gap-2 justify-lg-content-end">
-                        <a href="{% url 'tournaments:matches' tournament.slug %}" class="btn btn-outline-light px-3 py-2">
+                        <a href="{% url 'tournaments:matches' tournament.slug %}" class="btn btn-outline-primary px-3 py-2">
                             <i class="bi bi-controller me-1"></i> Matches
                         </a>
-                        <a href="{% url 'tournaments:bracket' tournament.slug %}" class="btn btn-outline-light px-3 py-2">
+                        <a href="{% url 'tournaments:bracket' tournament.slug %}" class="btn btn-outline-primary px-3 py-2">
                             <i class="bi bi-diagram-3 me-1"></i> Bracket
                         </a>
                         <a href="{% url 'tournaments:leaderboard' tournament.slug %}" class="btn btn-outline-warning px-3 py-2">
@@ -45,7 +45,7 @@ Statistics - {{ tournament.name }}
                             <i class="bi bi-speedometer2 me-1"></i> Dashboard
                         </a>
                         {% else %}
-                        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-outline-light px-3 py-2">
+                        <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-outline-secondary px-3 py-2">
                             <i class="bi bi-arrow-left me-1"></i> Details
                         </a>
                         {% endif %}
@@ -56,23 +56,23 @@ Statistics - {{ tournament.name }}
     </div>
 
     <!-- Summary Statistics Grid -->
-    <h4 class="fw-bold mb-3" style="color: #f8fafc;">
+    <h4 class="fw-bold text-main mb-3">
         <i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Tournament Overview
     </h4>
     <div class="row g-3 mb-4">
         
         <!-- 1. Registered Teams -->
         <div class="col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100 p-2" style="background: #1e293b !important; border: 1px solid rgba(148, 163, 184, 0.2) !important; border-radius: 12px;">
+            <div class="card shadow-sm border-0 h-100 p-2" style="background: var(--ga-card-bg) !important; border: 1px solid var(--ga-border) !important; border-radius: 12px;">
                 <div class="card-body text-center p-2">
-                    <div style="color: #cbd5e1;" class="small text-uppercase fw-bold mb-1">
+                    <div class="text-secondary small text-uppercase fw-bold mb-1">
                         <i class="bi bi-people-fill text-cyan me-1"></i> Teams
                     </div>
-                    <h3 class="fw-bold mb-0" style="color: #f8fafc;">
-                        {{ participant_count }} <small class="fs-6" style="color: #94a3b8;">/ {{ tournament.max_participants }}</small>
+                    <h3 class="fw-bold text-main mb-0">
+                        {{ participant_count }} <small class="fs-6 text-muted">/ {{ tournament.max_participants }}</small>
                     </h3>
-                    <div class="progress mt-2" style="height: 5px; background: rgba(255,255,255,0.08);">
-                        <div class="progress-bar" style="width: {{ registration_percentage }}%; background: #22d3ee;"></div>
+                    <div class="progress mt-2" style="height: 5px; background: rgba(148, 163, 184, 0.15);">
+                        <div class="progress-bar" style="width: {{ registration_percentage }}%; background: var(--ga-cyan);"></div>
                     </div>
                 </div>
             </div>
@@ -80,60 +80,60 @@ Statistics - {{ tournament.name }}
 
         <!-- 2. Total Matches -->
         <div class="col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100 p-2" style="background: #1e293b !important; border: 1px solid rgba(148, 163, 184, 0.2) !important; border-radius: 12px;">
+            <div class="card shadow-sm border-0 h-100 p-2" style="background: var(--ga-card-bg) !important; border: 1px solid var(--ga-border) !important; border-radius: 12px;">
                 <div class="card-body text-center p-2">
-                    <div style="color: #cbd5e1;" class="small text-uppercase fw-bold mb-1">
+                    <div class="text-secondary small text-uppercase fw-bold mb-1">
                         <i class="bi bi-controller text-primary me-1"></i> Matches
                     </div>
-                    <h3 class="fw-bold mb-0" style="color: #60a5fa;">
+                    <h3 class="fw-bold text-primary mb-0">
                         {{ total_matches_count }}
                     </h3>
-                    <small style="color: #94a3b8;">Total Fixtures</small>
+                    <small class="text-muted">Total Fixtures</small>
                 </div>
             </div>
         </div>
 
         <!-- 3. Completed Matches -->
         <div class="col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100 p-2" style="background: #1e293b !important; border: 1px solid rgba(148, 163, 184, 0.2) !important; border-radius: 12px;">
+            <div class="card shadow-sm border-0 h-100 p-2" style="background: var(--ga-card-bg) !important; border: 1px solid var(--ga-border) !important; border-radius: 12px;">
                 <div class="card-body text-center p-2">
-                    <div style="color: #cbd5e1;" class="small text-uppercase fw-bold mb-1">
+                    <div class="text-secondary small text-uppercase fw-bold mb-1">
                         <i class="bi bi-check-circle-fill text-success me-1"></i> Completed
                     </div>
-                    <h3 class="fw-bold mb-0" style="color: #22c55e;">
+                    <h3 class="fw-bold text-success mb-0">
                         {{ completed_matches_count }}
                     </h3>
-                    <small style="color: #94a3b8;">Played Games</small>
+                    <small class="text-muted">Played Games</small>
                 </div>
             </div>
         </div>
 
         <!-- 4. Remaining Matches -->
         <div class="col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100 p-2" style="background: #1e293b !important; border: 1px solid rgba(148, 163, 184, 0.2) !important; border-radius: 12px;">
+            <div class="card shadow-sm border-0 h-100 p-2" style="background: var(--ga-card-bg) !important; border: 1px solid var(--ga-border) !important; border-radius: 12px;">
                 <div class="card-body text-center p-2">
-                    <div style="color: #cbd5e1;" class="small text-uppercase fw-bold mb-1">
+                    <div class="text-secondary small text-uppercase fw-bold mb-1">
                         <i class="bi bi-hourglass-split text-warning me-1"></i> Remaining
                     </div>
-                    <h3 class="fw-bold mb-0" style="color: #f59e0b;">
+                    <h3 class="fw-bold text-warning mb-0">
                         {{ remaining_matches_count }}
                     </h3>
-                    <small style="color: #94a3b8;">Pending Games</small>
+                    <small class="text-muted">Pending Games</small>
                 </div>
             </div>
         </div>
 
         <!-- 5. Completion Rate -->
         <div class="col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100 p-2" style="background: #1e293b !important; border: 1px solid rgba(148, 163, 184, 0.2) !important; border-radius: 12px;">
+            <div class="card shadow-sm border-0 h-100 p-2" style="background: var(--ga-card-bg) !important; border: 1px solid var(--ga-border) !important; border-radius: 12px;">
                 <div class="card-body text-center p-2">
-                    <div style="color: #cbd5e1;" class="small text-uppercase fw-bold mb-1">
+                    <div class="text-secondary small text-uppercase fw-bold mb-1">
                         <i class="bi bi-percent text-success me-1"></i> Progress
                     </div>
-                    <h3 class="fw-bold mb-0" style="color: #f8fafc;">
+                    <h3 class="fw-bold text-main mb-0">
                         {{ completion_percentage }}%
                     </h3>
-                    <div class="progress mt-2" style="height: 5px; background: rgba(255,255,255,0.08);">
+                    <div class="progress mt-2" style="height: 5px; background: rgba(148, 163, 184, 0.15);">
                         <div class="progress-bar bg-success" style="width: {{ completion_percentage }}%;"></div>
                     </div>
                 </div>
@@ -142,19 +142,19 @@ Statistics - {{ tournament.name }}
 
         <!-- 6. Champion -->
         <div class="col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100 p-2" style="background: #1e293b !important; border: 1px solid rgba(245, 158, 11, 0.4) !important; border-radius: 12px;">
+            <div class="card shadow-sm border-0 h-100 p-2" style="background: var(--ga-card-bg) !important; border: 1px solid var(--ga-warning) !important; border-radius: 12px;">
                 <div class="card-body text-center p-2">
-                    <div style="color: #f59e0b;" class="small text-uppercase fw-bold mb-1">
+                    <div class="text-warning small text-uppercase fw-bold mb-1">
                         <i class="bi bi-trophy-fill me-1"></i> Champion
                     </div>
-                    <h4 class="fw-bold mb-0 text-truncate fs-6" style="color: #f59e0b;">
+                    <h4 class="fw-bold text-warning mb-0 text-truncate fs-6">
                         {% if tournament.champion %}
                             {{ tournament.champion.name }}
                         {% else %}
-                            <span style="color: #94a3b8;" class="fs-7 italic">Undecided</span>
+                            <span class="fs-7 text-muted italic">Undecided</span>
                         {% endif %}
                     </h4>
-                    <small style="color: #94a3b8;">Tournament Winner</small>
+                    <small class="text-muted">Tournament Winner</small>
                 </div>
             </div>
         </div>
@@ -166,55 +166,59 @@ Statistics - {{ tournament.name }}
 
         <!-- Performance Metrics -->
         <div class="col-lg-4">
-            <h4 class="fw-bold mb-3" style="color: #f8fafc;">
+            <h4 class="fw-bold text-main mb-3">
                 <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Performance
             </h4>
-            <div class="card shadow-sm border-0 h-100" style="background: #1e293b; border-radius: 16px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <div class="card shadow-sm border-0 h-100" style="background: var(--ga-card-bg); border-radius: 16px; border: 1px solid var(--ga-border) !important;">
                 <div class="card-body p-4 d-flex flex-column justify-content-between">
                     
                     <div class="d-flex align-items-center mb-4">
-                        <div class="d-flex align-items-center justify-content-center rounded-3 me-3" style="width: 48px; height: 48px; background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; flex-shrink: 0;">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 me-3" style="width: 48px; height: 48px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(37, 99, 235, 0.3); color: var(--ga-primary); flex-shrink: 0;">
                             <i class="bi bi-bullseye fs-4"></i>
                         </div>
                         <div>
-                            <div style="color: #cbd5e1;" class="small text-uppercase fw-bold">Total Goals / Points</div>
-                            <h2 class="fw-bold mb-0" style="color: #f8fafc;">{{ total_goals }}</h2>
-                            <small style="color: #94a3b8;">Tournament total</small>
+                            <div class="text-secondary small text-uppercase fw-bold">Total Goals / Points</div>
+                            <h2 class="fw-bold text-main mb-0">{{ total_goals }}</h2>
+                            <small class="text-muted">Tournament total</small>
                         </div>
                     </div>
 
                     <div class="d-flex align-items-center mb-4">
-                        <div class="d-flex align-items-center justify-content-center rounded-3 me-3" style="width: 48px; height: 48px; background: rgba(34, 211, 238, 0.18); border: 1px solid rgba(34, 211, 238, 0.3); color: #22d3ee; flex-shrink: 0;">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 me-3" style="width: 48px; height: 48px; background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(2, 132, 199, 0.3); color: var(--ga-cyan); flex-shrink: 0;">
                             <i class="bi bi-graph-up-arrow fs-4"></i>
                         </div>
                         <div>
-                            <div style="color: #cbd5e1;" class="small text-uppercase fw-bold">Average Goals / Match</div>
-                            <h2 class="fw-bold mb-0" style="color: #f8fafc;">{{ avg_goals }}</h2>
-                            <small style="color: #94a3b8;">Per completed match</small>
+                            <div class="text-secondary small text-uppercase fw-bold">Average Goals / Match</div>
+                            <h2 class="fw-bold text-main mb-0">{{ avg_goals }}</h2>
+                            <small class="text-muted">Per completed match</small>
                         </div>
                     </div>
 
-                    <hr style="border-top: 1px solid rgba(148, 163, 184, 0.2);" class="my-3">
+                    <hr style="border-top: 1px solid var(--ga-border);" class="my-3">
 
                     <!-- Highest Scoring Match -->
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-2">
-                            <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 32px; height: 32px; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;">
+                            <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 32px; height: 32px; background: rgba(220, 38, 38, 0.15); border: 1px solid rgba(220, 38, 38, 0.3); color: var(--ga-danger);">
                                 <i class="bi bi-fire fs-6"></i>
                             </div>
-                            <div style="color: #cbd5e1;" class="small text-uppercase fw-bold">Highest Scoring Match</div>
+                            <div class="text-secondary small text-uppercase fw-bold">Highest Scoring Match</div>
                         </div>
                         {% if highest_scoring_match %}
-                        <div class="p-3 rounded-3" style="background: #18243a; border: 1px solid rgba(148, 163, 184, 0.2);">
-                            <div class="fw-bold fs-6 mb-1" style="color: #f8fafc;">
+                        <div class="p-3 rounded-3" style="background: var(--ga-surface); border: 1px solid var(--ga-border);">
+                            <div class="fw-bold fs-6 mb-1 text-main">
                                 {{ highest_scoring_match.team_one_display }}
-                                <span class="badge mx-1.5" style="background: #f59e0b; color: #0b1324; font-weight: 800;">{{ highest_scoring_match.team_one_score }} — {{ highest_scoring_match.team_two_score }}</span>
+                                <span class="badge mx-1.5 bg-warning text-white fw-bold">{{ highest_scoring_match.team_one_score }} — {{ highest_scoring_match.team_two_score }}</span>
                                 {{ highest_scoring_match.team_two_display }}
                             </div>
-                            <small style="color: #94a3b8;" class="d-block">{{ highest_scoring_match.round.name }} • Match #{{ highest_scoring_match.match_number }}</small>
+                            <small class="text-muted d-block">{{ highest_scoring_match.round.name }} • Match #{{ highest_scoring_match.match_number }}</small>
                         </div>
                         {% else %}
-                        <div style="color: #94a3b8;" class="small italic">No matches completed yet</div>
+                        <div class="p-3 rounded-3 text-center" style="background: var(--ga-surface); border: 1px solid var(--ga-border);">
+                            <i class="bi bi-controller fs-4 text-muted mb-1 d-block"></i>
+                            <div class="fw-bold small text-main mb-1">No matches completed yet</div>
+                            <small class="text-muted">Match statistics will appear once the first match is completed.</small>
+                        </div>
                         {% endif %}
                     </div>
 
@@ -224,61 +228,65 @@ Statistics - {{ tournament.name }}
 
         <!-- Team Standings / Leaderboard -->
         <div class="col-lg-8">
-            <h4 class="fw-bold mb-3" style="color: #f8fafc;">
+            <h4 class="fw-bold text-main mb-3">
                 <i class="bi bi-trophy-fill text-warning me-2"></i> Team Standings
             </h4>
-            <div class="card shadow-sm border-0" style="background: #1e293b; border-radius: 16px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <div class="card shadow-sm border-0" style="background: var(--ga-card-bg); border-radius: 16px; border: 1px solid var(--ga-border) !important;">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-dark table-hover mb-0 align-middle" style="background: transparent;">
-                            <thead style="border-bottom: 1px solid rgba(148, 163, 184, 0.25);">
+                            <thead style="border-bottom: 1px solid var(--ga-border);">
                                 <tr>
-                                    <th class="ps-4 py-3" style="color: #cbd5e1; font-weight: 700;">#</th>
-                                    <th class="py-3" style="color: #cbd5e1; font-weight: 700;">Team / Player</th>
-                                    <th class="text-center py-3" style="color: #cbd5e1; font-weight: 700;">Played</th>
-                                    <th class="text-center py-3" style="color: #cbd5e1; font-weight: 700;">Wins</th>
-                                    <th class="text-center py-3" style="color: #cbd5e1; font-weight: 700;">Losses</th>
-                                    <th class="text-center py-3" style="color: #cbd5e1; font-weight: 700;">GF</th>
-                                    <th class="text-center py-3" style="color: #cbd5e1; font-weight: 700;">GA</th>
-                                    <th class="text-center py-3 pe-4" style="color: #cbd5e1; font-weight: 700;">GD</th>
+                                    <th class="ps-4 py-3 text-secondary fw-bold">#</th>
+                                    <th class="py-3 text-secondary fw-bold">Team / Player</th>
+                                    <th class="text-center py-3 text-secondary fw-bold">Played</th>
+                                    <th class="text-center py-3 text-secondary fw-bold">Wins</th>
+                                    <th class="text-center py-3 text-secondary fw-bold">Losses</th>
+                                    <th class="text-center py-3 text-secondary fw-bold">GF</th>
+                                    <th class="text-center py-3 text-secondary fw-bold">GA</th>
+                                    <th class="text-center py-3 pe-4 text-secondary fw-bold">GD</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for rank in team_rankings %}
-                                <tr style="border-bottom: 1px solid rgba(148, 163, 184, 0.1);">
+                                <tr style="border-bottom: 1px solid var(--ga-border);">
                                     <td class="ps-4 fw-bold">
                                         {% if forloop.counter == 1 %}
-                                            <span class="badge me-1" style="background: #f59e0b; color: #0b1324; font-weight: 800;">🥇 1</span>
+                                            <span class="badge me-1 bg-warning text-white fw-bold">🥇 1</span>
                                         {% elif forloop.counter == 2 %}
-                                            <span class="badge me-1" style="background: #94a3b8; color: #0b1324; font-weight: 800;">🥈 2</span>
+                                            <span class="badge me-1 bg-secondary text-white fw-bold">🥈 2</span>
                                         {% elif forloop.counter == 3 %}
-                                            <span class="badge me-1" style="background: #d97706; color: #ffffff; font-weight: 800;">🥉 3</span>
+                                            <span class="badge me-1 bg-danger text-white fw-bold">🥉 3</span>
                                         {% else %}
-                                            <span style="color: #cbd5e1;">{{ forloop.counter }}</span>
+                                            <span class="text-secondary">{{ forloop.counter }}</span>
                                         {% endif %}
                                     </td>
-                                    <td class="fw-bold" style="color: #f8fafc;">
+                                    <td class="fw-bold text-main">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 12px; background: linear-gradient(135deg, #2563eb, #3b82f6); flex-shrink: 0;">
+                                            <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center bg-primary" style="width: 30px; height: 30px; font-size: 12px; flex-shrink: 0;">
                                                 {{ rank.team.display_name|slice:":2"|upper }}
                                             </div>
                                             {{ rank.team.display_name }}
                                         </div>
                                     </td>
 
-                                    <td class="text-center" style="color: #cbd5e1;">{{ rank.matches_played }}</td>
-                                    <td class="text-center fw-bold" style="color: #22c55e;">{{ rank.wins }}</td>
-                                    <td class="text-center" style="color: #ef4444;">{{ rank.losses }}</td>
-                                    <td class="text-center" style="color: #cbd5e1;">{{ rank.goals_scored }}</td>
-                                    <td class="text-center" style="color: #cbd5e1;">{{ rank.goals_conceded }}</td>
-                                    <td class="text-center pe-4 font-monospace fw-bold {% if rank.goal_difference > 0 %}text-success{% elif rank.goal_difference < 0 %}text-danger{% else %}{% endif %}" style="{% if rank.goal_difference == 0 %}color: #94a3b8;{% endif %}">
+                                    <td class="text-center text-secondary">{{ rank.matches_played }}</td>
+                                    <td class="text-center fw-bold text-success">{{ rank.wins }}</td>
+                                    <td class="text-center text-danger">{{ rank.losses }}</td>
+                                    <td class="text-center text-secondary">{{ rank.goals_scored }}</td>
+                                    <td class="text-center text-secondary">{{ rank.goals_conceded }}</td>
+                                    <td class="text-center pe-4 font-monospace fw-bold {% if rank.goal_difference > 0 %}text-success{% elif rank.goal_difference < 0 %}text-danger{% else %}text-muted{% endif %}">
                                         {% if rank.goal_difference > 0 %}+{% endif %}{{ rank.goal_difference }}
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="8" class="text-center py-4" style="color: #94a3b8;">
-                                        No registered teams or statistics recorded yet.
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="d-flex flex-column align-items-center justify-content-center">
+                                            <i class="bi bi-people fs-2 text-muted mb-2"></i>
+                                            <div class="fw-bold text-main mb-1">No registered teams yet</div>
+                                            <small class="text-muted">Team standings and rankings will appear here once teams register for this tournament.</small>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
