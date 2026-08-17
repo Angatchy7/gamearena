@@ -16,6 +16,45 @@
 
     {% include "tournaments/partials/tournament_header.html" %}
 
+    <!-- Contextual Tournament Navigation Tabs -->
+    <div class="card border-0 shadow-sm mb-4" style="background: var(--ga-card-bg, #1e293b); border-radius: 14px; border: 1px solid var(--ga-border, rgba(255,255,255,0.08)) !important;">
+        <div class="card-body p-2">
+            <ul class="nav nav-pills ga-tournament-nav-pills gap-1.5 flex-nowrap overflow-auto" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active px-3 py-2 fw-bold text-nowrap rounded-3" href="{% url 'tournaments:detail' tournament.slug %}">
+                        <i class="bi bi-grid-fill me-1.5"></i> Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 fw-bold text-nowrap text-secondary rounded-3" href="{% url 'tournaments:matches' tournament.slug %}">
+                        <i class="bi bi-controller me-1.5"></i> Matches
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 fw-bold text-nowrap text-secondary rounded-3" href="{% url 'tournaments:bracket' tournament.slug %}">
+                        <i class="bi bi-diagram-3-fill me-1.5"></i> Bracket
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 fw-bold text-nowrap text-secondary rounded-3" href="{% url 'tournaments:leaderboard' tournament.slug %}">
+                        <i class="bi bi-trophy-fill me-1.5"></i> Leaderboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 fw-bold text-nowrap text-secondary rounded-3" href="{% url 'tournaments:statistics' tournament.slug %}">
+                        <i class="bi bi-bar-chart-line-fill me-1.5"></i> Statistics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 py-2 fw-bold text-nowrap text-secondary rounded-3 d-inline-flex align-items-center gap-1.5" href="{% url 'tournaments:participants' tournament.slug %}">
+                        <i class="bi bi-people-fill me-1"></i> Participants
+                        <span class="badge bg-primary bg-opacity-20 text-primary rounded-pill px-2 py-0.5" style="font-size: 0.75rem;">{{ tournament.registrations.count }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
     <div class="row g-4">
 
         <!-- LEFT SIDE: Overview & Hub Navigation -->

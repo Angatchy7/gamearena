@@ -1,24 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
   <defs>
     <linearGradient id="ff-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1a0a00"/>
-      <stop offset="40%" stop-color="#7c2d12"/>
-      <stop offset="100%" stop-color="#0f0a00"/>
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="50%" stop-color="#7c2d12"/>
+      <stop offset="85%" stop-color="#c2410c"/>
+      <stop offset="100%" stop-color="#f97316"/>
     </linearGradient>
-    <linearGradient id="ff-flame" x1="0%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%" stop-color="#dc2626"/>
-      <stop offset="50%" stop-color="#f97316"/>
-      <stop offset="100%" stop-color="#fbbf24"/>
-    </linearGradient>
-    <radialGradient id="ff-glow" cx="50%" cy="60%" r="50%">
-      <stop offset="0%" stop-color="#f97316" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
-    </radialGradient>
   </defs>
+
   <rect width="800" height="450" fill="url(#ff-bg)"/>
-  <ellipse cx="400" cy="280" rx="280" ry="140" fill="url(#ff-glow)"/>
-  <path d="M310 320 Q320 260 350 240 Q340 280 360 270 Q355 230 390 200 Q385 250 410 235 Q400 195 430 170 Q425 220 445 205 Q440 250 460 270 Q470 280 465 320 Z" fill="url(#ff-flame)" opacity="0.9"/>
-  <path d="M330 320 Q338 275 360 258 Q354 288 370 278 Q366 250 392 228 Q388 262 405 250 Q412 280 415 320 Z" fill="#fcd34d" opacity="0.7"/>
-  <text x="400" y="375" font-family="system-ui, sans-serif" font-weight="900" font-size="42" fill="#ffffff" text-anchor="middle" letter-spacing="3">FREE FIRE</text>
-  <text x="400" y="408" font-family="system-ui, sans-serif" font-weight="600" font-size="15" fill="#f97316" text-anchor="middle" letter-spacing="8">BATTLE ROYALE</text>
+
+  <!-- Flame Graphics -->
+  <path d="M500,450 C550,300 600,200 580,100 C640,180 660,280 650,450 Z" fill="#f97316" opacity="0.4"/>
+  <path d="M550,450 C590,320 630,220 610,140 C660,220 680,310 670,450 Z" fill="#fdba74" opacity="0.5"/>
+
+  <!-- Typography -->
+  <g transform="translate(70, 230)">
+    <rect x="0" y="-35" width="150" height="30" rx="4" fill="#c2410c"/>
+    <text x="12" y="-14" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="14" fill="#ffffff" letter-spacing="3">SURVIVAL SHOOTER</text>
+    
+    <text x="0" y="45" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="64" fill="#ffffff" letter-spacing="4">FREE FIRE</text>
+    <text x="0" y="88" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="16" fill="#fdba74" letter-spacing="5">GARENA BATTLE ROYALE</text>
+  </g>
 </svg>

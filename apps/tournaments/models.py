@@ -7,6 +7,8 @@ from django.utils import timezone
 
 
 
+import os
+
 class Game(models.Model):
     """
     Supported games that tournaments can be created for.
@@ -58,62 +60,53 @@ class Game(models.Model):
         return self.name
 
     @property
-    def image_url(self):
-        """
-        Returns uploaded game logo URL if present and file exists,
-        else returns a game-specific default artwork,
-        else returns the generic game default.
+    def artwork_url(self):
+        """Return the canonical public game artwork from local WebP assets.
 
-        Priority ordering for slug/name matching is intentionally ordered to
-        avoid accidental cross-matches (e.g. Rocket League must NOT match
-        the 'fc' or 'ea' patterns; PUBG Mobile must not match 'mobile'
-        strings from other games, etc.).
+        Uploaded logos remain available through image_url; public cards use this
+        stable artwork so the homepage and tournament cards consistently render
+        the same game-specific visual asset.
         """
+        slug = (self.slug or "").lower()
+        name = (self.name or "").lower()
+
+        game_key = None
+        if slug in ["pubg", "pubg-mobile", "battlegrounds-mobile-india"] or "pubg" in name or "battlegrounds" in name:
+            game_key = "pubg"
+        elif slug in ["valorant"] or "valorant" in name:
+            game_key = "valorant"
+        elif slug in ["rocket-league"] or "rocket league" in name or "rocket-league" in slug:
+            game_key = "rocket_league"
+        elif slug in ["free-fire", "garena-free-fire"] or "free fire" in name or "freefire" in name:
+            game_key = "free_fire"
+        elif slug in ["cs2", "counter-strike-2", "counter-strike"] or "counter-strike" in name or "cs2" in name:
+            game_key = "cs2"
+        elif slug in ["ea-sports-fc", "ea-fc", "fifa"] or "ea fc" in name or "ea sports fc" in name or "fifa" in name or "eafc" in slug:
+            game_key = "eafc"
+        elif slug in ["dota-2", "dota2", "dota"] or "dota" in name:
+            game_key = "dota2"
+
+        static_dir = os.path.join(settings.BASE_DIR, "static", "images", "games")
+        if game_key:
+            webp = os.path.join(static_dir, f"{game_key}.webp")
+            if os.path.exists(webp):
+                return f"/static/images/games/{game_key}.webp"
+
+        default = os.path.join(settings.BASE_DIR, "static", "images", "defaults", "game_default.webp")
+        if os.path.exists(default):
+            return "/static/images/defaults/game_default.webp"
+        return "/static/images/defaults/game_default.webp"
+
+    @property
+    def image_url(self):
+        """Return an uploaded logo when available; otherwise use canonical WebP artwork."""
         if self.logo and self.logo.name:
             try:
                 if self.logo.storage.exists(self.logo.name):
                     return self.logo.url
             except (AttributeError, ValueError):
                 pass
-
-        slug = (self.slug or "").lower()
-        name = (self.name or "").lower()
-
-        # Exact slug matches first — most reliable
-        _SLUG_MAP = {
-            "pubg": "/static/images/games/pubg.svg",
-            "pubg-mobile": "/static/images/games/pubg.svg",
-            "battlegrounds-mobile-india": "/static/images/games/pubg.svg",
-            "valorant": "/static/images/games/valorant.svg",
-            "rocket-league": "/static/images/games/rocket_league.svg",
-            "ea-sports-fc": "/static/images/games/eafc.svg",
-            "ea-fc": "/static/images/games/eafc.svg",
-            "fifa": "/static/images/games/eafc.svg",
-            "cs2": "/static/images/games/cs2.svg",
-            "counter-strike-2": "/static/images/games/cs2.svg",
-            "counter-strike": "/static/images/games/cs2.svg",
-            "free-fire": "/static/images/games/free_fire.svg",
-            "garena-free-fire": "/static/images/games/free_fire.svg",
-        }
-        if slug in _SLUG_MAP:
-            return _SLUG_MAP[slug]
-
-        # Name substring fallback — ordered so 'rocket league' is caught
-        # BEFORE the generic 'league' or 'fc' checks.
-        if "pubg" in name or "battlegrounds" in name:
-            return "/static/images/games/pubg.svg"
-        if "valorant" in name:
-            return "/static/images/games/valorant.svg"
-        if "rocket league" in name or "rocket-league" in slug:
-            return "/static/images/games/rocket_league.svg"
-        if "free fire" in name or "freefire" in name:
-            return "/static/images/games/free_fire.svg"
-        if "counter-strike" in slug or "cs2" in slug or "counter-strike" in name or "cs2" in name:
-            return "/static/images/games/cs2.svg"
-        if "ea fc" in name or "ea sports fc" in name or "fifa" in name or "eafc" in slug:
-            return "/static/images/games/eafc.svg"
-
-        return "/static/images/defaults/game_default.svg"
+        return self.artwork_url
 
 
 
@@ -351,9 +344,37 @@ class Tournament(models.Model):
         return self.current_status == self.Status.REGISTRATION_OPEN
 
     @property
+    def card_image_url(self):
+        """Public tournament-card artwork: uploaded cover first, then game artwork."""
+        if self.cover_image and self.cover_image.name:
+            try:
+                if self.cover_image.storage.exists(self.cover_image.name):
+                    return self.cover_image.url
+            except (AttributeError, ValueError):
+                pass
+        return self.game.artwork_url if self.game_id else "/static/images/defaults/tournament_cover.webp"
+
+    @property
+    def banner_display_url(self):
+        """Public tournament hero art: uploaded banner/cover, then game artwork."""
+        if self.banner and self.banner.name:
+            try:
+                if self.banner.storage.exists(self.banner.name):
+                    return self.banner.url
+            except (AttributeError, ValueError):
+                pass
+        if self.cover_image and self.cover_image.name:
+            try:
+                if self.cover_image.storage.exists(self.cover_image.name):
+                    return self.cover_image.url
+            except (AttributeError, ValueError):
+                pass
+        return self.game.artwork_url if self.game_id else "/static/images/defaults/tournament_banner.webp"
+
+    @property
     def cover_url(self):
         """
-        Priority: uploaded cover image -> uploaded banner -> game artwork -> default cover SVG.
+        Priority: uploaded cover image -> uploaded banner -> game artwork -> default cover image.
         Falls back if the physical file no longer exists.
         """
         if self.cover_image and self.cover_image.name:
@@ -370,12 +391,18 @@ class Tournament(models.Model):
                 pass
         if self.game_id:
             return self.game.image_url
-        return "/static/images/defaults/tournament_cover.svg"
+
+        default_dir = os.path.join(settings.BASE_DIR, "static", "images", "defaults")
+        for ext in ["webp", "png", "jpg", "jpeg", "svg"]:
+            if os.path.exists(os.path.join(default_dir, f"tournament_cover.{ext}")):
+                return f"/static/images/defaults/tournament_cover.{ext}"
+
+        return "/static/images/defaults/tournament_cover.webp"
 
     @property
     def banner_url(self):
         """
-        Priority: uploaded banner -> uploaded cover image -> game artwork -> default banner SVG.
+        Priority: uploaded banner -> uploaded cover image -> game artwork -> default banner image.
         Falls back if the physical file no longer exists.
         """
         if self.banner and self.banner.name:
@@ -392,7 +419,24 @@ class Tournament(models.Model):
                 pass
         if self.game_id:
             return self.game.image_url
-        return "/static/images/defaults/tournament_banner.svg"
+
+        default_dir = os.path.join(settings.BASE_DIR, "static", "images", "defaults")
+        for ext in ["webp", "png", "jpg", "jpeg", "svg"]:
+            if os.path.exists(os.path.join(default_dir, f"tournament_banner.{ext}")):
+                return f"/static/images/defaults/tournament_banner.{ext}"
+
+        return "/static/images/defaults/tournament_banner.webp"
+
+    @property
+    def registered_count(self):
+        """
+        Returns the total number of registrations for this tournament.
+        Uses annotated value if present, else counts database registrations.
+        """
+        if hasattr(self, "annotated_registered_count"):
+            return self.annotated_registered_count
+        return self.registrations.count()
+
 
 
 
@@ -646,4 +690,4 @@ class Match(models.Model):
     def __str__(self):
         return (
             f"{self.round.name} - Match {self.match_number}"
-        )
+        )

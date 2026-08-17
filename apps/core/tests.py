@@ -227,15 +227,15 @@ class MediaStorageTests(TestCase):
 
         # Team fallback
         team = Team.objects.create(name="Fallback Squad", manager=user)
-        self.assertEqual(team.logo_url, "/static/images/defaults/team_default.svg")
+        self.assertEqual(team.logo_url, "/static/images/defaults/team_default.webp")
 
         # Game fallback - specific artwork
         game_pubg = Game.objects.create(name="PUBG Mobile", slug="pubg-mobile")
-        self.assertEqual(game_pubg.image_url, "/static/images/games/pubg.svg")
+        self.assertEqual(game_pubg.image_url, "/static/images/games/pubg.webp")
 
         # Game fallback - generic default
         game_generic = Game.objects.create(name="Unknown Title", slug="unknown-title")
-        self.assertEqual(game_generic.image_url, "/static/images/defaults/game_default.svg")
+        self.assertEqual(game_generic.image_url, "/static/images/defaults/game_default.webp")
 
         # Tournament fallback to game artwork
         now = timezone.now()
@@ -253,8 +253,8 @@ class MediaStorageTests(TestCase):
             end_date=now + timedelta(days=3),
             contact_email="pubg@example.com",
         )
-        self.assertEqual(tourney.cover_url, "/static/images/games/pubg.svg")
-        self.assertEqual(tourney.banner_url, "/static/images/games/pubg.svg")
+        self.assertEqual(tourney.cover_url, "/static/images/games/pubg.webp")
+        self.assertEqual(tourney.banner_url, "/static/images/games/pubg.webp")
 
         # Tournament fallback to generic defaults when game has generic default
         tourney_generic = Tournament.objects.create(
@@ -272,8 +272,8 @@ class MediaStorageTests(TestCase):
             contact_email="generic@example.com",
         )
         tourney_generic.game = None
-        self.assertEqual(tourney_generic.cover_url, "/static/images/defaults/tournament_cover.svg")
-        self.assertEqual(tourney_generic.banner_url, "/static/images/defaults/tournament_banner.svg")
+        self.assertEqual(tourney_generic.cover_url, "/static/images/defaults/tournament_cover.webp")
+        self.assertEqual(tourney_generic.banner_url, "/static/images/defaults/tournament_banner.webp")
 
     def test_zero_migrations(self):
         """

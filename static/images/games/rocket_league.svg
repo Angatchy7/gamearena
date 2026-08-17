@@ -1,14 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
   <defs>
     <linearGradient id="rl-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e1b4b"/>
-      <stop offset="50%" stop-color="#1e40af"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+      <stop offset="0%" stop-color="#030712"/>
+      <stop offset="45%" stop-color="#1e1b4b"/>
+      <stop offset="80%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#f97316"/>
     </linearGradient>
   </defs>
+
   <rect width="800" height="450" fill="url(#rl-bg)"/>
-  <circle cx="400" cy="180" r="50" fill="none" stroke="#3b82f6" stroke-width="6"/>
-  <path d="M370 180 L430 180 M400 150 L400 210" stroke="#60a5fa" stroke-width="4"/>
-  <text x="400" y="310" font-family="system-ui, sans-serif" font-weight="900" font-size="34" fill="#ffffff" text-anchor="middle" letter-spacing="4">ROCKET LEAGUE</text>
-  <text x="400" y="345" font-family="system-ui, sans-serif" font-weight="600" font-size="16" fill="#60a5fa" text-anchor="middle" letter-spacing="6">HIGH-OCTANE ACTION</text>
+
+  <!-- Rocket Boost & Ball Graphic -->
+  <circle cx="580" cy="180" r="70" fill="none" stroke="#f97316" stroke-width="8" opacity="0.6"/>
+  <path d="M400,280 Q500,220 580,180" stroke="#38bdf8" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Typography -->
+  <g transform="translate(70, 230)">
+    <rect x="0" y="-35" width="165" height="30" rx="4" fill="#2563eb"/>
+    <text x="12" y="-14" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="14" fill="#ffffff" letter-spacing="3">VEHICULAR SOCCER</text>
+    
+    <text x="0" y="45" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="56" fill="#ffffff" letter-spacing="3">ROCKET LEAGUE</text>
+  </g>
 </svg>

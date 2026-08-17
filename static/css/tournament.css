@@ -673,3 +673,18 @@ form.tournament-form .form-label {
     filter: invert(0.8) !important;
     cursor: pointer;
 }
+
+/* Final tournament hero media: show the complete artwork without hard cropping. */
+.tournament-hero-card {
+    min-height: 320px;
+}
+
+.tournament-hero-card .tournament-hero-image {
+    object-fit: contain;
+}
+
+@media (max-width: 992px) {
+    .tournament-hero-card {
+        min-height: 360px;
+    }
+}

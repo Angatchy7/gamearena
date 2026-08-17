@@ -1,9 +1,8 @@
 {% extends "base.html" %}
-
 {% load static %}
 
 {% block title %}
-GameArena
+GameArena | The Ultimate Esports Platform
 {% endblock %}
 
 {% block extra_css %}
@@ -12,21 +11,23 @@ GameArena
 
 {% block content %}
 
+<!-- 1. HERO SECTION -->
 {% include "core/partials/hero.html" %}
 
-{% include "core/partials/featured_tournament.html" %}
-
+<!-- 2. LIVE & UPCOMING TOURNAMENTS CAROUSEL -->
 {% include "core/partials/live_tournaments.html" %}
 
-{% include "core/partials/registration_open.html" %}
+<!-- 3. WHY GAMERS CHOOSE GAMEARENA -->
+{% include "core/partials/why_choose.html" %}
 
+<!-- 4. BROWSE POPULAR GAMES -->
 {% include "core/partials/games.html" %}
 
+<!-- 5. READY TO COMPETE CTA -->
+{% include "core/partials/ready_to_compete.html" %}
+
+<!-- 6. PLATFORM STATISTICS -->
 {% include "core/partials/stats.html" %}
-
-{% include "core/partials/latest_tournaments.html" %}
-
-{% include "core/partials/footer_cta.html" %}
 
 <!-- =========================================================
      AUTH MODAL (INLINE LOGIN & REGISTER)
@@ -143,13 +144,11 @@ GameArena
                     </div>
                 </div>
 
-
                 <button type="submit" class="auth-submit-btn">
                     CREATE ACCOUNT
                 </button>
             </form>
         </div>
-
 
         <div class="auth-modal-footer">
             Already have an account?
@@ -175,8 +174,6 @@ GameArena
                 icon.className = 'bi bi-eye fs-6';
             }
         });
-        btn.addEventListener('mouseenter', function() { this.style.color = '#f8fafc'; });
-        btn.addEventListener('mouseleave', function() { this.style.color = '#94a3b8'; });
     });
 </script>
 

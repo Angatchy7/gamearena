@@ -1,22 +1,60 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a"/>
-      <stop offset="50%" stop-color="#78350f"/>
-      <stop offset="100%" stop-color="#451a03"/>
+    <linearGradient id="pubg-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c160c"/>
+      <stop offset="50%" stop-color="#3d2810"/>
+      <stop offset="100%" stop-color="#0a0805"/>
     </linearGradient>
-    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f59e0b"/>
-      <stop offset="100%" stop-color="#fbbf24"/>
-    </linearGradient>
+    <radialGradient id="smoke-red" cx="75%" cy="35%" r="45%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#dc2626" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect width="800" height="450" fill="url(#bg)"/>
-  <circle cx="400" cy="225" r="160" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0.2"/>
-  <circle cx="400" cy="225" r="120" fill="none" stroke="#f59e0b" stroke-width="4" opacity="0.4"/>
-  <g transform="translate(400, 190)" text-anchor="middle">
-    <path d="M-40 -40 L40 -40 L50 20 L0 50 L-50 20 Z" fill="#1e293b" stroke="url(#gold)" stroke-width="4"/>
-    <text y="10" font-family="system-ui, sans-serif" font-weight="900" font-size="28" fill="#fbbf24">PUBG</text>
+
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#pubg-bg)"/>
+  <rect width="800" height="450" fill="url(#smoke-red)"/>
+
+  <!-- Mountains / Battleground Terrain -->
+  <polygon points="0,450 150,300 350,380 500,290 800,450" fill="#291c0e" opacity="0.9"/>
+  <polygon points="200,450 450,280 650,340 800,260 800,450" fill="#171008"/>
+
+  <!-- Air Drop Supply Crate -->
+  <g transform="translate(620, 210)">
+    <!-- Red Smoke -->
+    <ellipse cx="0" cy="-30" rx="35" ry="60" fill="#f87171" opacity="0.4" filter="blur(10px)"/>
+    <!-- Crate Base -->
+    <rect x="-30" y="0" width="60" height="50" fill="#b91c1c" stroke="#7f1d1d" stroke-width="2"/>
+    <!-- Blue Tarp Top -->
+    <rect x="-34" y="-8" width="68" height="14" fill="#1d4ed8" rx="2"/>
+    <!-- Straps -->
+    <line x1="-12" y1="0" x2="-12" y2="50" stroke="#0f172a" stroke-width="4"/>
+    <line x1="12" y1="0" x2="12" y2="50" stroke="#0f172a" stroke-width="4"/>
   </g>
-  <text x="400" y="320" font-family="system-ui, sans-serif" font-weight="800" font-size="32" fill="#ffffff" text-anchor="middle" letter-spacing="4">PUBG MOBILE</text>
-  <text x="400" y="355" font-family="system-ui, sans-serif" font-weight="600" font-size="16" fill="#f59e0b" text-anchor="middle" letter-spacing="6">BATTLE ROYALE</text>
+
+  <!-- PUBG Soldier Silhouette & Helmet -->
+  <g transform="translate(280, 220)">
+    <!-- Body / Tactical Vest -->
+    <path d="M-80 180 L-60 60 L-30 40 L30 40 L60 60 L80 180 Z" fill="#2d261e"/>
+    <rect x="-40" y="60" width="80" height="90" fill="#1e1810" rx="6"/>
+    <!-- Rifle -->
+    <rect x="-100" y="30" width="180" height="16" rx="3" fill="#0f172a" transform="rotate(-15)"/>
+    <!-- Level 3 Helmet -->
+    <circle cx="0" cy="-20" r="45" fill="#3f3f46" stroke="#18181b" stroke-width="3"/>
+    <path d="M-35 -15 L35 -15 L30 10 L-30 10 Z" fill="#09090b" stroke="#71717a" stroke-width="2"/>
+    <rect x="-25" y="-8" width="50" height="8" fill="#38bdf8" opacity="0.7"/>
+  </g>
+
+  <!-- Dark Bottom Gradient for Text Legibility -->
+  <rect y="250" width="800" height="200" fill="url(#pubg-bg)" opacity="0.6"/>
+
+  <!-- Logo Overlay -->
+  <g transform="translate(60, 60)">
+    <rect x="0" y="0" width="160" height="65" fill="#000" stroke="#f59e0b" stroke-width="3" rx="4"/>
+    <text x="80" y="35" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="26" fill="#ffffff" text-anchor="middle" letter-spacing="2">PUBG</text>
+    <text x="80" y="54" font-family="'Inter', system-ui, sans-serif" font-weight="800" font-size="13" fill="#f59e0b" text-anchor="middle" letter-spacing="4">MOBILE</text>
+  </g>
+
+  <text x="60" y="150" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="22" fill="#fbbf24" letter-spacing="6">BATTLE ROYALE</text>
 </svg>

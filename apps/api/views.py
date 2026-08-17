@@ -909,3 +909,40 @@ class ChangePasswordVerifyAPIView(APIView):
 
         return Response({"detail": "Password changed successfully."}, status=status.HTTP_200_OK)
 
+
+class ChangePasswordDirectAPIView(APIView):
+    """
+    POST /api/auth/change-password/
+    Updates user password requiring current_password, new_password, confirm_password.
+    No OTP required for changing password inside Settings.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        current_password = str(request.data.get("current_password") or "").strip()
+        new_password = str(request.data.get("new_password") or "")
+        confirm_password = str(request.data.get("confirm_password") or "")
+
+        if not current_password or not new_password or not confirm_password:
+            return Response({"detail": "Current password, new password, and confirmation are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.check_password(current_password):
+            return Response({"detail": "Current password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_password != confirm_password:
+            return Response({"detail": "New password and confirmation password do not match."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            validate_password(new_password, user=user)
+        except ValidationError as e:
+            return Response({"detail": list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        update_session_auth_hash(request, user)
+
+        return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
+
+

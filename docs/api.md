@@ -29,7 +29,7 @@ Returns a collection of active games with their total tournament counts.
     "id": 1,
     "name": "PUBG Mobile",
     "slug": "pubg-mobile",
-    "image_url": "/static/images/games/pubg.svg",
+    "image_url": "/static/images/games/pubg.webp",
     "tournament_count": 5
   }
 ]
@@ -45,7 +45,7 @@ Returns detail for a single game.
   "name": "PUBG Mobile",
   "slug": "pubg-mobile",
   "description": "Battle Royale Game",
-  "image_url": "/static/images/games/pubg.svg",
+  "image_url": "/static/images/games/pubg.webp",
   "tournament_count": 5,
   "is_active": true,
   "created_at": "2026-08-15T12:00:00Z"
@@ -82,7 +82,7 @@ Returns list of tournaments matching optional filters.
       "id": 1,
       "name": "PUBG Mobile",
       "slug": "pubg-mobile",
-      "image_url": "/static/images/games/pubg.svg"
+      "image_url": "/static/images/games/pubg.webp"
     },
     "organizer": "organizer_user",
     "status": "REGISTRATION_OPEN",
@@ -93,8 +93,8 @@ Returns list of tournaments matching optional filters.
     "end_date": "2026-08-25T00:00:00Z",
     "registration_fee": "0.00",
     "prize_pool": "1000.00",
-    "cover_url": "/static/images/games/pubg.svg",
-    "banner_url": "/static/images/games/pubg.svg",
+    "cover_url": "/static/images/games/pubg.webp",
+    "banner_url": "/static/images/games/pubg.webp",
     "participation_type": "TEAM",
     "team_size": 5,
     "max_participants": 16,
@@ -125,14 +125,14 @@ Returns collection of active teams managed by `request.user`.
     "name": "Alpha PUBG Squad",
     "slug": "alpha-pubg-squad",
     "description": "PUBG Mobile Competitive Team",
-    "logo_url": "/static/images/defaults/team_default.svg",
+    "logo_url": "/static/images/defaults/team_default.webp",
     "max_players": 5,
     "is_active": true,
     "game": {
       "id": 1,
       "name": "PUBG Mobile",
       "slug": "pubg-mobile",
-      "image_url": "/static/images/games/pubg.svg"
+      "image_url": "/static/images/games/pubg.webp"
     },
     "manager": "aadar",
     "active_member_count": 5,

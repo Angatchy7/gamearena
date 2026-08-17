@@ -49,7 +49,7 @@
 
     {% endblock %}
 
-    <!-- Theme early-init: apply saved preference before first paint to prevent FOUC -->
+    <!-- Theme & Sidebar early-init: apply saved preference before first paint to prevent FOUC -->
     <script>
     (function() {
         var pref = localStorage.getItem('gamearena-theme') || localStorage.getItem('ga_theme') || 'dark';
@@ -58,6 +58,9 @@
             effective = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         }
         document.documentElement.setAttribute('data-theme', effective);
+        if (localStorage.getItem('ga_sidebar_collapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-collapsed');
+        }
     })();
     </script>
 

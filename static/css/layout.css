@@ -245,19 +245,20 @@
 
 .ga-sidebar {
 
-    width: 280px;
-    min-width: 280px;
+    width: 240px;
+    min-width: 240px;
 
     background: var(--ga-sidebar-bg);
 
     border-right: 1px solid var(--ga-sidebar-border);
 
-    padding: 24px;
+    padding: 24px 16px;
 
     overflow-y: auto;
+    overflow-x: hidden;
 
     scrollbar-width: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    transition: width 250ms cubic-bezier(0.4, 0, 0.2, 1), min-width 250ms cubic-bezier(0.4, 0, 0.2, 1), padding 250ms cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease;
 
 }
 
@@ -269,19 +270,21 @@
 
 .sidebar-brand-title {
     color: var(--ga-sidebar-title);
+    transition: opacity 200ms ease, display 250ms ease;
 }
 
 .sidebar-subtitle {
     color: var(--ga-sidebar-muted);
+    transition: opacity 200ms ease, display 250ms ease;
 }
 
 .sidebar-logo {
 
-    width: 76px;
+    width: 64px;
 
-    height: 76px;
+    height: 64px;
 
-    border-radius: 22px;
+    border-radius: 18px;
 
     background: linear-gradient(135deg,
             #2563eb,
@@ -293,11 +296,12 @@
 
     align-items: center;
 
-    font-size: 36px;
+    font-size: 30px;
 
     color: white;
 
-    box-shadow: 0 15px 35px rgba(37, 99, 235, .35);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, .35);
+    transition: width 250ms ease, height 250ms ease, font-size 250ms ease, margin 250ms ease;
 
 }
 
@@ -315,6 +319,8 @@
 
     font-weight: 700;
 
+    transition: opacity 200ms ease;
+
 }
 
 .sidebar-link {
@@ -325,7 +331,7 @@
 
     gap: 14px;
 
-    padding: 14px 18px;
+    padding: 12px 14px;
 
     margin-bottom: 8px;
 
@@ -335,11 +341,13 @@
 
     text-decoration: none;
 
-    transition: .25s;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
     position: relative;
 
     font-weight: 500;
+
+    white-space: nowrap;
 
 }
 
@@ -348,6 +356,7 @@
     width: 22px;
 
     font-size: 18px;
+    flex-shrink: 0;
 
 }
 
@@ -357,7 +366,7 @@
 
     color: var(--ga-primary);
 
-    transform: translateX(6px);
+    transform: translateX(4px);
 
 }
 
@@ -375,18 +384,104 @@
 
     position: absolute;
 
-    left: -24px;
+    left: -16px;
 
     top: 10px;
 
     width: 4px;
 
-    height: 28px;
+    height: 24px;
 
     border-radius: 5px;
 
     background: #3b82f6;
 
+}
+
+/* ===============================
+   COLLAPSED SIDEBAR (72px)
+==================================*/
+
+html.sidebar-collapsed .ga-sidebar,
+.ga-sidebar.collapsed {
+    width: 72px !important;
+    min-width: 72px !important;
+    padding: 20px 10px !important;
+}
+
+html.sidebar-collapsed .ga-sidebar .menu-title,
+html.sidebar-collapsed .ga-sidebar .sidebar-brand-title,
+html.sidebar-collapsed .ga-sidebar .sidebar-subtitle,
+html.sidebar-collapsed .ga-sidebar .sidebar-link span,
+.ga-sidebar.collapsed .menu-title,
+.ga-sidebar.collapsed .sidebar-brand-title,
+.ga-sidebar.collapsed .sidebar-subtitle,
+.ga-sidebar.collapsed .sidebar-link span {
+    display: none !important;
+    opacity: 0;
+}
+
+html.sidebar-collapsed .ga-sidebar .sidebar-header,
+.ga-sidebar.collapsed .sidebar-header {
+    margin-bottom: 12px !important;
+}
+
+html.sidebar-collapsed .ga-sidebar .sidebar-logo,
+.ga-sidebar.collapsed .sidebar-logo {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 20px !important;
+    margin-bottom: 0 !important;
+    border-radius: 12px !important;
+}
+
+html.sidebar-collapsed .ga-sidebar .sidebar-link,
+.ga-sidebar.collapsed .sidebar-link {
+    justify-content: center !important;
+    padding: 12px 0 !important;
+    gap: 0 !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+html.sidebar-collapsed .ga-sidebar .sidebar-link i,
+.ga-sidebar.collapsed .sidebar-link i {
+    width: auto !important;
+    font-size: 20px !important;
+    margin: 0 auto !important;
+}
+
+html.sidebar-collapsed .ga-sidebar .sidebar-link.active::before,
+.ga-sidebar.collapsed .sidebar-link.active::before {
+    left: -10px !important;
+}
+
+html.sidebar-collapsed .ga-sidebar hr,
+.ga-sidebar.collapsed hr {
+    margin: 12px 0 !important;
+}
+
+/* Collapsed Sidebar Hover Tooltips */
+html.sidebar-collapsed .ga-sidebar .sidebar-link:hover::after,
+.ga-sidebar.collapsed .sidebar-link:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 12px;
+    background: var(--ga-dropdown-bg, #1e293b);
+    color: var(--ga-text-main, #f8fafc);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 1050;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--ga-border);
+    pointer-events: none;
 }
 
 /* ===============================

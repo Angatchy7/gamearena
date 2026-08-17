@@ -1,5 +1,71 @@
-<footer class="ga-footer">
+<footer class="ga-footer pt-4 pb-3 position-relative mt-5" style="background: var(--ga-surface-2, #0f172a); border-top: 1px solid var(--ga-border, rgba(255,255,255,0.08));">
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <!-- Brand Column -->
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="logo-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="bi bi-controller fs-5"></i>
+                    </div>
+                    <span class="fw-extrabold fs-4 tracking-tight text-main">GameArena</span>
+                </div>
+                <p class="text-muted small mb-4" style="max-width: 320px; line-height: 1.6;">
+                    The ultimate esports tournament platform. Play competitive matches, manage rosters, host custom tournaments, and climb global leaderboards.
+                </p>
+                <div class="d-flex align-items-center gap-2 text-muted">
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" title="Discord" onclick="return false;"><i class="bi bi-discord"></i></a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" title="Twitter / X" onclick="return false;"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" title="YouTube" onclick="return false;"><i class="bi bi-youtube"></i></a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" title="Twitch" onclick="return false;"><i class="bi bi-twitch"></i></a>
+                </div>
+            </div>
 
-    © 2026 GameArena
+            <!-- Column 2: Platform -->
+            <div class="col-lg-2 col-md-6 col-6">
+                <h6 class="fw-bold text-main mb-3 text-uppercase small" style="letter-spacing: 0.05em;">Platform</h6>
+                <ul class="list-unstyled d-flex flex-column gap-2 small text-muted">
+                    <li><a href="{% url 'tournaments:list' %}" class="text-reset text-decoration-none hover-white"><i class="bi bi-trophy me-1.5"></i> Tournaments</a></li>
+                    <li><a href="{% url 'core:games' %}" class="text-reset text-decoration-none hover-white"><i class="bi bi-controller me-1.5"></i> Games Catalog</a></li>
+                    <li><a href="{% url 'teams:list' %}" class="text-reset text-decoration-none hover-white"><i class="bi bi-people me-1.5"></i> Teams Roster</a></li>
+                    <li><a href="{% url 'tournaments:list' %}" class="text-reset text-decoration-none hover-white"><i class="bi bi-award me-1.5"></i> Leaderboards</a></li>
+                </ul>
+            </div>
 
+            <!-- Column 3: Community -->
+            <div class="col-lg-3 col-md-6 col-6">
+                <h6 class="fw-bold text-main mb-3 text-uppercase small" style="letter-spacing: 0.05em;">Community</h6>
+                <ul class="list-unstyled d-flex flex-column gap-2 small text-muted">
+                    <li><a href="#" class="text-reset text-decoration-none hover-white" onclick="return false;"><i class="bi bi-newspaper me-1.5"></i> Esports News <span class="badge bg-secondary bg-opacity-50 text-white-50 ms-1" style="font-size: 0.65rem;">Soon</span></a></li>
+                    <li><a href="#" class="text-reset text-decoration-none hover-white" onclick="return false;"><i class="bi bi-star me-1.5"></i> Featured Sponsors <span class="badge bg-secondary bg-opacity-50 text-white-50 ms-1" style="font-size: 0.65rem;">Soon</span></a></li>
+                    <li><a href="#" class="text-reset text-decoration-none hover-white" onclick="return false;"><i class="bi bi-question-circle me-1.5"></i> Platform FAQ</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 4: Support & Legal -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="fw-bold text-main mb-3 text-uppercase small" style="letter-spacing: 0.05em;">Support & Legal</h6>
+                <ul class="list-unstyled d-flex flex-column gap-2 small text-muted mb-3">
+                    <li><a href="#" class="text-reset text-decoration-none hover-white" onclick="return false;"><i class="bi bi-headset me-1.5"></i> Help Center</a></li>
+                    <li><a href="#" class="text-reset text-decoration-none hover-white" onclick="return false;"><i class="bi bi-envelope me-1.5"></i> Contact Support</a></li>
+                    <li><a href="#" class="text-reset text-decoration-none hover-white" onclick="return false;"><i class="bi bi-shield-lock me-1.5"></i> Privacy Policy</a></li>
+                    <li><a href="#" class="text-reset text-decoration-none hover-white" onclick="return false;"><i class="bi bi-file-earmark-text me-1.5"></i> Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="pt-3 border-top border-secondary border-opacity-10 d-flex flex-wrap justify-content-between align-items-center gap-3 small text-muted">
+            <div>
+                © 2026 GameArena. All rights reserved. Built for competitive esports.
+            </div>
+            <div class="d-flex gap-3">
+                <span class="text-cyan fw-bold"><i class="bi bi-shield-check me-1"></i> Fair Play Certified</span>
+            </div>
+        </div>
+    </div>
 </footer>
+
+<style>
+.hover-white:hover {
+    color: var(--ga-text-main, #ffffff) !important;
+}
+</style>

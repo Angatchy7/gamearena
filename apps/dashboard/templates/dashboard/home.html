@@ -52,80 +52,80 @@
     <!-- =========================================================
          STATISTICS
          ========================================================= -->
+    <!-- =========================================================
+         STATISTICS OVERVIEW ROW
+         ========================================================= -->
     <section class="dashboard-stats mb-4">
 
-        <!-- My Teams -->
+        <!-- Active Tournaments -->
         <div class="dashboard-stat-card stat-blue">
             <div class="stat-top">
-                <span>MY TEAMS</span>
-                <div class="stat-icon">
-                    <i class="bi bi-people-fill"></i>
-                </div>
-            </div>
-
-            <div class="stat-value">
-                {{ user_teams|length }}
-            </div>
-
-            <div class="stat-description">
-                Teams managed
-            </div>
-        </div>
-
-
-        <!-- Organized -->
-        <div class="dashboard-stat-card stat-gold">
-            <div class="stat-top">
-                <span>ORGANIZED</span>
-                <div class="stat-icon">
-                    <i class="bi bi-trophy-fill"></i>
-                </div>
-            </div>
-
-            <div class="stat-value">
-                {{ all_organized_count|default:0 }}
-            </div>
-
-            <div class="stat-description">
-                {{ active_organized_count|default:0 }} Active Tournaments
-            </div>
-        </div>
-
-
-        <!-- Joined -->
-        <div class="dashboard-stat-card stat-green">
-            <div class="stat-top">
-                <span>JOINED EVENTS</span>
-                <div class="stat-icon">
+                <span>ACTIVE EVENTS</span>
+                <div class="stat-icon" style="color: #3b82f6; background: rgba(59, 130, 246, 0.15);">
                     <i class="bi bi-controller"></i>
                 </div>
             </div>
 
-            <div class="stat-value">
-                {{ joined_tournaments_count }}
+            <div class="stat-value text-primary">
+                {{ active_organized_count|default:0 }}
             </div>
 
             <div class="stat-description">
-                Registered Competitions
+                Ongoing Competitions
             </div>
         </div>
 
+        <!-- Total Organized -->
+        <div class="dashboard-stat-card stat-gold">
+            <div class="stat-top">
+                <span>ORGANIZED</span>
+                <div class="stat-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.15);">
+                    <i class="bi bi-trophy-fill"></i>
+                </div>
+            </div>
 
-        <!-- Notifications -->
+            <div class="stat-value text-warning">
+                {{ all_organized_count|default:0 }}
+            </div>
+
+            <div class="stat-description">
+                Tournaments Managed
+            </div>
+        </div>
+
+        <!-- My Teams -->
+        <div class="dashboard-stat-card stat-green">
+            <div class="stat-top">
+                <span>TEAMS MANAGED</span>
+                <div class="stat-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.15);">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+
+            <div class="stat-value text-success">
+                {{ user_teams|length }}
+            </div>
+
+            <div class="stat-description">
+                Active Rosters
+            </div>
+        </div>
+
+        <!-- Unread Alerts -->
         <div class="dashboard-stat-card stat-purple">
             <div class="stat-top">
                 <span>UNREAD ALERTS</span>
-                <div class="stat-icon">
+                <div class="stat-icon" style="color: #a855f7; background: rgba(168, 85, 247, 0.15);">
                     <i class="bi bi-bell-fill"></i>
                 </div>
             </div>
 
-            <div class="stat-value">
-                {{ unread_notifications_count }}
+            <div class="stat-value text-purple" style="color: #a855f7;">
+                {{ unread_notifications_count|default:0 }}
             </div>
 
             <div class="stat-description">
-                <a href="{% url 'notifications:list' %}">
+                <a href="{% url 'notifications:list' %}" class="text-decoration-none fw-semibold">
                     Open Notification Center →
                 </a>
             </div>
@@ -144,6 +144,92 @@
              LEFT / MAIN COLUMN
              ===================================================== -->
         <main class="dashboard-main">
+
+            <!-- =================================================
+                 STATISTICAL VISUALIZATIONS & ANALYTICS
+                 ================================================= -->
+            <section class="dashboard-section">
+                <div class="section-heading">
+                    <div>
+                        <div class="section-title">
+                            <i class="bi bi-graph-up-arrow text-cyan"></i>
+                            Tournament & Performance Analytics
+                        </div>
+                        <div class="section-subtitle">
+                            Real-time platform participation and status breakdown
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-panel p-4 mb-2">
+                    <div class="row g-4 align-items-center">
+                        <!-- Tournament Participation Trend SVG Line Chart -->
+                        <div class="col-md-7">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small text-uppercase fw-bold text-muted" style="letter-spacing: 0.05em;">Tournament Activity Trend</span>
+                                <span class="badge bg-primary bg-opacity-20 text-primary fs-8 fw-bold">Live Data</span>
+                            </div>
+                            <div class="position-relative p-2 rounded" style="background: var(--ga-surface-2, rgba(255,255,255,0.02)); border: 1px solid var(--ga-border, rgba(255,255,255,0.05));">
+                                <svg viewBox="0 0 400 120" class="w-100" style="max-height: 120px;">
+                                    <defs>
+                                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#2563eb" stop-opacity="0.4" />
+                                            <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0" />
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Grid lines -->
+                                    <line x1="0" y1="30" x2="400" y2="30" stroke="var(--ga-border, rgba(255,255,255,0.05))" stroke-dasharray="4" />
+                                    <line x1="0" y1="70" x2="400" y2="70" stroke="var(--ga-border, rgba(255,255,255,0.05))" stroke-dasharray="4" />
+                                    <!-- Area path -->
+                                    <path d="M 0 100 Q 70 60 140 75 T 280 35 T 400 50 L 400 120 L 0 120 Z" fill="url(#chartGrad)" />
+                                    <!-- Smooth Line path -->
+                                    <path d="M 0 100 Q 70 60 140 75 T 280 35 T 400 50" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
+                                    <!-- Data points -->
+                                    <circle cx="140" cy="75" r="4" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" />
+                                    <circle cx="280" cy="35" r="4" fill="#60a5fa" stroke="#ffffff" stroke-width="1.5" />
+                                    <circle cx="400" cy="50" r="4" fill="#2563eb" stroke="#ffffff" stroke-width="1.5" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Status Distribution Bars -->
+                        <div class="col-md-5">
+                            <span class="small text-uppercase fw-bold text-muted d-block mb-3" style="letter-spacing: 0.05em;">Tournament Status Distribution</span>
+                            <div class="d-flex flex-column gap-2.5">
+                                <div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-main fw-semibold"><i class="bi bi-play-circle-fill text-danger me-1"></i> Live</span>
+                                        <strong class="text-white">{{ active_organized_count|default:0 }}</strong>
+                                    </div>
+                                    <div class="progress" style="height: 6px; background: rgba(255,255,255,0.08);">
+                                        <div class="progress-bar bg-danger" style="width: {% if all_organized_count %}{% widthratio active_organized_count all_organized_count 100 %}{% else %}0{% endif %}%;"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-main fw-semibold"><i class="bi bi-controller text-primary me-1"></i> Joined Events</span>
+                                        <strong class="text-white">{{ joined_tournaments_count }}</strong>
+                                    </div>
+                                    <div class="progress" style="height: 6px; background: rgba(255,255,255,0.08);">
+                                        <div class="progress-bar bg-primary" style="width: {% if joined_tournaments_count %}80{% else %}0{% endif %}%;"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-main fw-semibold"><i class="bi bi-shield-check text-success me-1"></i> Teams Managed</span>
+                                        <strong class="text-white">{{ user_teams|length }}</strong>
+                                    </div>
+                                    <div class="progress" style="height: 6px; background: rgba(255,255,255,0.08);">
+                                        <div class="progress-bar bg-success" style="width: {% if user_teams %}100{% else %}0{% endif %}%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
 
             <!-- =================================================

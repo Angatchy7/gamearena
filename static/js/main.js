@@ -131,7 +131,7 @@
         return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     }
 
-    function updateActiveThemeButtons(themeChoice) {
+    function updateActiveThemeButtons(themeChoice, effectiveTheme) {
         var buttons = document.querySelectorAll('[data-theme-val]');
         buttons.forEach(function (btn) {
             var val = btn.getAttribute('data-theme-val');
@@ -141,6 +141,21 @@
             } else {
                 btn.classList.remove('active');
                 btn.setAttribute('aria-pressed', 'false');
+            }
+        });
+
+        // Update quick toggle icon state
+        var quickToggles = document.querySelectorAll('.ga-theme-quick-toggle');
+        quickToggles.forEach(function (btn) {
+            var icon = btn.querySelector('i');
+            if (icon) {
+                if (effectiveTheme === 'dark') {
+                    icon.className = 'bi bi-sun-fill text-warning fs-5';
+                    btn.setAttribute('title', 'Switch to Light mode');
+                } else {
+                    icon.className = 'bi bi-moon-fill text-primary fs-5';
+                    btn.setAttribute('title', 'Switch to Dark mode');
+                }
             }
         });
     }
@@ -157,7 +172,7 @@
         } catch (e) {
             // Silently handle quota or disabled localStorage
         }
-        updateActiveThemeButtons(choice);
+        updateActiveThemeButtons(choice, effectiveTheme);
     }
 
     // Initialize theme state on DOM ready
@@ -165,8 +180,17 @@
         var currentChoice = getSavedTheme();
         applyTheme(currentChoice);
 
-        // Bind theme selector clicks
+        // Bind clicks for quick toggle and theme dropdown options
         document.addEventListener('click', function (e) {
+            var quickToggle = e.target.closest('.ga-theme-quick-toggle');
+            if (quickToggle) {
+                e.preventDefault();
+                var currentEffective = document.documentElement.getAttribute('data-theme') || 'dark';
+                var nextChoice = (currentEffective === 'dark') ? 'light' : 'dark';
+                applyTheme(nextChoice);
+                return;
+            }
+
             var themeBtn = e.target.closest('[data-theme-val]');
             if (themeBtn) {
                 var choice = themeBtn.getAttribute('data-theme-val');
@@ -190,4 +214,39 @@
         }
     });
 })();
+
+/* ==========================================================
+   GAMEARENA — Sidebar Collapse Controller
+   ========================================================== */
+(function () {
+    'use strict';
+
+    function setSidebarState(collapsed) {
+        var root = document.documentElement;
+        var sidebar = document.querySelector('.ga-sidebar');
+        if (collapsed) {
+            root.classList.add('sidebar-collapsed');
+            if (sidebar) sidebar.classList.add('collapsed');
+            try { localStorage.setItem('ga_sidebar_collapsed', 'true'); } catch (e) {}
+        } else {
+            root.classList.remove('sidebar-collapsed');
+            if (sidebar) sidebar.classList.remove('collapsed');
+            try { localStorage.setItem('ga_sidebar_collapsed', 'false'); } catch (e) {}
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var isCollapsed = localStorage.getItem('ga_sidebar_collapsed') === 'true';
+        setSidebarState(isCollapsed);
+
+        document.addEventListener('click', function (e) {
+            var toggleBtn = e.target.closest('#sidebar-toggle');
+            if (toggleBtn) {
+                var currentlyCollapsed = document.documentElement.classList.contains('sidebar-collapsed');
+                setSidebarState(!currentlyCollapsed);
+            }
+        });
+    });
+})();
+
 

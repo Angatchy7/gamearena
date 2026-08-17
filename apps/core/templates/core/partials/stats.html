@@ -1,79 +1,59 @@
-<section class="container py-5">
-
-    <div class="row g-4">
-
-        <div class="col-md-4">
-
-            <div class="card border-0 shadow stats-card">
-
-                <div class="card-body text-center">
-
-                    <h1>
-
-                        {{ stats.tournaments }}
-
-                    </h1>
-
-                    <p>
-
-                        Tournaments
-
-                    </p>
-
+<section class="py-3.5 py-lg-4 position-relative">
+    <div class="container">
+        <div class="card border-0 shadow-sm p-3 p-md-4" style="background: var(--ga-card-bg, #1e293b); border-radius: 16px; border: 1px solid var(--ga-border, rgba(255,255,255,0.08)) !important;">
+            <div class="row g-4 align-items-center text-center text-md-start">
+                <!-- Registered Players -->
+                <div class="col-6 col-lg-3">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+                        <div class="rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center text-primary bg-primary bg-opacity-15" style="width: 48px; height: 48px;">
+                            <i class="bi bi-people-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-extrabold text-white mb-0 fs-4">{{ user_count|default:stats.users|default:0 }}</h4>
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.04em;">Registered Players</small>
+                        </div>
+                    </div>
                 </div>
 
-            </div>
-
-        </div>
-
-        <div class="col-md-4">
-
-            <div class="card border-0 shadow stats-card">
-
-                <div class="card-body text-center">
-
-                    <h1>
-
-                        {{ stats.teams }}
-
-                    </h1>
-
-                    <p>
-
-                        Teams
-
-                    </p>
-
+                <!-- Tournaments Hosted -->
+                <div class="col-6 col-lg-3">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+                        <div class="rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center text-success bg-success bg-opacity-15" style="width: 48px; height: 48px;">
+                            <i class="bi bi-trophy-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-extrabold text-white mb-0 fs-4">{{ tournament_count|default:stats.tournaments|default:0 }}</h4>
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.04em;">Tournaments Hosted</small>
+                        </div>
+                    </div>
                 </div>
 
-            </div>
-
-        </div>
-
-        <div class="col-md-4">
-
-            <div class="card border-0 shadow stats-card">
-
-                <div class="card-body text-center">
-
-                    <h1>
-
-                        {{ stats.games }}
-
-                    </h1>
-
-                    <p>
-
-                        Games
-
-                    </p>
-
+                <!-- Games Supported -->
+                <div class="col-6 col-lg-3">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+                        <div class="rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center bg-opacity-15" style="width: 48px; height: 48px; background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                            <i class="bi bi-controller fs-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-extrabold text-white mb-0 fs-4">{{ game_count|default:stats.games|default:0 }}</h4>
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.04em;">Games Supported</small>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- Matches Played -->
+                <div class="col-6 col-lg-3">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+                        <div class="rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center text-warning bg-warning bg-opacity-15" style="width: 48px; height: 48px;">
+                            <i class="bi bi-crosshair fs-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-extrabold text-white mb-0 fs-4">{{ match_count|default:stats.matches|default:0 }}</h4>
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.04em;">Matches Played</small>
+                        </div>
+                    </div>
+                </div>
             </div>
-
         </div>
-
     </div>
-
 </section>

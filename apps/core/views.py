@@ -8,8 +8,13 @@ from apps.teams.models import Team
 from apps.tournaments.models import Game, Tournament
 
 
-def home(request):
+from django.contrib.auth import get_user_model
+from apps.tournaments.models import Match
 
+User = get_user_model()
+
+
+def home(request):
     featured_tournament = (
         Tournament.objects
         .select_related("game", "organizer")
@@ -25,60 +30,65 @@ def home(request):
             .first()
         )
 
-    live_tournaments = (
+    # Active & Upcoming Tournaments (Priority: LIVE -> REGISTRATION_OPEN -> REGISTRATION_CLOSED/UPCOMING)
+    active_and_upcoming_tournaments = list(
         Tournament.objects
-        .select_related("game")
-        .filter(status=Tournament.Status.LIVE)
-        .order_by("-created_at")[:6]
+        .select_related("game", "organizer")
+        .annotate(annotated_registered_count=Count("registrations", distinct=True))
+        .exclude(status__in=[Tournament.Status.COMPLETED, Tournament.Status.CANCELLED])
+        .order_by("-status", "start_date")[:10]
     )
 
-    upcoming_tournaments = (
-        Tournament.objects
-        .select_related("game")
-        .filter(status=Tournament.Status.REGISTRATION_OPEN)
-        .order_by("registration_end")[:6]
-    )
+    # If no active/upcoming, fallback to latest tournaments excluding cancelled
+    if not active_and_upcoming_tournaments:
+        active_and_upcoming_tournaments = list(
+            Tournament.objects
+            .select_related("game", "organizer")
+            .annotate(annotated_registered_count=Count("registrations", distinct=True))
+            .exclude(status=Tournament.Status.CANCELLED)
+            .order_by("-created_at")[:10]
+        )
 
-    latest_tournaments = (
-        Tournament.objects
-        .select_related("game")
-        .order_by("-created_at")[:6]
-    )
+    live_tournaments = [t for t in active_and_upcoming_tournaments if t.status == Tournament.Status.LIVE]
+    upcoming_tournaments = [t for t in active_and_upcoming_tournaments if t.status != Tournament.Status.LIVE]
 
     games = (
         Game.objects
-        .annotate(
-            total_tournaments=Count("tournaments")
-        )
-        .order_by("-total_tournaments", "name")
+        .annotate(total_tournaments=Count("tournaments"))
+        .order_by("-total_tournaments", "name")[:6]
     )
 
     stats = {
         "tournaments": Tournament.objects.count(),
         "teams": Team.objects.exclude(description="__SOLO_INTERNAL__").count(),
         "games": Game.objects.count(),
+        "users": User.objects.count(),
+        "matches": Match.objects.count(),
     }
 
     return render(
-    request,
-    "core/home.html",
-    {
-        "featured_tournament": featured_tournament,
-        "live_tournaments": live_tournaments,
-        "upcoming_tournaments": upcoming_tournaments,
-        "latest_tournaments": latest_tournaments,
-        "games": games,
-        "stats": stats,
+        request,
+        "core/home.html",
+        {
+            "featured_tournament": featured_tournament,
+            "active_and_upcoming_tournaments": active_and_upcoming_tournaments,
+            "live_tournaments": live_tournaments,
+            "upcoming_tournaments": upcoming_tournaments,
+            "games": games,
+            "stats": stats,
 
-        # Hero Stats
-        "tournament_count": stats["tournaments"],
-        "team_count": stats["teams"],
-        "game_count": stats["games"],
+            # Hero & Metric Stats
+            "tournament_count": stats["tournaments"],
+            "team_count": stats["teams"],
+            "game_count": stats["games"],
+            "user_count": stats["users"],
+            "match_count": stats["matches"],
 
-        # Layout
-        "show_sidebar": False,
-    },
-)
+            # Layout
+            "show_sidebar": False,
+        },
+    )
+
 
 class SearchView(View):
     """
@@ -106,6 +116,7 @@ class SearchView(View):
                     "game",
                     "organizer",
                 )
+                .annotate(annotated_registered_count=Count("registrations", distinct=True))
                 .filter(
                     Q(name__icontains=query)
                     | Q(description__icontains=query)

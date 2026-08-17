@@ -52,7 +52,7 @@ class TournamentListView(View):
                 "game",
                 "organizer",
             )
-            .annotate(registered_count=Count("registrations", distinct=True))
+            .annotate(annotated_registered_count=Count("registrations", distinct=True))
             .order_by("-created_at")
         )
 
@@ -124,7 +124,7 @@ class MyTournamentListView(LoginRequiredMixin, View):
                 "game",
                 "organizer",
             )
-            .annotate(registered_count=Count("registrations", distinct=True))
+            .annotate(annotated_registered_count=Count("registrations", distinct=True))
             .order_by("-created_at")
         )
 
@@ -245,16 +245,17 @@ class TournamentDetailView(View):
             Tournament.objects.select_related(
                 "game",
                 "organizer",
+                "champion",
             ),
             slug=slug,
         )
 
+        context = get_tournament_statistics(tournament=tournament)
+
         return render(
             request,
             self.template_name,
-            {
-                "tournament": tournament,
-            },
+            context,
         )
 
 class TournamentParticipantsView(View):

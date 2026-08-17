@@ -1,16 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
   <defs>
-    <linearGradient id="ea-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#022c22"/>
-      <stop offset="50%" stop-color="#064e3b"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+    <linearGradient id="eafc-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#021329"/>
+      <stop offset="50%" stop-color="#0b2b52"/>
+      <stop offset="100%" stop-color="#04101f"/>
     </linearGradient>
+    <radialGradient id="stadium-glow" cx="60%" cy="30%" r="55%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect width="800" height="450" fill="url(#ea-bg)"/>
-  <g transform="translate(400, 180)" text-anchor="middle">
-    <polygon points="0,-60 50,30 -50,30" fill="none" stroke="#10b981" stroke-width="6"/>
-    <text y="15" font-family="system-ui, sans-serif" font-weight="900" font-size="28" fill="#10b981">FC</text>
+
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#eafc-bg)"/>
+  <rect width="800" height="450" fill="url(#stadium-glow)"/>
+
+  <!-- Stadium Lights Array -->
+  <g opacity="0.4">
+    <circle cx="200" cy="80" r="40" fill="#ffffff"/>
+    <circle cx="600" cy="80" r="40" fill="#ffffff"/>
+    <line x1="0" y1="360" x2="800" y2="360" stroke="#22c55e" stroke-width="4"/>
   </g>
-  <text x="400" y="310" font-family="system-ui, sans-serif" font-weight="900" font-size="34" fill="#ffffff" text-anchor="middle" letter-spacing="4">EA SPORTS FC 26</text>
-  <text x="400" y="345" font-family="system-ui, sans-serif" font-weight="600" font-size="16" fill="#10b981" text-anchor="middle" letter-spacing="6">FOOTBALL SIMULATION</text>
+
+  <!-- Football Player Silhouette Celebrating -->
+  <g transform="translate(520, 210)">
+    <!-- Body in White Jersey -->
+    <path d="M-50 190 L-40 40 L40 40 L50 190 Z" fill="#ffffff"/>
+    <!-- Head -->
+    <circle cx="0" cy="-20" r="28" fill="#3f2e21"/>
+    <!-- Raised Arm Left -->
+    <path d="M-40 40 L-100 -30 L-75 -40 L-25 30 Z" fill="#ffffff"/>
+    <!-- Raised Arm Right -->
+    <path d="M40 40 L100 -30 L75 -40 L25 30 Z" fill="#ffffff"/>
+  </g>
+
+  <!-- Football -->
+  <circle cx="250" cy="300" r="32" fill="#ffffff" stroke="#0f172a" stroke-width="3"/>
+  <polygon points="250,282 265,293 259,311 241,311 235,293" fill="#0f172a"/>
+
+  <!-- EA SPORTS FC 26 Logo -->
+  <g transform="translate(60, 60)">
+    <!-- EA Circle Badge -->
+    <circle cx="35" cy="35" r="30" fill="#ffffff"/>
+    <text x="35" y="44" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="20" fill="#0b2b52" text-anchor="middle">EA</text>
+    <text x="170" y="48" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="44" fill="#ffffff" letter-spacing="4">FC 26</text>
+  </g>
+
+  <text x="60" y="140" font-family="'Inter', system-ui, sans-serif" font-weight="800" font-size="18" fill="#38bdf8" letter-spacing="6">SPORTS</text>
 </svg>

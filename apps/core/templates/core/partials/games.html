@@ -1,105 +1,62 @@
-<section class="container py-5">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <div>
-
-            <h2 class="fw-bold text-white mb-1">
-
-                🎮 Browse Games
-
-            </h2>
-
-            <p class="text-muted mb-0">
-
-                Explore tournaments by your favorite games.
-
-            </p>
-
-        </div>
-
-    </div>
-
-    <div class="row g-4">
-
-        {% for game in games %}
-
-        <div class="col-xl-3 col-lg-4 col-md-6">
-
-            <div class="ga-game-card">
-
-                <div class="ga-game-image">
-
-                    <img src="{{ game.image_url }}" alt="{{ game.name }}" style="width: 100%; height: 100%; object-fit: cover;">
-
-                </div>
-
-
-                <div class="ga-game-body">
-
-                    <h5>
-
-                        {{ game.name }}
-
-                    </h5>
-
-                    <p>
-
-                        Competitive tournaments available on GameArena.
-
-                    </p>
-
-                    <div class="ga-game-stats">
-
-                        <div>
-
-                            <strong>
-
-                                {{ game.total_tournaments }}
-
-                            </strong>
-
-                            <small>
-
-                                Tournaments
-
-                            </small>
-
-                        </div>
-
-                        <div>
-
-                            <strong>
-
-                                Multiplayer
-
-                            </strong>
-
-                            <small>
-
-                                Mode
-
-                            </small>
-
-                        </div>
-
-                    </div>
-
-                    <a href="{% url 'tournaments:list' %}?game={{ game.slug }}" class="btn btn-primary w-100 mt-3">
-
-                        Explore Game
-
-                    </a>
-
-
-                </div>
-
+<section class="py-3.5 py-lg-4 position-relative">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-3 flex-wrap gap-2">
+            <div>
+                <span class="text-cyan small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.72rem;">DISCOVER EVENTS BY GAME</span>
+                <h3 class="fw-extrabold text-main mb-0 fs-4">
+                    Browse Popular Games
+                </h3>
             </div>
 
+            <a href="{% url 'core:games' %}" class="btn btn-sm btn-outline-primary px-3 py-1.5 fw-bold rounded-3">
+                Full Games Catalog →
+            </a>
         </div>
 
-        {% endfor %}
+        <div class="row g-3">
+            {% for game in games|slice:":6" %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card ga-game-card h-100 border-0 overflow-hidden shadow-sm text-white position-relative" style="background: var(--ga-card-bg, #1e293b); border-radius: 14px; border: 1px solid var(--ga-border, rgba(255,255,255,0.08)) !important;">
+                    <!-- Game Artwork (140px height for wider/shorter card profile) -->
+                    <div class="position-relative overflow-hidden ga-game-artwork">
+                        {% if game.image_url %}
+                            <img src="{{ game.artwork_url }}" alt="{{ game.name }}" class="w-100 h-100 ga-game-img" style="transition: transform 0.3s ease;">
+                        {% else %}
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center opacity-50">
+                                <i class="bi bi-controller fs-2 text-cyan"></i>
+                            </div>
+                        {% endif %}
+                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.85) 100%);"></div>
 
+                        <span class="position-absolute top-0 end-0 m-2 badge bg-dark bg-opacity-85 text-cyan border border-info border-opacity-25 px-2 py-1 fs-8 fw-bold rounded-pill">
+                            {{ game.total_tournaments|default:game.tournaments.count|default:0 }} Events
+                        </span>
+                    </div>
+
+                    <!-- Compact Text Area -->
+                    <div class="card-body p-2.5 text-center d-flex flex-column justify-content-between">
+                        <div class="mb-2">
+                            <h6 class="fw-bold text-main mb-0.5 text-truncate" style="font-size: 0.92rem;" title="{{ game.name }}">{{ game.name }}</h6>
+                            <small class="text-muted d-block text-truncate" style="font-size: 0.72rem;">{{ game.genre|default:"Esports" }}</small>
+                        </div>
+
+                        <a href="{% url 'tournaments:list' %}?game={{ game.slug }}" class="btn btn-sm btn-outline-primary w-100 py-1.5 fw-bold rounded-3" style="font-size: 0.78rem;">
+                            Explore Game
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-3 text-muted small">
+                No games available right now.
+            </div>
+            {% endfor %}
+        </div>
     </div>
-
 </section>
+
+<style>
+.ga-game-card:hover .ga-game-img {
+    transform: scale(1.05);
+}
+</style>

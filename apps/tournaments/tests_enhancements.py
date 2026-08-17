@@ -136,8 +136,8 @@ class ProductionUXAndEnhancementsTest(TestCase):
 
     def test_image_url_fallbacks_and_uploaded_priorities(self):
         # Game fallbacks
-        self.assertIn("images/games/pubg.svg", self.game_pubg.image_url)
-        self.assertIn("images/defaults/game_default.svg", self.game_generic.image_url)
+        self.assertIn("images/games/pubg.webp", self.game_pubg.image_url)
+        self.assertIn("images/defaults/game_default.webp", self.game_generic.image_url)
 
         # Uploaded game image takes priority
         dummy_img = SimpleUploadedFile("test_game.png", b"fake_image_bytes", content_type="image/png")
@@ -147,14 +147,14 @@ class ProductionUXAndEnhancementsTest(TestCase):
 
         # Team logo fallback & priority
         team = Team.objects.create(name="Beta Force", manager=self.user1)
-        self.assertIn("images/defaults/team_default.svg", team.logo_url)
+        self.assertIn("images/defaults/team_default.webp", team.logo_url)
         dummy_logo = SimpleUploadedFile("team_logo.png", b"fake_logo_bytes", content_type="image/png")
         team.logo = dummy_logo
         team.save()
         self.assertIn("team_logo", team.logo_url)
 
         # Tournament cover & banner fallbacks
-        self.assertIn("images/games/pubg.svg", self.solo_tournament.cover_url)
+        self.assertIn("images/games/pubg.webp", self.solo_tournament.cover_url)
         dummy_cover = SimpleUploadedFile("cover.jpg", b"fake_cover_bytes", content_type="image/jpeg")
         self.solo_tournament.cover_image = dummy_cover
         self.solo_tournament.save()
@@ -523,7 +523,7 @@ class SprintRegressionTests(TestCase):
     def test_game_image_url_free_fire(self):
         """
         Regression: Game.image_url must return free_fire.svg for Free Fire games,
-        not fall through to game_default.svg.
+        not fall through to game_default.webp.
         """
         g = Game(name="Garena Free Fire", slug="free-fire")
         url = g.image_url
@@ -610,5 +610,52 @@ class SprintRegressionTests(TestCase):
         if form.is_valid():
             from decimal import Decimal
             self.assertEqual(form.cleaned_data["registration_fee"], Decimal("0.00"))
-        # If form is invalid for other reasons, that's fine — we just check
-        # the fee is zeroed when it IS valid
+
+    def test_tournament_performance_statistics_and_solo_display_names(self):
+        """
+        Verify get_tournament_statistics produces clean display names (no __SOLO_ prefix),
+        calculates performance KPIs, and detail page renders performance section without Prize Pool Breakdown donut.
+        """
+        from apps.tournaments.services import get_tournament_statistics
+        user1 = User.objects.create_user(username="perf_user_1", password="Password123!")
+        user2 = User.objects.create_user(username="perf_user_2", password="Password123!")
+        now = timezone.now()
+        solo_t = Tournament.objects.create(
+            name="Solo Performance Championship",
+            game=self.game,
+            organizer=self.organizer,
+            description="Testing performance analytics",
+            rules="Standard",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=4,
+            registration_start=now - timedelta(hours=1),
+            registration_end=now + timedelta(hours=1),
+            start_date=now + timedelta(hours=2),
+            end_date=now + timedelta(days=1),
+            contact_email="solo_perf@example.com",
+            status=Tournament.Status.REGISTRATION_OPEN,
+            prize_pool=1000,
+        )
+
+        reg1 = register_solo_player(tournament=solo_t, user=user1)
+        reg2 = register_solo_player(tournament=solo_t, user=user2)
+        self.assertTrue(reg1["success"])
+        self.assertTrue(reg2["success"])
+
+        stats = get_tournament_statistics(tournament=solo_t)
+        self.assertIn("team_rankings", stats)
+        self.assertIn("recent_matches", stats)
+        for r in stats["team_rankings"]:
+            self.assertFalse(r["display_name"].startswith("__SOLO_"))
+            self.assertIn(r["display_name"], [user1.username, user2.username])
+
+        # Test detail page HTTP response
+        url = reverse("tournaments:detail", kwargs={"slug": solo_t.slug})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Tournament Performance")
+        self.assertNotContains(resp, "Prize Pool Breakdown")
+
+

@@ -10,10 +10,10 @@ My Teams - GameArena
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
 
         <div>
-            <h1 class="fw-bold mb-1" style="color: #f8fafc;">
+            <h1 class="fw-bold mb-1 text-main">
                 🛡️ My Teams
             </h1>
-            <p style="color: #cbd5e1;" class="mb-0">
+            <p class="text-secondary mb-0">
                 Esports organizations you manage or compete with.
             </p>
         </div>
@@ -30,7 +30,7 @@ My Teams - GameArena
 
         <div class="col-md-6 col-lg-4">
 
-            <div class="card h-100 border-0 shadow-sm" style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <div class="card h-100 border-0 shadow-sm">
 
                 <div class="card-body p-4 d-flex flex-column justify-content-between">
 
@@ -40,8 +40,8 @@ My Teams - GameArena
                             <div class="d-flex align-items-center gap-3">
                                 <img src="{{ team.logo_url }}" alt="{{ team.display_name }}" class="rounded-circle shadow-sm" style="width: 48px; height: 48px; object-fit: cover; border: 2px solid rgba(37, 99, 235, 0.4);">
                                 <div>
-                                    <h5 class="fw-bold mb-0" style="color: #f8fafc; font-size: 1.1rem;">{{ team.display_name }}</h5>
-                                    <div class="fs-8 fw-semibold" style="color: #60a5fa;"><i class="bi bi-person-fill me-1"></i>Manager: {{ team.manager.username }}</div>
+                                    <h5 class="fw-bold mb-0 text-main" style="font-size: 1.1rem;">{{ team.display_name }}</h5>
+                                    <div class="fs-8 fw-semibold text-primary"><i class="bi bi-person-fill me-1"></i>Manager: {{ team.manager.username }}</div>
                                     {% if team.game %}
                                     <div class="fs-8 fw-semibold text-cyan mt-0.5"><i class="bi bi-controller me-1"></i>{{ team.game.name }}</div>
                                     {% endif %}
@@ -50,27 +50,27 @@ My Teams - GameArena
                             </div>
 
                             {% if team.is_active %}
-                            <span class="badge px-2.5 py-1 fs-8" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35);">Active</span>
+                            <span class="badge bg-success text-white px-2.5 py-1 fs-8">Active</span>
                             {% else %}
-                            <span class="badge px-2.5 py-1 fs-8" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">Inactive</span>
+                            <span class="badge bg-danger text-white px-2.5 py-1 fs-8">Inactive</span>
                             {% endif %}
                         </div>
 
                         {% if team.description %}
-                        <p style="color: #94a3b8; font-size: 0.85rem;" class="mb-3">
+                        <p class="text-muted small mb-3">
                             {{ team.description|truncatewords:15 }}
                         </p>
                         {% endif %}
 
                         <!-- Stats Row -->
-                        <div class="row g-2 py-2.5 border-top border-bottom my-3" style="border-color: rgba(148, 163, 184, 0.15) !important;">
+                        <div class="row g-2 py-2.5 border-top border-bottom my-3" style="border-color: var(--ga-border) !important;">
                             <div class="col-6">
-                                <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Roster Size</small>
-                                <strong style="color: #cbd5e1;" class="fs-7"><i class="bi bi-people-fill text-cyan me-1"></i> {{ team.active_member_count }} Members</strong>
+                                <small class="text-muted d-block text-uppercase fs-8 fw-bold">Roster Size</small>
+                                <strong class="text-body fs-7"><i class="bi bi-people-fill text-cyan me-1"></i> {{ team.active_member_count }} Members</strong>
                             </div>
                             <div class="col-6">
-                                <small style="color: #94a3b8;" class="d-block text-uppercase fs-8 fw-bold">Max Capacity</small>
-                                <strong style="color: #cbd5e1;" class="fs-7">{{ team.max_players }} Max</strong>
+                                <small class="text-muted d-block text-uppercase fs-8 fw-bold">Max Capacity</small>
+                                <strong class="text-body fs-7">{{ team.max_players }} Max</strong>
                             </div>
                         </div>
                     </div>
@@ -90,11 +90,11 @@ My Teams - GameArena
         {% empty %}
 
         <div class="col-12">
-            <div class="card border-0 shadow-sm text-center py-5" style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            <div class="card border-0 shadow-sm text-center py-5">
                 <div class="card-body">
                     <i class="bi bi-people display-3 text-cyan mb-3 d-block"></i>
-                    <h4 class="fw-bold" style="color: #f8fafc;">No Teams Found</h4>
-                    <p style="color: #cbd5e1;" class="mb-4">Create your first esports team and start competing.</p>
+                    <h4 class="fw-bold text-main">No Teams Found</h4>
+                    <p class="text-secondary mb-4">Create your first esports team and start competing.</p>
                     <a href="{% url 'teams:create' %}" class="btn btn-primary px-4 py-2.5 fw-bold" style="border-radius: 12px;">
                         <i class="bi bi-plus-lg me-1"></i> Create Team
                     </a>

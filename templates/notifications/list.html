@@ -8,7 +8,7 @@ Notification Center - GameArena
 <div class="container-fluid px-0 py-2">
 
     <!-- Notification Header Banner -->
-    <div class="card bg-dark text-white border-0 shadow-lg mb-4 overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--border) !important;">
+    <div class="card border-0 shadow-lg mb-4 overflow-hidden" style="background: var(--ga-card-bg); border: 1px solid var(--ga-border) !important;">
         <div class="card-body p-4 p-lg-5">
             <div class="row align-items-center">
                 <div class="col-lg-8 mb-3 mb-lg-0">
@@ -26,10 +26,10 @@ Notification Center - GameArena
                             </span>
                         {% endif %}
                     </div>
-                    <h1 class="fw-bold text-white mb-2 display-6">
+                    <h1 class="fw-bold text-main mb-2 display-6">
                         🔔 Notification Center
                     </h1>
-                    <p class="text-muted mb-0">
+                    <p class="text-secondary mb-0">
                         Stay updated on team invitations, tournament announcements, match schedules, and system alerts.
                     </p>
                 </div>
@@ -51,17 +51,17 @@ Notification Center - GameArena
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
         <ul class="nav nav-pills gap-2">
             <li class="nav-item">
-                <a href="?filter=all" class="nav-link px-4 py-2 fw-semibold {% if current_filter == 'all' %}active{% else %}text-white-50 bg-dark{% endif %}" style="border-radius: 12px;">
+                <a href="?filter=all" class="nav-link px-4 py-2 fw-semibold {% if current_filter == 'all' %}active{% else %}text-secondary{% endif %}" style="border-radius: 12px;">
                     All <span class="badge bg-secondary ms-1">{{ total_count }}</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="?filter=unread" class="nav-link px-4 py-2 fw-semibold {% if current_filter == 'unread' %}active{% else %}text-white-50 bg-dark{% endif %}" style="border-radius: 12px;">
+                <a href="?filter=unread" class="nav-link px-4 py-2 fw-semibold {% if current_filter == 'unread' %}active{% else %}text-secondary{% endif %}" style="border-radius: 12px;">
                     Unread <span class="badge {% if unread_count > 0 %}bg-warning text-dark{% else %}bg-secondary{% endif %} ms-1">{{ unread_count }}</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="?filter=read" class="nav-link px-4 py-2 fw-semibold {% if current_filter == 'read' %}active{% else %}text-white-50 bg-dark{% endif %}" style="border-radius: 12px;">
+                <a href="?filter=read" class="nav-link px-4 py-2 fw-semibold {% if current_filter == 'read' %}active{% else %}text-secondary{% endif %}" style="border-radius: 12px;">
                     Read <span class="badge bg-secondary ms-1">{{ read_count }}</span>
                 </a>
             </li>
@@ -77,13 +77,13 @@ Notification Center - GameArena
             <div class="col-12 max-w-4xl mx-auto">
                 {% for notification in notifications %}
                     <div class="card border-0 shadow-sm mb-3 {% if not notification.is_read %}border-start border-4 border-primary{% endif %}" 
-                         style="background: {% if not notification.is_read %}#1e293b{% else %}#111827{% endif %}; border-radius: 14px; transition: all 0.2s ease;">
+                         style="border-radius: 14px; transition: all 0.2s ease;">
                         <div class="card-body p-3 p-md-4">
                             <div class="d-flex align-items-start gap-3">
                                 
                                 <!-- Icon by Notification Type -->
                                 <div class="rounded-circle p-3 text-center d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" 
-                                     style="width: 48px; height: 48px; background: rgba(255,255,255,0.05);">
+                                     style="width: 48px; height: 48px; background: var(--ga-surface-3, rgba(148, 163, 184, 0.15));">
                                     {% if notification.notification_type == 'TEAM_INVITATION' %}
                                         <i class="bi bi-people-fill text-info fs-4"></i>
                                     {% elif notification.notification_type == 'TOURNAMENT_INVITATION' or notification.notification_type == 'TOURNAMENT' %}
@@ -99,7 +99,7 @@ Notification Center - GameArena
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                                         <div class="d-flex align-items-center gap-2">
-                                            <h5 class="fw-bold text-white mb-0 fs-6">{{ notification.title }}</h5>
+                                            <h5 class="fw-bold text-main mb-0 fs-6">{{ notification.title }}</h5>
                                             {% if not notification.is_read %}
                                                 <span class="badge bg-primary rounded-pill px-2 py-0.5 fs-8">NEW</span>
                                             {% endif %}
@@ -109,7 +109,7 @@ Notification Center - GameArena
                                         </small>
                                     </div>
                                     
-                                    <p class="text-white-50 mb-2 fs-6" style="line-height: 1.5;">{{ notification.message }}</p>
+                                    <p class="text-secondary mb-2 fs-6" style="line-height: 1.5;">{{ notification.message }}</p>
 
                                     <!-- Team Invitation Actions -->
                                     {% if notification.notification_type == "TEAM_INVITATION" and notification.team_invitation %}

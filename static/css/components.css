@@ -14,7 +14,7 @@
 
     border: 1px solid var(--ga-card-border);
 
-    border-radius: 18px;
+    border-radius: 16px;
 
     overflow: hidden;
 
@@ -522,7 +522,7 @@
     background: var(--ga-card-bg);
 
     border: 1px solid var(--ga-card-border);
-    border-radius: 18px;
+    border-radius: 16px;
 
     box-shadow: var(--ga-shadow-sm);
 

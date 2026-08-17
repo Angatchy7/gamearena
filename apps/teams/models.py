@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+import os
 
 
 class Team(models.Model):
@@ -92,21 +93,21 @@ class Team(models.Model):
 
     @property
     def logo_url(self):
-        """
-        Returns uploaded team logo URL if present and the file physically exists,
-        otherwise returns default team logo SVG.
-        """
+        """Return uploaded team logo when available, otherwise the best local default."""
         if self.logo and self.logo.name:
             try:
                 if self.logo.storage.exists(self.logo.name):
                     return self.logo.url
             except (AttributeError, ValueError):
                 pass
-        return "/static/images/defaults/team_default.svg"
 
+        default_dir = os.path.join(settings.BASE_DIR, "static", "images", "defaults")
+        for ext in ["webp", "png", "jpg", "jpeg", "svg"]:
+            candidate = os.path.join(default_dir, f"team_default.{ext}")
+            if os.path.exists(candidate):
+                return f"/static/images/defaults/team_default.{ext}"
 
-
-
+        return "/static/images/defaults/team_default.webp"
 
 
 

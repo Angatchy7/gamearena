@@ -1,82 +1,153 @@
 <div class="card border-0 shadow-lg text-white mb-4 overflow-hidden position-relative tournament-hero-card"
-     style="border-radius: 20px; border: 1px solid var(--ga-border, rgba(255, 255, 255, 0.12)) !important; background: var(--ga-card-bg, #0f172a);">
-    
+    style="border-radius: 20px; border: 1px solid var(--ga-border, rgba(255, 255, 255, 0.12)) !important; background: var(--ga-card-bg, #0f172a);">
+
     <!-- Background Image / Overlay -->
     <div class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;">
-        <img src="{{ tournament.banner_url }}" alt="{{ tournament.name }}" class="w-100 h-100 object-fit-cover" style="filter: brightness(0.35) contrast(1.15);">
-        <!-- Gradient Overlay Shade -->
-        <div class="position-absolute top-0 start-0 w-100 h-100" 
-             style="background: linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.95) 100%);"></div>
+        <img src="{{ tournament.banner_url }}" alt="{{ tournament.name }}" class="w-100 h-100 object-fit-cover"
+            style="filter: brightness(0.7) contrast(1.1);">
+        <!-- Controlled Dark Gradient Overlay -->
+        <div class="position-absolute top-0 start-0 w-100 h-100"
+            style="background: linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.88) 75%, rgba(15, 23, 42, 0.96) 100%);">
+        </div>
     </div>
 
     <!-- Hero Content -->
     <div class="card-body p-4 p-md-5 position-relative" style="z-index: 2;">
         <div class="row align-items-center g-4">
-            
+
             <!-- Left Details Column -->
             <div class="col-lg-8">
-                
+
                 <!-- Status & Game Badges -->
                 <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                    <img src="{{ tournament.game.image_url }}" alt="{{ tournament.game.name }}" class="rounded-circle me-1" style="width: 28px; height: 28px; object-fit: cover;">
+                    {% if tournament.game.image_url %}
+                    <img src="{{ tournament.game.image_url }}" alt="{{ tournament.game.name }}"
+                        class="rounded-circle me-1" style="width: 28px; height: 28px; object-fit: cover;">
+                    {% endif %}
                     <span class="badge bg-primary bg-opacity-90 px-3 py-1.5 fs-7 text-uppercase fw-bold shadow-sm">
                         <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
                     </span>
 
-                    <span class="badge {% if tournament.current_status == 'LIVE' %}bg-danger animate-pulse{% elif tournament.current_status == 'REGISTRATION_OPEN' %}bg-success{% elif tournament.current_status == 'COMPLETED' %}bg-secondary{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}bg-warning text-dark{% else %}bg-info{% endif %} px-3 py-1.5 fs-7 text-uppercase fw-bold shadow-sm">
-                        {% if tournament.current_status == 'LIVE' %}🔴 Live{% elif tournament.current_status == 'REGISTRATION_OPEN' %}Registration Open{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}Registration Closed{% elif tournament.current_status == 'COMPLETED' %}Completed{% elif tournament.current_status == 'DRAFT' %}Draft{% else %}{{ tournament.get_status_display }}{% endif %}
+                    <span
+                        class="badge {% if tournament.current_status == 'LIVE' %}bg-danger animate-pulse{% elif tournament.current_status == 'REGISTRATION_OPEN' %}bg-success{% elif tournament.current_status == 'COMPLETED' %}bg-secondary{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}bg-warning text-dark{% else %}bg-info{% endif %} px-3 py-1.5 fs-7 text-uppercase fw-bold shadow-sm">
+                        {% if tournament.current_status == 'LIVE' %}🔴 Live{% elif tournament.current_status ==
+                        'REGISTRATION_OPEN' %}UPCOMING{% elif tournament.current_status == 'REGISTRATION_CLOSED'
+                        %}REGISTRATION CLOSED{% elif tournament.current_status == 'COMPLETED' %}COMPLETED{% elif
+                        tournament.current_status == 'DRAFT' %}DRAFT{% else %}{{ tournament.get_status_display|upper
+                        }}{% endif %}
                     </span>
 
-                    <span class="badge bg-dark bg-opacity-75 border border-secondary px-3 py-1.5 fs-7 fw-semibold text-light shadow-sm">
-                        <i class="bi bi-person-circle text-info me-1"></i> Hosted by {{ tournament.organizer.username }}
+                    <span
+                        class="badge bg-dark bg-opacity-75 border border-secondary px-3 py-1.5 fs-7 fw-bold text-light shadow-sm text-uppercase">
+                        <i class="bi bi-people me-1"></i> {% if tournament.participation_type == 'SOLO' %}SOLO
+                        TOURNAMENT{% else %}TEAM TOURNAMENT{% endif %}
                     </span>
                 </div>
 
                 <!-- Tournament Title -->
-                <h1 class="fw-extrabold text-white mb-3 display-5 tracking-tight text-shadow-sm">
+                <h1 class="fw-extrabold text-white mb-2 display-5 tracking-tight text-shadow-sm">
                     {{ tournament.name }}
                 </h1>
 
+                <!-- Organizer Subtitle -->
+                <div class="d-flex align-items-center gap-1 text-white-50 small mb-3">
+                    <span>Organized by <strong class="text-white">{{ tournament.organizer.username }}</strong></span>
+                    <i class="bi bi-patch-check-fill text-primary ms-1"></i>
+                </div>
+
+                {% if tournament.description %}
+                <p class="text-white-50 small mb-4 line-clamp-2" style="max-width: 680px; line-height: 1.5;">
+                    {{ tournament.description }}
+                </p>
+                {% endif %}
+
                 <!-- Champion Banner Alert if Completed -->
                 {% if tournament.champion %}
-                    <div class="alert alert-warning border border-warning border-opacity-50 bg-warning bg-opacity-15 text-warning d-inline-flex align-items-center gap-2 px-3.5 py-2 rounded-3 mb-0 shadow-sm">
-                        <i class="bi bi-trophy-fill fs-5"></i>
-                        <span>Champion: <strong class="text-white ms-1">{{ tournament.champion.display_name }}</strong> 👑</span>
-                    </div>
+                <div
+                    class="alert alert-warning border border-warning border-opacity-50 bg-warning bg-opacity-15 text-warning d-inline-flex align-items-center gap-2 px-3.5 py-2 rounded-3 mb-3 shadow-sm">
+                    <i class="bi bi-trophy-fill fs-5"></i>
+                    <span>Champion: <strong class="text-white ms-1">{{ tournament.champion.display_name }}</strong>
+                        👑</span>
+                </div>
                 {% endif %}
+
+                <!-- Metrics Highlights Bar -->
+                <div class="d-flex flex-wrap gap-4 pt-3 border-top border-white border-opacity-10 text-white-50 small">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-trophy-fill text-success fs-5"></i>
+                        <div>
+                            <div class="text-uppercase fw-bold text-muted"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em;">Prize Pool</div>
+                            <strong class="text-success fw-extrabold">NPR {{ tournament.prize_pool }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-people-fill text-warning fs-5"></i>
+                        <div>
+                            <div class="text-uppercase fw-bold text-muted"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em;">Participants</div>
+                            <strong class="text-white">{{ tournament.registered_count|default:tournament.registrations.count }} / {{ tournament.max_participants }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-calendar-event text-danger fs-5"></i>
+                        <div>
+                            <div class="text-uppercase fw-bold text-muted"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em;">Reg. Deadline</div>
+                            <strong class="text-white">{{ tournament.registration_end|date:"d M Y, H:i" }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-clock text-info fs-5"></i>
+                        <div>
+                            <div class="text-uppercase fw-bold text-muted"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em;">Starts On</div>
+                            <strong class="text-white">{{ tournament.start_date|date:"d M Y, H:i" }}</strong>
+                        </div>
+                    </div>
+                </div>
 
             </div>
 
-            <!-- Right Column Primary Action -->
-            <div class="col-lg-4 text-lg-end">
-                <div class="p-3.5 rounded-4 bg-dark bg-opacity-60 border border-white border-opacity-10 backdrop-blur shadow-lg">
-                    <small class="text-white-50 text-uppercase fw-bold fs-8 mb-2 d-block text-start text-lg-end">Primary Action</small>
-                    <div class="d-grid gap-2">
-                        {% if request.user == tournament.organizer and tournament.status == 'DRAFT' %}
-                            <form method="post" action="{% url 'tournaments:publish' tournament.slug %}" class="d-grid mb-0">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-success btn-lg fw-bold py-2.5 shadow-sm">
-                                    <i class="bi bi-cloud-upload me-1.5"></i> Publish Tournament
-                                </button>
-                            </form>
-                        {% elif request.user == tournament.organizer %}
-                            <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-warning btn-lg fw-bold py-2.5 shadow-sm">
-                                <i class="bi bi-speedometer2 me-1.5"></i> Organizer Dashboard
-                            </a>
-                        {% elif tournament.current_status == tournament.Status.REGISTRATION_OPEN %}
-                            <a href="{% url 'tournaments:register' tournament.slug %}" class="btn btn-success btn-lg fw-bold py-2.5 shadow-sm">
-                                {% if tournament.participation_type == 'SOLO' %}
-                                    <i class="bi bi-person-plus me-1.5"></i> Register
-                                {% else %}
-                                    <i class="bi bi-shield-plus me-1.5"></i> Register Team
-                                {% endif %}
-                            </a>
+            <!-- Right Column Action Buttons -->
+            <div class="col-lg-4 text-lg-end align-self-end">
+                <div class="d-flex flex-column gap-2.5">
+                    {% if request.user == tournament.organizer and tournament.status == 'DRAFT' %}
+                    <form method="post" action="{% url 'tournaments:publish' tournament.slug %}" class="d-grid mb-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg fw-bold py-2.5 shadow-sm">
+                            <i class="bi bi-cloud-upload me-1.5"></i> Publish Tournament
+                        </button>
+                    </form>
+                    {% elif request.user == tournament.organizer %}
+                    <a href="{% url 'tournaments:dashboard' tournament.slug %}"
+                        class="btn btn-primary btn-lg fw-bold py-2.5 shadow-sm">
+                        <i class="bi bi-speedometer2 me-1.5"></i> Organizer Dashboard
+                    </a>
+                    {% elif tournament.current_status == tournament.Status.REGISTRATION_OPEN %}
+                    <a href="{% url 'tournaments:register' tournament.slug %}"
+                        class="btn btn-primary btn-lg fw-bold py-2.5 shadow-sm">
+                        {% if tournament.participation_type == 'SOLO' %}
+                        <i class="bi bi-person-plus me-1.5"></i> Register Solo
                         {% else %}
-                            <a href="{% url 'tournaments:bracket' tournament.slug %}" class="btn btn-primary btn-lg fw-bold py-2.5 shadow-sm">
-                                <i class="bi bi-diagram-3-fill me-1.5"></i> View Bracket
-                            </a>
+                        <i class="bi bi-people-fill me-1.5"></i> Register Team
                         {% endif %}
-                    </div>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'tournaments:bracket' tournament.slug %}"
+                        class="btn btn-primary btn-lg fw-bold py-2.5 shadow-sm">
+                        <i class="bi bi-diagram-3-fill me-1.5"></i> View Bracket
+                    </a>
+                    {% endif %}
+
+                    <a href="#overview-section"
+                        class="btn btn-outline-light py-2 fw-semibold border-white border-opacity-25"
+                        style="border-radius: 12px;">
+                        <i class="bi bi-file-text me-1.5"></i> Tournament Rules
+                    </a>
                 </div>
             </div>
 

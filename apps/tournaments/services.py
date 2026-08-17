@@ -564,13 +564,14 @@ def get_tournament_statistics(*, tournament):
     first_completed_match = played_matches[0] if played_matches else None
     last_completed_match = played_matches[-1] if played_matches else None
 
-    # Team Rankings — skip SOLO registrations that have no team object
+    # Team / Player Rankings
     team_stats = {}
     for reg in registrations:
         if not reg.team:
             continue
         team_stats[reg.team.id] = {
             "team": reg.team,
+            "display_name": reg.display_name,
             "wins": 0,
             "losses": 0,
             "matches_played": 0,
@@ -615,6 +616,8 @@ def get_tournament_statistics(*, tournament):
         reverse=True,
     )
 
+    recent_matches = list(reversed([m for m in completed_matches if m.team_one and m.team_two][-6:]))
+
     return {
         "tournament": tournament,
         "registrations": registrations,
@@ -631,4 +634,6 @@ def get_tournament_statistics(*, tournament):
         "first_completed_match": first_completed_match,
         "last_completed_match": last_completed_match,
         "team_rankings": team_rankings,
-    }
+        "recent_matches": recent_matches,
+    }
+

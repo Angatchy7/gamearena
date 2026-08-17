@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="100%" height="100%">
+  <defs>
+    <linearGradient id="hero-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070d19"/>
+      <stop offset="40%" stop-color="#0b1324"/>
+      <stop offset="70%" stop-color="#141a33"/>
+      <stop offset="100%" stop-color="#061226"/>
+    </linearGradient>
+
+    <!-- Gold Gradients for Trophy -->
+    <linearGradient id="gold-grad-main" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff59d"/>
+      <stop offset="25%" stop-color="#fbc02d"/>
+      <stop offset="50%" stop-color="#f57f17"/>
+      <stop offset="75%" stop-color="#ffb300"/>
+      <stop offset="100%" stop-color="#ffe082"/>
+    </linearGradient>
+    <linearGradient id="gold-highlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#fff176" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#ff8f00" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="trophy-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffb300" stop-opacity="0.6"/>
+      <stop offset="40%" stop-color="#ff8f00" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#ff6f00" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="spotlight-blue" cx="20%" cy="10%" r="60%">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="spotlight-cyan" cx="80%" cy="10%" r="60%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Filter for Intense Glow -->
+    <filter id="gold-glow-filter" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Layer -->
+  <rect width="1600" height="900" fill="url(#hero-bg-grad)"/>
+
+  <!-- Stadium Spotlights -->
+  <rect width="1600" height="900" fill="url(#spotlight-blue)"/>
+  <rect width="1600" height="900" fill="url(#spotlight-cyan)"/>
+
+  <!-- Arena Light Beams -->
+  <g opacity="0.22">
+    <polygon points="100,0 250,0 900,650 700,650" fill="#38bdf8"/>
+    <polygon points="1500,0 1350,0 700,650 900,650" fill="#fbbf24"/>
+    <polygon points="400,0 550,0 850,550 750,550" fill="#60a5fa"/>
+    <polygon points="1200,0 1050,0 750,550 850,550" fill="#a855f7"/>
+  </g>
+
+  <!-- Stadium Audience Silhouette -->
+  <path d="M0 720 Q 200 680 400 710 T 800 690 T 1200 710 T 1600 680 L 1600 900 L 0 900 Z" fill="#050a14" opacity="0.85"/>
+  <path d="M0 760 Q 300 740 600 760 T 1200 750 T 1600 760 L 1600 900 L 0 900 Z" fill="#02050b"/>
+
+  <!-- Golden Glow Aura behind Trophy -->
+  <circle cx="800" cy="420" r="320" fill="url(#trophy-glow)" filter="url(#gold-glow-filter)"/>
+
+  <!-- Confetti / Floating Gold Particles -->
+  <g opacity="0.75">
+    <circle cx="720" cy="220" r="3" fill="#fff" opacity="0.9"/>
+    <circle cx="880" cy="260" r="4" fill="#fbc02d"/>
+    <circle cx="640" cy="310" r="3" fill="#ffe082"/>
+    <circle cx="950" cy="340" r="5" fill="#fff"/>
+    <circle cx="770" cy="180" r="3" fill="#ffd54f"/>
+    <polygon points="710,190 716,194 712,202 706,198" fill="#ffd700"/>
+    <polygon points="890,210 898,212 894,222 886,220" fill="#ffb300"/>
+    <polygon points="630,280 638,284 634,292 626,288" fill="#fff"/>
+    <polygon points="970,290 978,294 972,302 964,298" fill="#ffd700"/>
+  </g>
+
+  <!-- Main Focal Point: THE GOLDEN TROPHY -->
+  <g transform="translate(800, 430)" text-anchor="middle" filter="url(#gold-glow-filter)">
+    <!-- Pedestal Base -->
+    <path d="M-140 240 L140 240 L120 200 L-120 200 Z" fill="#1e293b" stroke="#fbc02d" stroke-width="2"/>
+    <rect x="-100" y="150" width="200" height="50" rx="6" fill="#0f172a" stroke="#ffb300" stroke-width="3"/>
+    
+    <!-- Plaque on Pedestal -->
+    <rect x="-70" y="162" width="140" height="26" rx="4" fill="url(#gold-grad-main)"/>
+    <text x="0" y="180" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="14" fill="#0f172a" letter-spacing="3">GAMEARENA</text>
+
+    <!-- Trophy Stem / Connector -->
+    <path d="M-25 150 L25 150 L35 90 L-35 90 Z" fill="url(#gold-grad-main)"/>
+    <circle cx="0" cy="90" r="42" fill="url(#gold-grad-main)" stroke="#fff" stroke-width="1.5"/>
+
+    <!-- Trophy Handles -->
+    <!-- Left Handle -->
+    <path d="M-80 -80 C-170 -60 -150 60 -65 70 C-75 40 -120 10 -75 -40 Z" fill="url(#gold-grad-main)" stroke="#fff176" stroke-width="1"/>
+    <!-- Right Handle -->
+    <path d="M80 -80 C170 -60 150 60 65 70 C75 40 120 10 75 -40 Z" fill="url(#gold-grad-main)" stroke="#fff176" stroke-width="1"/>
+
+    <!-- Main Trophy Cup Body -->
+    <path d="M-110 -110 C-110 30 -50 90 0 90 C50 90 110 30 110 -110 L-110 -110 Z" fill="url(#gold-grad-main)"/>
+    <path d="M-110 -110 L110 -110 L125 -135 L-125 -135 Z" fill="url(#gold-grad-main)"/>
+    
+    <!-- Cup Rim & Interior Reflection -->
+    <ellipse cx="0" cy="-135" rx="125" ry="25" fill="#fff8e1" stroke="#f57f17" stroke-width="3"/>
+    <ellipse cx="0" cy="-135" rx="105" ry="18" fill="#ff8f00"/>
+
+    <!-- Cup Body Highlight Lines -->
+    <path d="M-80 -100 C-80 10 -40 60 0 60 C-30 40 -60 0 -60 -100 Z" fill="url(#gold-highlight)"/>
+    
+    <!-- Emblem Star on Cup -->
+    <polygon points="0,-45 12,-10 45,-10 18,10 28,45 0,22 -28,45 -18,10 -45,-10 -12,-10" fill="#ffffff" opacity="0.95"/>
+  </g>
+
+  <!-- GameArena Platform Branding Footer Text -->
+  <g transform="translate(800, 840)" text-anchor="middle">
+    <text x="0" y="0" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="32" fill="#ffffff" letter-spacing="6">GAMEARENA ESPORTS</text>
+  </g>
+</svg>

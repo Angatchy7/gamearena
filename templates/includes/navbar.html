@@ -4,6 +4,13 @@
 
     <div class="container-fluid">
 
+        {% if user.is_authenticated %}
+        <!-- Sidebar Toggle -->
+        <button type="button" id="sidebar-toggle" class="btn btn-link text-white p-0 me-3 d-none d-lg-inline-flex align-items-center justify-content-center ga-sidebar-toggle-btn" aria-label="Toggle navigation sidebar" title="Toggle Sidebar">
+            <i class="bi bi-list fs-3"></i>
+        </button>
+        {% endif %}
+
         <!-- Logo -->
 
         <a class="navbar-brand d-flex align-items-center fw-bold text-white" href="{% url 'core:home' %}">
@@ -29,251 +36,128 @@
 
         <div class="collapse navbar-collapse" id="navbarContent">
 
-            {% if user.is_authenticated %}
-
-            <!-- SEARCH -->
-
-            <div class="mx-auto search-wrapper">
-
+            <!-- GLOBAL SEARCH (ALL USERS) -->
+            <div class="mx-auto search-wrapper my-2 my-lg-0">
                 <form method="get" action="{% url 'core:search' %}">
-
                     <div class="input-group">
-
                         <span class="input-group-text">
-
                             <i class="bi bi-search"></i>
-
                         </span>
-
                         <input id="search-input" class="form-control" type="search" name="q" value="{{ request.GET.q }}"
                             placeholder="Search tournaments, teams, games..." autocomplete="off">
-
                     </div>
-
                 </form>
 
                 <!-- LIVE SEARCH RESULTS -->
-
-                <div id="search-results" class="search-results-dropdown d-none">
-
-                </div>
-
+                <div id="search-results" class="search-results-dropdown d-none"></div>
             </div>
 
-            {% endif %}
-
-            <ul class="navbar-nav ms-auto align-items-center">
+            <ul class="navbar-nav ms-auto align-items-center gap-2">
 
                 {% if user.is_authenticated %}
 
                 <!-- Notification -->
-
-                <li class="nav-item me-3">
-
-                    <a href="{% url 'notifications:list' %}" class="nav-icon position-relative">
-
+                <li class="nav-item me-1">
+                    <a href="{% url 'notifications:list' %}" class="nav-icon position-relative" title="Notifications" aria-label="Notifications">
                         <i class="bi bi-bell-fill"></i>
-
                         <span class="notification-dot"></span>
-
                     </a>
+                </li>
 
+                <!-- Navbar Quick Theme Toggle (Dark <-> Light) -->
+                <li class="nav-item me-2">
+                    <button type="button" class="nav-icon ga-theme-quick-toggle btn btn-link p-0 border-0 text-decoration-none d-flex align-items-center justify-content-center" 
+                            id="ga-theme-quick-toggle" 
+                            title="Change appearance" 
+                            aria-label="Change appearance">
+                        <i class="bi bi-moon-fill fs-5" id="ga-theme-quick-toggle-icon"></i>
+                    </button>
                 </li>
 
                 <!-- Profile -->
-
                 <li class="nav-item dropdown">
-
                     <a class="nav-link dropdown-toggle d-flex align-items-center profile-btn" href="#" role="button"
                         data-bs-toggle="dropdown">
-
                         <div class="profile-avatar">
-
                             {{ user.username|first|upper }}
-
                         </div>
-
-                        <div class="profile-info d-none d-lg-block">
-
+                        <div class="profile-info d-none d-lg-block ms-2">
                             <div class="profile-name">
-
                                 {{ user.username }}
-
                             </div>
-
-                            <small>
-
-                                Player
-
-                            </small>
-
+                            <small class="text-muted">Player</small>
                         </div>
-
                     </a>
 
                     <ul class="dropdown-menu dropdown-menu-end profile-menu shadow-lg border-0">
-
                         <li class="dropdown-header">
-
-                            <strong>
-
-                                {{ user.username }}
-
-                            </strong>
-
+                            <strong>{{ user.username }}</strong>
                             <br>
-
-                            <small class="text-muted">
-
-                                {{ user.email }}
-
-                            </small>
-
+                            <small class="text-muted">{{ user.email }}</small>
                         </li>
-
+                        <li><hr class="dropdown-divider"></li>
                         <li>
-
-                            <hr class="dropdown-divider">
-
-                        </li>
-
-                        <li>
-
                             <a class="dropdown-item" href="{% url 'accounts:profile' user.username %}">
-
-                                <i class="bi bi-person-circle me-2"></i>
-
-                                My Profile
-
+                                <i class="bi bi-person-circle me-2"></i> My Profile
                             </a>
-
                         </li>
-
                         <li>
-
                             <a class="dropdown-item" href="{% url 'accounts:settings' %}">
-
-                                <i class="bi bi-gear me-2"></i>
-
-                                Settings
-
+                                <i class="bi bi-gear me-2"></i> Settings
                             </a>
-
                         </li>
-
-                        <li>
-
-                            <hr class="dropdown-divider">
-
-                        </li>
-
+                        <li><hr class="dropdown-divider"></li>
                         <li class="px-3 py-2 ga-theme-dropdown-item">
-
                             <div class="d-flex align-items-center justify-content-between mb-2 small fw-bold text-muted" style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
-
                                 <span><i class="bi bi-palette me-1"></i> Appearance</span>
-
                             </div>
-
                             <div class="btn-group btn-group-sm w-100 ga-theme-selector" role="group" aria-label="Appearance theme toggle">
-
                                 <button type="button" class="btn ga-theme-btn" data-theme-val="dark" title="Dark theme">
-
                                     <i class="bi bi-moon-fill"></i> Dark
-
                                 </button>
-
                                 <button type="button" class="btn ga-theme-btn" data-theme-val="light" title="Light theme">
-
                                     <i class="bi bi-sun-fill"></i> Light
-
                                 </button>
-
                                 <button type="button" class="btn ga-theme-btn" data-theme-val="system" title="Follow system theme">
-
                                     <i class="bi bi-display"></i> System
-
                                 </button>
-
                             </div>
-
                         </li>
-
+                        <li><hr class="dropdown-divider"></li>
                         <li>
-
-                            <hr class="dropdown-divider">
-
-                        </li>
-
-                        <li>
-
                             <form method="post" action="{% url 'accounts:logout' %}">
-
                                 {% csrf_token %}
-
                                 <button type="submit" class="dropdown-item text-danger">
-
-                                    <i class="bi bi-box-arrow-right me-2"></i>
-
-                                    Logout
-
+                                    <i class="bi bi-box-arrow-right me-2"></i> Logout
                                 </button>
-
                             </form>
-
                         </li>
-
                     </ul>
-
                 </li>
 
                 {% else %}
 
-                {% if request.resolver_match.url_name == 'home' %}
+                <!-- Theme quick toggle for logged out users -->
+                <li class="nav-item me-2">
+                    <button type="button" class="nav-icon ga-theme-quick-toggle btn btn-link p-0 border-0 text-decoration-none d-flex align-items-center justify-content-center" 
+                            id="ga-theme-quick-toggle-guest" 
+                            title="Change appearance" 
+                            aria-label="Change appearance">
+                        <i class="bi bi-moon-fill fs-5"></i>
+                    </button>
+                </li>
 
-                <li class="nav-item">
-
-                    <a class="nav-link text-white" href="{% url 'accounts:login' %}" data-auth-modal="login">
-
+                <li class="nav-item ms-1">
+                    <a class="nav-link text-white fw-semibold" href="{% url 'accounts:login' %}" data-auth-modal="login">
                         Login
-
                     </a>
-
                 </li>
 
-                <li class="nav-item ms-2">
-
-                    <a class="btn btn-primary rounded-pill px-4" href="{% url 'accounts:register' %}" data-auth-modal="register">
-
-                        Register
-
+                <li class="nav-item ms-1">
+                    <a class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" href="{% url 'accounts:register' %}" data-auth-modal="register">
+                        Sign Up
                     </a>
-
                 </li>
-
-                {% else %}
-
-                <li class="nav-item">
-
-                    <a class="nav-link text-white" href="{% url 'accounts:login' %}">
-
-                        Login
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item ms-2">
-
-                    <a class="btn btn-primary rounded-pill px-4" href="{% url 'accounts:register' %}">
-
-                        Register
-
-                    </a>
-
-                </li>
-
-                {% endif %}
 
                 {% endif %}
 

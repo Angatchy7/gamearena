@@ -20,6 +20,7 @@ from .views import (
     ResetPasswordAPIView,
     ChangePasswordRequestAPIView,
     ChangePasswordVerifyAPIView,
+    ChangePasswordDirectAPIView,
     UserAutocompleteAPIView,
     NotificationListView,
     NotificationUnreadView,
@@ -53,6 +54,7 @@ urlpatterns = [
     path("auth/forgot-password/", ForgotPasswordAPIView.as_view(), name="forgot_password_api"),
     path("auth/forgot-password/verify/", VerifyOTPAPIView.as_view(), name="forgot_password_verify_api"),
     path("auth/forgot-password/reset/", ResetPasswordAPIView.as_view(), name="forgot_password_reset_api"),
+    path("auth/change-password/", ChangePasswordDirectAPIView.as_view(), name="change_password_direct_api"),
     path("auth/change-password/request/", ChangePasswordRequestAPIView.as_view(), name="change_password_request_api"),
     path("auth/change-password/verify/", ChangePasswordVerifyAPIView.as_view(), name="change_password_verify_api"),
 

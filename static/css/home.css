@@ -235,21 +235,14 @@
 ===================================================== */
 
 .hero-section {
-
-    padding: 90px 0 70px;
-
+    padding: 50px 0 35px;
 }
 
 .hero-title {
-
-    font-size: 4.2rem;
-
+    font-size: 3.5rem;
     font-weight: 800;
-
-    line-height: 1.05;
-
+    line-height: 1.08;
     color: #fff;
-
 }
 
 .hero-text {
@@ -572,7 +565,7 @@
         0 30px 70px rgba(0, 0, 0, .55),
         0 0 60px rgba(37, 99, 235, .08);
     transform: scale(.93) translateY(12px);
-    transition: transform .28s cubic-bezier(.34,1.56,.64,1), opacity .25s ease;
+    transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), opacity .25s ease;
     opacity: 0;
     max-height: calc(100vh - 2rem);
     overflow-y: auto;
@@ -586,9 +579,18 @@
 }
 
 /* Scrollbar inside modal */
-.auth-modal::-webkit-scrollbar { width: 4px; }
-.auth-modal::-webkit-scrollbar-track { background: transparent; }
-.auth-modal::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+.auth-modal::-webkit-scrollbar {
+    width: 4px;
+}
+
+.auth-modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.auth-modal::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
 
 /* --- Header bar --- */
 .auth-modal-header {
@@ -630,8 +632,8 @@
     width: 34px;
     height: 34px;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,.1);
-    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255, 255, 255, .1);
+    background: rgba(255, 255, 255, .05);
     color: #94a3b8;
     cursor: pointer;
     display: flex;
@@ -643,9 +645,9 @@
 }
 
 .auth-modal-close:hover {
-    background: rgba(255,255,255,.1);
+    background: rgba(255, 255, 255, .1);
     color: #f8fafc;
-    border-color: rgba(255,255,255,.2);
+    border-color: rgba(255, 255, 255, .2);
 }
 
 /* --- Body --- */
@@ -777,7 +779,7 @@
     display: inline-block;
     width: 15px;
     height: 15px;
-    border: 2px solid rgba(255,255,255,.3);
+    border: 2px solid rgba(255, 255, 255, .3);
     border-top-color: white;
     border-radius: 50%;
     animation: auth-spin .7s linear infinite;
@@ -786,17 +788,33 @@
 }
 
 @keyframes auth-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* --- Footer link --- */
-.auth-modal-footer {
-    padding: 1.1rem 2rem 1.5rem;
-    border-top: 1px solid rgba(255,255,255,.06);
-    text-align: center;
-    font-size: .83rem;
-    color: #64748b;
+.text-gradient-primary {
+    background: linear-gradient(135deg, #38bdf8 0%, #2563eb 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
+
+.ga-hover-scale {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ga-hover-scale:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.3) !important;
+}
+
+.ga-feature-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(56, 189, 248, 0.35) !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25) !important;
+}
+
 
 .auth-modal-footer a,
 .auth-modal-switch {
@@ -821,7 +839,7 @@
 /* --- Divider --- */
 .auth-divider {
     height: 1px;
-    background: rgba(255,255,255,.07);
+    background: rgba(255, 255, 255, .07);
     margin: 1.3rem 0;
 }
 
@@ -860,5 +878,151 @@
 
     .auth-modal-footer {
         padding: .8rem 1.1rem 1rem;
+    }
+}
+
+/* === Final premium media treatment === */
+.hero-bg-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    filter: brightness(.9) saturate(1.06) contrast(1.06);
+}
+
+.ga-game-artwork,
+.ga-card-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 30%, rgba(37, 99, 235, .18), transparent 55%), var(--ga-surface-3, #0f172a);
+}
+
+.ga-game-img,
+.ga-card-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: linear-gradient(135deg, rgba(8, 15, 28, .95), rgba(20, 33, 56, .85));
+    transition: transform .35s ease, filter .35s ease;
+}
+
+.ga-game-card:hover .ga-game-img,
+.ga-tournament-card:hover .ga-card-img {
+    transform: scale(1.035);
+    filter: saturate(1.08) brightness(1.03);
+}
+
+.ga-game-card,
+.ga-tournament-card {
+    min-width: 0;
+}
+
+.ga-tournament-card .card-body {
+    min-height: 184px;
+}
+
+.ga-tournament-card h6,
+.ga-game-card h6 {
+    line-height: 1.2;
+}
+
+.tournament-hero-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: #0b1220;
+    filter: brightness(.78) contrast(1.05) saturate(1.05);
+}
+
+.tournament-hero-overlay {
+    background:
+        linear-gradient(90deg, rgba(6, 11, 21, .72) 0%, rgba(6, 11, 21, .4) 42%, rgba(6, 11, 21, .18) 74%, rgba(6, 11, 21, .52) 100%),
+        linear-gradient(180deg, rgba(6, 11, 21, .18) 0%, rgba(6, 11, 21, .58) 100%);
+}
+
+@media (max-width: 768px) {
+    .ga-card-banner {
+        height: 168px !important;
+    }
+
+    .ga-game-artwork {
+        height: 170px;
+    }
+
+    .ga-tournament-card .card-body {
+        min-height: 196px;
+    }
+}
+
+flex-wrap: nowrap !important;
+align-items: stretch !important;
+gap: 16px !important;
+width: max-content !important;
+min-width: 100% !important;
+overflow: visible !important;
+}
+
+.tournament-carousel-track>* {
+    flex: 0 0 270px !important;
+    width: 270px !important;
+    min-width: 270px !important;
+    max-width: 270px !important;
+}
+
+.ga-game-card,
+.ga-tournament-card {
+    min-width: 0;
+}
+
+.ga-tournament-card .card-body {
+    min-height: 184px;
+}
+
+.ga-tournament-card h6,
+.ga-game-card h6 {
+    line-height: 1.2;
+}
+
+.tournament-hero-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 35%;
+    background: #0b1220;
+    filter: brightness(.85) contrast(1.05) saturate(1.05);
+}
+
+.tournament-hero-overlay {
+    background:
+        linear-gradient(90deg, rgba(6, 11, 21, .75) 0%, rgba(6, 11, 21, .45) 42%, rgba(6, 11, 21, .25) 74%, rgba(6, 11, 21, .55) 100%),
+        linear-gradient(180deg, rgba(6, 11, 21, .25) 0%, rgba(6, 11, 21, .65) 100%);
+}
+
+@media (max-width: 768px) {
+    .ga-card-banner {
+        height: 168px !important;
+    }
+
+    .ga-game-artwork {
+        height: 140px;
+    }
+
+    .ga-tournament-card .card-body {
+        min-height: 196px;
+    }
+}
+
+@media (max-width: 576px) {
+    .ga-carousel-item {
+        flex: 0 0 85% !important;
+        width: 85% !important;
+        min-width: 85% !important;
     }
 }

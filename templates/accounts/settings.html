@@ -98,149 +98,231 @@
 
                     <p class="text-muted small mb-3">Keep your account secure by updating your password or verifying via email.</p>
 
-                    <!-- Email-Verified Password Change Box -->
-                    <div id="pw-verify-container" class="mb-3 p-3 rounded-3" style="border: 1px solid var(--ga-border); background: var(--ga-surface-2);">
-                        <div id="pw-step-1">
-                            <div class="fw-bold small mb-1"><i class="bi bi-shield-check text-cyan me-1"></i> Email-Verified Password Change</div>
-                            <div class="text-muted small mb-3">Request a secure verification token to your email (<b>{{ user.email|default:user.username }}</b>) before updating.</div>
-                            <div id="pw-request-msg" class="d-none alert p-2 small mb-3"></div>
-                            <button type="button" id="btn-request-pw-verify" class="btn btn-outline-cyan btn-sm fw-bold">
-                                <i class="bi bi-send me-1"></i> Send Verification Email
-                            </button>
-                        </div>
+                    <!-- Embedded Password Change Card -->
+                    <div id="pw-change-card" class="p-3 rounded-3 mb-3" style="border: 1px solid var(--ga-border); background: var(--ga-surface-2, rgba(255, 255, 255, 0.02));">
+                        <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-key-fill text-primary"></i> Change Password
+                        </h6>
 
-                        <div id="pw-step-2" class="d-none">
-                            <div class="alert alert-success p-2 small mb-3">
-                                <i class="bi bi-check-circle me-1"></i> Verification token sent! Check your email inbox.
-                            </div>
-                            <div class="mb-2">
-                                <label for="pw-verify-token" class="form-label text-muted small fw-bold">Verification Token</label>
-                                <input type="text" id="pw-verify-token" class="form-control form-control-sm" placeholder="Paste token from email">
-                            </div>
-                            <div class="mb-2">
-                                <label for="pw-verify-new" class="form-label text-muted small fw-bold">New Password</label>
-                                <input type="password" id="pw-verify-new" class="form-control form-control-sm" placeholder="Min 8 characters">
-                            </div>
+                        <div id="change-pw-alert" class="alert d-none p-2 small mb-3"></div>
+
+                        <form id="change-password-form" onsubmit="return false;">
+                            <!-- Current Password -->
                             <div class="mb-3">
-                                <label for="pw-verify-confirm" class="form-label text-muted small fw-bold">Confirm New Password</label>
-                                <input type="password" id="pw-verify-confirm" class="form-control form-control-sm" placeholder="Repeat new password">
+                                <label for="current_password" class="form-label text-muted small fw-bold text-uppercase">Current Password</label>
+                                <div class="position-relative">
+                                    <input type="password" id="current_password" name="current_password" class="form-control form-control-sm pe-5" placeholder="Enter current password" required>
+                                    <button type="button" class="btn btn-link text-muted position-absolute top-50 end-0 translate-middle-y text-decoration-none pe-3 py-0 pw-eye-toggle" data-target="current_password" aria-label="Toggle password visibility">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div id="pw-verify-msg" class="d-none alert p-2 small mb-3"></div>
-                            <div class="d-flex gap-2">
-                                <button type="button" id="btn-submit-pw-verify" class="btn btn-primary btn-sm fw-bold">
-                                    <i class="bi bi-key me-1"></i> Update Password
-                                </button>
-                                <button type="button" id="btn-cancel-pw-verify" class="btn btn-outline-secondary btn-sm">Cancel</button>
+
+                            <!-- New Password -->
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label text-muted small fw-bold text-uppercase">New Password</label>
+                                <div class="position-relative">
+                                    <input type="password" id="new_password" name="new_password" class="form-control form-control-sm pe-5" placeholder="Enter new password" required>
+                                    <button type="button" class="btn btn-link text-muted position-absolute top-50 end-0 translate-middle-y text-decoration-none pe-3 py-0 pw-eye-toggle" data-target="new_password" aria-label="Toggle password visibility">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+
+                            <!-- Confirm Password -->
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label text-muted small fw-bold text-uppercase">Confirm Password</label>
+                                <div class="position-relative">
+                                    <input type="password" id="confirm_password" name="confirm_password" class="form-control form-control-sm pe-5" placeholder="Confirm new password" required>
+                                    <button type="button" class="btn btn-link text-muted position-absolute top-50 end-0 translate-middle-y text-decoration-none pe-3 py-0 pw-eye-toggle" data-target="confirm_password" aria-label="Toggle password visibility">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Strength Meter -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted fw-bold">Password Strength</span>
+                                    <span id="pw-strength-text" class="small fw-bold text-muted">—</span>
+                                </div>
+                                <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
+                                    <div id="pw-strength-bar" class="progress-bar transition-all" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+
+                            <!-- Checklist -->
+                            <div class="mb-3 p-2.5 rounded bg-dark bg-opacity-25 border border-secondary border-opacity-10 small">
+                                <div class="fw-semibold text-muted mb-1" style="font-size: 0.75rem;">Must contain:</div>
+                                <div class="row g-1 text-muted" style="font-size: 0.8rem;">
+                                    <div class="col-6" id="chk-length"><i class="bi bi-x-circle text-secondary me-1"></i> 8+ characters</div>
+                                    <div class="col-6" id="chk-uppercase"><i class="bi bi-x-circle text-secondary me-1"></i> Uppercase</div>
+                                    <div class="col-6" id="chk-number"><i class="bi bi-x-circle text-secondary me-1"></i> Number</div>
+                                    <div class="col-6" id="chk-special"><i class="bi bi-x-circle text-secondary me-1"></i> Special char</div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" id="btn-update-password" class="btn btn-primary w-100 py-2 fw-bold">
+                                <i class="bi bi-shield-check me-1"></i> Update Password
+                            </button>
+                        </form>
                     </div>
 
-                    <a href="{% url 'accounts:password_change' %}"
-                       class="btn btn-outline-primary w-100 py-2 fw-bold"
-                       style="border-radius: 12px;">
-                        <i class="bi bi-key-fill me-2"></i> Standard Password Change
-                    </a>
-
                     <script>
-                        document.getElementById('btn-request-pw-verify')?.addEventListener('click', function() {
-                            var btn = this;
-                            var reqMsg = document.getElementById('pw-request-msg');
-                            if (reqMsg) reqMsg.classList.add('d-none');
-                            btn.disabled = true;
-                            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
-                            fetch('/api/auth/change-password/request/', {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRFToken': '{{ csrf_token }}',
-                                    'Content-Type': 'application/json'
-                                }
-                            }).then(function(res) {
-                                return res.json().then(function(data) {
-                                    return { status: res.status, data: data };
-                                });
-                            }).then(function(result) {
-                                if (result.status === 200) {
-                                    document.getElementById('pw-step-1').classList.add('d-none');
-                                    document.getElementById('pw-step-2').classList.remove('d-none');
-                                } else {
-                                    if (reqMsg) {
-                                        reqMsg.className = 'alert alert-danger p-2 small mb-3';
-                                        reqMsg.textContent = result.data.detail || 'Failed to send verification email.';
-                                        reqMsg.classList.remove('d-none');
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Eye toggles
+                            document.querySelectorAll('.pw-eye-toggle').forEach(function(btn) {
+                                btn.addEventListener('click', function() {
+                                    var targetId = this.getAttribute('data-target');
+                                    var input = document.getElementById(targetId);
+                                    var icon = this.querySelector('i');
+                                    if (input.type === 'password') {
+                                        input.type = 'text';
+                                        icon.className = 'bi bi-eye-slash';
                                     } else {
-                                        alert(result.data.detail || 'Failed to send verification email.');
+                                        input.type = 'password';
+                                        icon.className = 'bi bi-eye';
                                     }
-                                }
-                            }).catch(function(err) {
-                                if (reqMsg) {
-                                    reqMsg.className = 'alert alert-danger p-2 small mb-3';
-                                    reqMsg.textContent = 'Error requesting verification email.';
-                                    reqMsg.classList.remove('d-none');
-                                } else {
-                                    alert('Error requesting verification email.');
-                                }
-                            }).finally(function() {
-                                btn.disabled = false;
-                                btn.innerHTML = '<i class="bi bi-send me-1"></i> Send Verification Email';
+                                });
                             });
-                        });
 
-                        document.getElementById('btn-cancel-pw-verify')?.addEventListener('click', function() {
-                            document.getElementById('pw-step-2').classList.add('d-none');
-                            document.getElementById('pw-step-1').classList.remove('d-none');
-                        });
+                            // Password Strength and Checklist validation
+                            var newPw = document.getElementById('new_password');
+                            var strengthBar = document.getElementById('pw-strength-bar');
+                            var strengthText = document.getElementById('pw-strength-text');
 
-                        document.getElementById('btn-submit-pw-verify')?.addEventListener('click', function() {
-                            var token = document.getElementById('pw-verify-token').value;
-                            var newPw = document.getElementById('pw-verify-new').value;
-                            var confirmPw = document.getElementById('pw-verify-confirm').value;
-                            var msgBox = document.getElementById('pw-verify-msg');
+                            var chkLength = document.getElementById('chk-length');
+                            var chkUpper = document.getElementById('chk-uppercase');
+                            var chkNum = document.getElementById('chk-number');
+                            var chkSpec = document.getElementById('chk-special');
 
-                            msgBox.classList.add('d-none');
-                            msgBox.className = 'd-none alert p-2 small mb-3';
-
-                            if (!token || !newPw || !confirmPw) {
-                                msgBox.className = 'alert alert-danger p-2 small mb-3';
-                                msgBox.textContent = 'Please fill in all verification fields.';
-                                msgBox.classList.remove('d-none');
-                                return;
+                            function updateCheck(el, valid) {
+                                if (!el) return;
+                                var icon = el.querySelector('i');
+                                if (valid) {
+                                    el.className = el.className.replace('text-muted', 'text-success');
+                                    if (icon) icon.className = 'bi bi-check-circle-fill text-success me-1';
+                                } else {
+                                    el.className = el.className.replace('text-success', 'text-muted');
+                                    if (icon) icon.className = 'bi bi-x-circle text-secondary me-1';
+                                }
                             }
 
-                            fetch('/api/auth/change-password/verify/', {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRFToken': '{{ csrf_token }}',
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    token: token,
-                                    new_password: newPw,
-                                    confirm_password: confirmPw
-                                })
-                            }).then(function(res) {
-                                return res.json().then(function(data) {
-                                    return { status: res.status, data: data };
+                            if (newPw) {
+                                newPw.addEventListener('input', function() {
+                                    var val = newPw.value;
+                                    var hasLength = val.length >= 8;
+                                    var hasUpper = /[A-Z]/.test(val);
+                                    var hasNum = /[0-9]/.test(val);
+                                    var hasSpec = /[^A-Za-z0-9]/.test(val);
+
+                                    updateCheck(chkLength, hasLength);
+                                    updateCheck(chkUpper, hasUpper);
+                                    updateCheck(chkNum, hasNum);
+                                    updateCheck(chkSpec, hasSpec);
+
+                                    var score = (hasLength ? 1 : 0) + (hasUpper ? 1 : 0) + (hasNum ? 1 : 0) + (hasSpec ? 1 : 0);
+
+                                    if (val.length === 0) {
+                                        strengthBar.style.width = '0%';
+                                        strengthBar.className = 'progress-bar';
+                                        strengthText.textContent = '—';
+                                        strengthText.className = 'small fw-bold text-muted';
+                                    } else if (score <= 1) {
+                                        strengthBar.style.width = '25%';
+                                        strengthBar.className = 'progress-bar bg-danger';
+                                        strengthText.textContent = 'Weak';
+                                        strengthText.className = 'small fw-bold text-danger';
+                                    } else if (score === 2) {
+                                        strengthBar.style.width = '50%';
+                                        strengthBar.className = 'progress-bar bg-warning';
+                                        strengthText.textContent = 'Fair';
+                                        strengthText.className = 'small fw-bold text-warning';
+                                    } else if (score === 3) {
+                                        strengthBar.style.width = '75%';
+                                        strengthBar.className = 'progress-bar bg-info';
+                                        strengthText.textContent = 'Good';
+                                        strengthText.className = 'small fw-bold text-info';
+                                    } else {
+                                        strengthBar.style.width = '100%';
+                                        strengthBar.className = 'progress-bar bg-success';
+                                        strengthText.textContent = 'Strong';
+                                        strengthText.className = 'small fw-bold text-success';
+                                    }
                                 });
-                            }).then(function(result) {
-                                if (result.status === 200) {
-                                    msgBox.className = 'alert alert-success p-2 small mb-3';
-                                    msgBox.textContent = result.data.detail || 'Password updated successfully!';
-                                    msgBox.classList.remove('d-none');
-                                    setTimeout(function() {
-                                        document.getElementById('pw-step-2').classList.add('d-none');
-                                        document.getElementById('pw-step-1').classList.remove('d-none');
-                                    }, 2000);
-                                } else {
-                                    msgBox.className = 'alert alert-danger p-2 small mb-3';
-                                    var detail = result.data.detail;
-                                    msgBox.textContent = Array.isArray(detail) ? detail.join(' ') : (detail || 'Failed to update password.');
-                                    msgBox.classList.remove('d-none');
-                                }
-                            }).catch(function() {
-                                msgBox.className = 'alert alert-danger p-2 small mb-3';
-                                msgBox.textContent = 'An error occurred while verifying.';
-                                msgBox.classList.remove('d-none');
-                            });
+                            }
+
+                            // Submit Form
+                            var form = document.getElementById('change-password-form');
+                            var alertBox = document.getElementById('change-pw-alert');
+                            var submitBtn = document.getElementById('btn-update-password');
+
+                            if (form) {
+                                form.addEventListener('submit', function(e) {
+                                    e.preventDefault();
+                                    alertBox.classList.add('d-none');
+                                    alertBox.className = 'alert d-none p-2 small mb-3';
+
+                                    var curPw = document.getElementById('current_password').value;
+                                    var nPw = document.getElementById('new_password').value;
+                                    var cPw = document.getElementById('confirm_password').value;
+
+                                    if (!curPw || !nPw || !cPw) {
+                                        alertBox.className = 'alert alert-danger p-2 small mb-3';
+                                        alertBox.textContent = 'Please fill in all password fields.';
+                                        alertBox.classList.remove('d-none');
+                                        return;
+                                    }
+
+                                    if (nPw !== cPw) {
+                                        alertBox.className = 'alert alert-danger p-2 small mb-3';
+                                        alertBox.textContent = 'New password and confirm password do not match.';
+                                        alertBox.classList.remove('d-none');
+                                        return;
+                                    }
+
+                                    submitBtn.disabled = true;
+                                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Updating...';
+
+                                    fetch('/api/auth/change-password/', {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRFToken': '{{ csrf_token }}',
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            current_password: curPw,
+                                            new_password: nPw,
+                                            confirm_password: cPw
+                                        })
+                                    }).then(function(res) {
+                                        return res.json().then(function(data) {
+                                            return { status: res.status, data: data };
+                                        });
+                                    }).then(function(res) {
+                                        if (res.status === 200) {
+                                            alertBox.className = 'alert alert-success p-2 small mb-3';
+                                            alertBox.textContent = res.data.detail || 'Password updated successfully!';
+                                            alertBox.classList.remove('d-none');
+                                            form.reset();
+                                            if (newPw) newPw.dispatchEvent(new Event('input'));
+                                        } else {
+                                            alertBox.className = 'alert alert-danger p-2 small mb-3';
+                                            var d = res.data.detail;
+                                            alertBox.textContent = Array.isArray(d) ? d.join(' ') : (d || 'Failed to update password.');
+                                            alertBox.classList.remove('d-none');
+                                        }
+                                    }).catch(function() {
+                                        alertBox.className = 'alert alert-danger p-2 small mb-3';
+                                        alertBox.textContent = 'An error occurred while updating password.';
+                                        alertBox.classList.remove('d-none');
+                                    }).finally(function() {
+                                        submitBtn.disabled = false;
+                                        submitBtn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Update Password';
+                                    });
+                                });
+                            }
                         });
                     </script>
 

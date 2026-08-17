@@ -17,7 +17,7 @@
                 <i class="bi bi-controller fs-5 text-cyan"></i>
                 <span class="text-muted text-uppercase fw-bold small letter-spacing-2">Game Catalog</span>
             </div>
-            <h1 class="fw-bold mb-1" style="color: #f8fafc; font-size: 2rem;">Browse Games</h1>
+            <h1 class="fw-bold mb-1 text-main" style="font-size: 2rem;">Browse Games</h1>
             <p class="text-muted mb-0">Explore all game types on GameArena and find your next tournament.</p>
         </div>
         <a href="{% url 'tournaments:list' %}" class="btn btn-outline-primary px-4 fw-semibold">
@@ -31,23 +31,23 @@
         {% for game in games %}
         <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
             <div class="card border-0 shadow-sm h-100"
-                 style="background: #1e293b; border-radius: 18px; border: 1px solid rgba(148,163,184,0.15) !important;
+                 style="border-radius: 16px; border: 1px solid var(--ga-border) !important;
                         transition: transform 0.2s ease, box-shadow 0.2s ease; overflow: hidden;">
 
                 <!-- Game Artwork -->
-                <div class="position-relative overflow-hidden" style="height: 160px; background: #0f172a;">
+                <div class="position-relative overflow-hidden" style="height: 160px; background: var(--ga-surface-3, #0f172a);">
                     <img src="{{ game.image_url }}"
                          alt="{{ game.name }}"
                          class="w-100 h-100"
                          style="object-fit: cover; transition: transform 0.3s ease;"
                          loading="lazy"
-                         onerror="this.src='/static/images/defaults/game_default.svg'">
+                         onerror="this.src='/static/images/defaults/game_default.webp'">
                     <div class="position-absolute top-0 start-0 w-100 h-100"
                          style="background: linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.8));"></div>
 
                     <!-- Tournament count badge -->
                     <div class="position-absolute bottom-0 end-0 m-3">
-                        <span class="badge px-3 py-1" style="background: rgba(37,99,235,0.9); border-radius: 20px; font-size: 0.78rem;">
+                        <span class="badge bg-primary text-white px-3 py-1" style="border-radius: 20px; font-size: 0.78rem;">
                             <i class="bi bi-trophy-fill me-1"></i>
                             {{ game.total_tournaments }} tournament{{ game.total_tournaments|pluralize }}
                         </span>
@@ -56,7 +56,7 @@
 
                 <!-- Card Body -->
                 <div class="card-body p-4 d-flex flex-column">
-                    <h5 class="fw-bold mb-1" style="color: #f8fafc;">{{ game.name }}</h5>
+                    <h5 class="fw-bold mb-1 text-main">{{ game.name }}</h5>
                     <p class="text-muted small mb-3 flex-grow-1" style="line-height: 1.5;">
                         {% if game.description %}
                             {{ game.description|truncatewords:16 }}
@@ -78,7 +78,7 @@
     {% else %}
     <div class="text-center py-5">
         <i class="bi bi-controller display-4 text-muted d-block mb-3"></i>
-        <h3 class="fw-bold mb-2" style="color: #f8fafc;">No Games Yet</h3>
+        <h3 class="fw-bold mb-2 text-main">No Games Yet</h3>
         <p class="text-muted">Games will appear here once administrators add them to the platform.</p>
     </div>
     {% endif %}

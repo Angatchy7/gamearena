@@ -760,12 +760,15 @@ form.tournament-form .form-label {
 [data-theme="light"] [style*="color: #cbd5e1"],
 [data-theme="light"] [style*="color:#cbd5e1"],
 [data-theme="light"] [style*="color: #e2e8f0"],
-[data-theme="light"] [style*="color:#e2e8f0"] {
+[data-theme="light"] [style*="color:#e2e8f0"],
+[data-theme="light"] [style*="color: #ffffff"]:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.badge-primary):not(.badge-success):not(.badge-danger) {
     color: var(--ga-text-main) !important;
 }
 
 [data-theme="light"] [style*="color: #94a3b8"],
-[data-theme="light"] [style*="color:#94a3b8"] {
+[data-theme="light"] [style*="color:#94a3b8"],
+[data-theme="light"] [style*="color: #64748b"],
+[data-theme="light"] [style*="color:#64748b"] {
     color: var(--ga-text-muted) !important;
 }
 
@@ -780,9 +783,69 @@ form.tournament-form .form-label {
 [data-theme="light"] [style*="background: #111827"],
 [data-theme="light"] [style*="background:#111827"],
 [data-theme="light"] [style*="background: #1f2937"],
-[data-theme="light"] [style*="background:#1f2937"] {
+[data-theme="light"] [style*="background:#1f2937"],
+[data-theme="light"] [style*="background: #0f172a"],
+[data-theme="light"] [style*="background:#0f172a"] {
     background: #ffffff !important;
 }
+
+/* Light Mode Auth Modal & Forms */
+[data-theme="light"] .auth-modal-backdrop {
+    background: rgba(15, 23, 42, 0.45) !important;
+}
+
+[data-theme="light"] .auth-form-input {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .auth-form-input:focus {
+    background: #ffffff !important;
+    border-color: #2563eb !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .auth-form-label {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .auth-modal-title {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .auth-modal-subtitle {
+    color: #64748b !important;
+}
+
+/* Light Mode Dashboard Panels & Cards */
+[data-theme="light"] .dashboard-hero {
+    background: linear-gradient(120deg, #eff6ff, #dbeafe 55%, #e0f2fe) !important;
+    border-color: rgba(37, 99, 235, 0.25) !important;
+}
+
+[data-theme="light"] .dashboard-welcome h1 {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .dashboard-welcome p {
+    color: #334155 !important;
+}
+
+[data-theme="light"] .dashboard-stat-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .stat-top span {
+    color: #64748b !important;
+}
+
+[data-theme="light"] .stat-description {
+    color: #64748b !important;
+}
+
 
 
 
