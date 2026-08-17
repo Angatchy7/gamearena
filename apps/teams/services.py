@@ -270,7 +270,40 @@ def remove_team_member(*, team, manager, member_user):
     }
 
 
+@transaction.atomic
+def delete_team(*, team, user):
+    """
+    Deactivates a team and all active team memberships, recording left_at timestamp.
+    Preserves historical tournament registrations, matches, statistics, and notifications.
+    Only team manager or authorized admin can perform this operation.
+    """
+    from django.utils import timezone as tz
+
+    is_admin = getattr(user, "is_staff", False) or getattr(user, "role", "") == "ADMIN"
+    if user != team.manager and not is_admin:
+        return {
+            "success": False,
+            "message": "Only the team manager or authorized admin can delete this team.",
+        }
+
+    now = tz.now()
+    team.is_active = False
+    team.save(update_fields=["is_active"])
+
+    # Deactivate active team members and set left_at
+    TeamMember.objects.filter(team=team, is_active=True).update(
+        is_active=False,
+        left_at=now,
+    )
+
+    return {
+        "success": True,
+        "message": f"Team '{team.name}' has been deactivated successfully.",
+    }
+
+
 from django.db.models import Q
+
 from apps.tournaments.models import TournamentRegistration, Match, Tournament
 
 

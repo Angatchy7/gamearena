@@ -1,5 +1,5 @@
 <div class="card border-0 shadow-lg text-white mb-4 overflow-hidden position-relative tournament-hero-card"
-     style="border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.12) !important; background: #0f172a;">
+     style="border-radius: 20px; border: 1px solid var(--ga-border, rgba(255, 255, 255, 0.12)) !important; background: var(--ga-card-bg, #0f172a);">
     
     <!-- Background Image / Overlay -->
     <div class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;">
@@ -24,7 +24,7 @@
                     </span>
 
                     <span class="badge {% if tournament.current_status == 'LIVE' %}bg-danger animate-pulse{% elif tournament.current_status == 'REGISTRATION_OPEN' %}bg-success{% elif tournament.current_status == 'COMPLETED' %}bg-secondary{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}bg-warning text-dark{% else %}bg-info{% endif %} px-3 py-1.5 fs-7 text-uppercase fw-bold shadow-sm">
-                        {% if tournament.current_status == 'LIVE' %}🔴 {% endif %}{% if tournament.current_status == 'REGISTRATION_OPEN' %}Registration Open{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}Registration Closed{% elif tournament.current_status == 'LIVE' %}Live{% elif tournament.current_status == 'COMPLETED' %}Completed{% elif tournament.current_status == 'DRAFT' %}Draft{% else %}{{ tournament.get_status_display }}{% endif %}
+                        {% if tournament.current_status == 'LIVE' %}🔴 Live{% elif tournament.current_status == 'REGISTRATION_OPEN' %}Registration Open{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}Registration Closed{% elif tournament.current_status == 'COMPLETED' %}Completed{% elif tournament.current_status == 'DRAFT' %}Draft{% else %}{{ tournament.get_status_display }}{% endif %}
                     </span>
 
                     <span class="badge bg-dark bg-opacity-75 border border-secondary px-3 py-1.5 fs-7 fw-semibold text-light shadow-sm">
@@ -39,55 +39,18 @@
 
                 <!-- Champion Banner Alert if Completed -->
                 {% if tournament.champion %}
-                    <div class="alert alert-warning border border-warning border-opacity-50 bg-warning bg-opacity-15 text-warning d-inline-flex align-items-center gap-2 px-3.5 py-2 rounded-3 mb-3 shadow-sm">
+                    <div class="alert alert-warning border border-warning border-opacity-50 bg-warning bg-opacity-15 text-warning d-inline-flex align-items-center gap-2 px-3.5 py-2 rounded-3 mb-0 shadow-sm">
                         <i class="bi bi-trophy-fill fs-5"></i>
                         <span>Champion: <strong class="text-white ms-1">{{ tournament.champion.display_name }}</strong> 👑</span>
                     </div>
                 {% endif %}
 
-
-                <!-- Statistics & Key Dates Bar -->
-                <div class="row g-3 mt-1 pt-3 border-top border-white border-opacity-10 text-white-50">
-                    <div class="col-6 col-sm-3">
-                        <div>
-                            <i class="bi bi-trophy-fill fs-3 text-success d-block mb-1"></i>
-                            <small class="text-muted d-block text-uppercase fs-8 fw-bold">Prize Pool</small>
-                            <strong class="text-white fs-6">NPR <span style="color: #22c55e;">{{ tournament.prize_pool }}</span></strong>
-                        </div>
-                    </div>
-
-                    <div class="col-6 col-sm-3">
-                        <div>
-                            <i class="bi bi-people-fill fs-3 text-warning d-block mb-1"></i>
-                            <small class="text-muted d-block text-uppercase fs-8 fw-bold">Participants</small>
-                            <strong class="text-white fs-6">{{ tournament.registrations.count }} / {{ tournament.max_participants }}</strong>
-                            <small class="text-muted d-block fs-8">{% widthratio tournament.registrations.count|default:0 tournament.max_participants 100 %}% Filled</small>
-                        </div>
-                    </div>
-
-                    <div class="col-6 col-sm-3">
-                        <div>
-                            <i class="bi bi-calendar-event fs-3 text-info d-block mb-1"></i>
-                            <small class="text-muted d-block text-uppercase fs-8 fw-bold">Reg. Deadline</small>
-                            <strong class="text-white small d-block">{{ tournament.registration_end|date:"d M Y, H:i" }}</strong>
-                        </div>
-                    </div>
-
-                    <div class="col-6 col-sm-3">
-                        <div>
-                            <i class="bi bi-clock fs-3 text-primary d-block mb-1"></i>
-                            <small class="text-muted d-block text-uppercase fs-8 fw-bold">Starts On</small>
-                            <strong class="text-white small d-block">{{ tournament.start_date|date:"d M Y, H:i" }}</strong>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
-            <!-- Right Column CTA Actions -->
+            <!-- Right Column Primary Action -->
             <div class="col-lg-4 text-lg-end">
                 <div class="p-3.5 rounded-4 bg-dark bg-opacity-60 border border-white border-opacity-10 backdrop-blur shadow-lg">
-                    <h6 class="text-muted text-uppercase fw-bold fs-8 mb-3 text-start text-lg-end">Tournament Actions</h6>
+                    <small class="text-white-50 text-uppercase fw-bold fs-8 mb-2 d-block text-start text-lg-end">Primary Action</small>
                     <div class="d-grid gap-2">
                         {% if request.user == tournament.organizer and tournament.status == 'DRAFT' %}
                             <form method="post" action="{% url 'tournaments:publish' tournament.slug %}" class="d-grid mb-0">
@@ -96,9 +59,11 @@
                                     <i class="bi bi-cloud-upload me-1.5"></i> Publish Tournament
                                 </button>
                             </form>
-                        {% endif %}
-
-                        {% if tournament.current_status == tournament.Status.REGISTRATION_OPEN and request.user != tournament.organizer %}
+                        {% elif request.user == tournament.organizer %}
+                            <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-warning btn-lg fw-bold py-2.5 shadow-sm">
+                                <i class="bi bi-speedometer2 me-1.5"></i> Organizer Dashboard
+                            </a>
+                        {% elif tournament.current_status == tournament.Status.REGISTRATION_OPEN %}
                             <a href="{% url 'tournaments:register' tournament.slug %}" class="btn btn-success btn-lg fw-bold py-2.5 shadow-sm">
                                 {% if tournament.participation_type == 'SOLO' %}
                                     <i class="bi bi-person-plus me-1.5"></i> Register
@@ -106,15 +71,9 @@
                                     <i class="bi bi-shield-plus me-1.5"></i> Register Team
                                 {% endif %}
                             </a>
-                        {% endif %}
-
-                        <a href="{% url 'tournaments:bracket' tournament.slug %}" class="btn btn-outline-primary btn-lg fw-semibold py-2.5">
-                            <i class="bi bi-diagram-3-fill me-1.5"></i> View Bracket
-                        </a>
-
-                        {% if request.user == tournament.organizer %}
-                            <a href="{% url 'tournaments:dashboard' tournament.slug %}" class="btn btn-warning btn-lg fw-bold py-2.5 shadow-sm">
-                                <i class="bi bi-speedometer2 me-1.5"></i> Organizer Dashboard
+                        {% else %}
+                            <a href="{% url 'tournaments:bracket' tournament.slug %}" class="btn btn-primary btn-lg fw-bold py-2.5 shadow-sm">
+                                <i class="bi bi-diagram-3-fill me-1.5"></i> View Bracket
                             </a>
                         {% endif %}
                     </div>

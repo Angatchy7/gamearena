@@ -130,7 +130,9 @@ class AuthenticationViewTests(TestCase):
     def test_logout(self):
         self.client.login(username="authuser", password="CorrectPassword123!")
         response = self.client.post(reverse("accounts:logout"))
-        self.assertRedirects(response, reverse("accounts:login"))
+        self.assertRedirects(response, "/")
+        self.assertNotIn("_auth_user_id", self.client.session)
+
 
 
 class SecurityAndRolePermissionTests(TestCase):

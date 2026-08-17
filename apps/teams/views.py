@@ -9,7 +9,8 @@ from django.contrib import messages
 
 from .forms import TeamCreateForm, TeamUpdateForm, TeamInvitationForm
 from .models import Team, TeamMember
-from .services import create_team, update_team, send_team_invitation, get_team_profile_data, remove_team_member
+from .services import create_team, update_team, send_team_invitation, get_team_profile_data, remove_team_member, delete_team
+
 
 User = get_user_model()
 
@@ -313,3 +314,31 @@ class RemoveTeamMemberView(LoginRequiredMixin, View):
             messages.error(request, result["message"])
 
         return redirect("teams:detail", slug=team.slug)
+
+
+class DeleteTeamView(LoginRequiredMixin, View):
+    """
+    Deactivates a team and all active member records.
+    Renders confirmation on GET, executes deactivation on POST.
+    Redirects to 'teams:list' (My Teams) after successful deletion.
+    """
+    template_name = "teams/delete_team.html"
+
+    def get(self, request, slug):
+        team = get_object_or_404(Team, slug=slug, is_active=True)
+        is_admin = getattr(request.user, "is_staff", False) or getattr(request.user, "role", "") == "ADMIN"
+        if request.user != team.manager and not is_admin:
+            return HttpResponseForbidden("Only the team manager or authorized admin can delete this team.")
+
+        return render(request, self.template_name, {"team": team})
+
+    def post(self, request, slug):
+        team = get_object_or_404(Team, slug=slug, is_active=True)
+        result = delete_team(team=team, user=request.user)
+
+        if result["success"]:
+            messages.success(request, result["message"])
+            return redirect("teams:list")
+        else:
+            messages.error(request, result["message"])
+            return redirect("teams:detail", slug=team.slug)

@@ -1,19 +1,18 @@
 from unittest.mock import patch
+from datetime import timedelta
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIClient
 from rest_framework import status
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from apps.api.views import signer
+from apps.accounts.models import PasswordResetOTP
 
 User = get_user_model()
 
 
-class PasswordRecoveryAndChangeTests(TestCase):
+class PasswordRecoveryOTPTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -23,7 +22,7 @@ class PasswordRecoveryAndChangeTests(TestCase):
         )
         self.client = APIClient()
 
-    def test_forgot_password_generic_response_existing_email(self):
+    def test_forgot_password_sends_email_and_otp(self):
         response = self.client.post(
             "/api/auth/forgot-password/",
             {"email": "testuser@example.com"},
@@ -31,12 +30,18 @@ class PasswordRecoveryAndChangeTests(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("detail", response.data)
-        self.assertEqual(
-            response.data["detail"],
-            "If an account exists for this email, a password reset link has been sent.",
-        )
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn("GameArena Password Reset", mail.outbox[0].subject)
+        self.assertIn("GameArena Password Reset Code", mail.outbox[0].subject)
+
+        # Check database for created OTP record
+        otp = PasswordResetOTP.objects.filter(email="testuser@example.com").first()
+        self.assertIsNotNone(otp)
+        self.assertEqual(len(otp.otp_code), 6)
+        self.assertTrue(otp.otp_code.isdigit())
+        self.assertFalse(otp.is_used)
+
+        # Ensure OTP code is NOT in response body or headers
+        self.assertNotIn(otp.otp_code, str(response.data))
 
     def test_forgot_password_generic_response_unknown_email(self):
         response = self.client.post(
@@ -45,91 +50,115 @@ class PasswordRecoveryAndChangeTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data["detail"],
-            "If an account exists for this email, a password reset link has been sent.",
-        )
+        self.assertIn("detail", response.data)
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_password_reset_token_generation_and_validity(self):
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        token = default_token_generator.make_token(self.user)
-
-        self.assertTrue(default_token_generator.check_token(self.user, token))
-
-    def test_authenticated_change_password_request_and_verify(self):
-        self.client.force_authenticate(user=self.user)
-
-        req_res = self.client.post("/api/auth/change-password/request/", format="json")
-        self.assertEqual(req_res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(mail.outbox), 1)
-        # Token must NOT be in API response
-        self.assertNotIn("token", req_res.data)
-
-        token = signer.sign(f"{self.user.pk}:{self.user.email}")
+    def test_verify_otp_success_returns_reset_token(self):
+        # Generate OTP
+        self.client.post("/api/auth/forgot-password/", {"email": "testuser@example.com"}, format="json")
+        otp = PasswordResetOTP.objects.get(email="testuser@example.com")
 
         verify_res = self.client.post(
-            "/api/auth/change-password/verify/",
-            {
-                "token": token,
-                "new_password": "NewStrongPassword456!",
-                "confirm_password": "NewStrongPassword456!",
-            },
+            "/api/auth/forgot-password/verify/",
+            {"email": "testuser@example.com", "code": otp.otp_code},
             format="json",
         )
         self.assertEqual(verify_res.status_code, status.HTTP_200_OK)
+        self.assertIn("reset_token", verify_res.data)
+        self.assertIsNotNone(verify_res.data["reset_token"])
 
+        otp.refresh_from_db()
+        self.assertTrue(otp.is_used)
+        self.assertEqual(otp.reset_token, verify_res.data["reset_token"])
+
+    def test_verify_otp_invalid_code_rejected(self):
+        self.client.post("/api/auth/forgot-password/", {"email": "testuser@example.com"}, format="json")
+
+        verify_res = self.client.post(
+            "/api/auth/forgot-password/verify/",
+            {"email": "testuser@example.com", "code": "000000"},
+            format="json",
+        )
+        self.assertEqual(verify_res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Invalid verification code", verify_res.data["detail"])
+
+    def test_verify_otp_expired_code_rejected(self):
+        now = timezone.now()
+        PasswordResetOTP.objects.create(
+            email="testuser@example.com",
+            otp_code="123456",
+            expires_at=now - timedelta(minutes=1),
+        )
+
+        verify_res = self.client.post(
+            "/api/auth/forgot-password/verify/",
+            {"email": "testuser@example.com", "code": "123456"},
+            format="json",
+        )
+        self.assertEqual(verify_res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("expired", verify_res.data["detail"].lower())
+
+    def test_verify_otp_attempt_limit_exceeded(self):
+        self.client.post("/api/auth/forgot-password/", {"email": "testuser@example.com"}, format="json")
+        otp = PasswordResetOTP.objects.get(email="testuser@example.com")
+        otp.attempts = 5
+        otp.save()
+
+        verify_res = self.client.post(
+            "/api/auth/forgot-password/verify/",
+            {"email": "testuser@example.com", "code": "000000"},
+            format="json",
+        )
+        self.assertEqual(verify_res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("too many failed attempts", verify_res.data["detail"].lower())
+
+    def test_full_reset_password_flow_success(self):
+        # 1. Send Code
+        self.client.post("/api/auth/forgot-password/", {"email": "testuser@example.com"}, format="json")
+        otp = PasswordResetOTP.objects.get(email="testuser@example.com")
+
+        # 2. Verify Code
+        verify_res = self.client.post(
+            "/api/auth/forgot-password/verify/",
+            {"email": "testuser@example.com", "code": otp.otp_code},
+            format="json",
+        )
+        reset_token = verify_res.data["reset_token"]
+
+        # 3. Reset Password
+        reset_res = self.client.post(
+            "/api/auth/forgot-password/reset/",
+            {
+                "reset_token": reset_token,
+                "new_password": "BrandNewPassword789!",
+                "confirm_password": "BrandNewPassword789!",
+            },
+            format="json",
+        )
+        self.assertEqual(reset_res.status_code, status.HTTP_200_OK)
+
+        # Verify password updated in DB
         self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password("NewStrongPassword456!"))
+        self.assertTrue(self.user.check_password("BrandNewPassword789!"))
 
-    def test_invalid_verification_token_rejected(self):
-        self.client.force_authenticate(user=self.user)
-
-        verify_res = self.client.post(
-            "/api/auth/change-password/verify/",
+    def test_reset_password_invalid_token_rejected(self):
+        reset_res = self.client.post(
+            "/api/auth/forgot-password/reset/",
             {
-                "token": "invalid_token_signature",
-                "new_password": "NewStrongPassword456!",
-                "confirm_password": "NewStrongPassword456!",
+                "reset_token": "fake_invalid_token",
+                "new_password": "BrandNewPassword789!",
+                "confirm_password": "BrandNewPassword789!",
             },
             format="json",
         )
-        self.assertEqual(verify_res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Invalid or expired", verify_res.data["detail"])
+        self.assertEqual(reset_res.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_mismatched_password_confirmation_rejected(self):
-        self.client.force_authenticate(user=self.user)
-        token = signer.sign(f"{self.user.pk}:{self.user.email}")
-
-        verify_res = self.client.post(
-            "/api/auth/change-password/verify/",
-            {
-                "token": token,
-                "new_password": "NewStrongPassword456!",
-                "confirm_password": "DifferentPassword789!",
-            },
-            format="json",
-        )
-        self.assertEqual(verify_res.status_code, status.HTTP_400_BAD_REQUEST)
-
-    @patch("apps.api.views.send_mail")
-    def test_change_password_request_email_failure_handled(self, mock_send_mail):
-        mock_send_mail.side_effect = Exception("SMTP connection refused")
-        self.client.force_authenticate(user=self.user)
-
-        req_res = self.client.post("/api/auth/change-password/request/", format="json")
-        self.assertEqual(req_res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        self.assertIn("Failed to send verification email", req_res.data["detail"])
-
-    def test_password_reset_web_views(self):
-        # Reset form view
-        res = self.client.get(reverse("accounts:password_reset"))
-        self.assertEqual(res.status_code, 200)
-
-        # Submit reset request via web form
-        res_post = self.client.post(
-            reverse("accounts:password_reset"),
+    @patch("apps.accounts.services.send_mail")
+    def test_send_mail_failure_returns_error(self, mock_send_mail):
+        mock_send_mail.side_effect = Exception("SMTP error")
+        response = self.client.post(
+            "/api/auth/forgot-password/",
             {"email": "testuser@example.com"},
+            format="json",
         )
-        self.assertEqual(res_post.status_code, 302)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -18,7 +18,8 @@ from django.contrib.auth import update_session_auth_hash, get_user_model
 logger = logging.getLogger(__name__)
 
 from apps.teams.models import Team, TeamMember, TeamInvitation
-from apps.teams.services import create_team, update_team, remove_team_member
+from apps.teams.services import create_team, update_team, remove_team_member, delete_team
+from apps.accounts.services import send_password_reset_otp, verify_password_reset_otp, reset_password_with_token
 from apps.tournaments.models import Game, Tournament, TournamentRegistration, Match, Round
 from apps.notifications.models import Notification
 from apps.notifications.services import (
@@ -43,6 +44,8 @@ from .serializers import (
     TeamSerializer,
     TeamAPIDetailSerializer,
     ForgotPasswordSerializer,
+    VerifyOTPSerializer,
+    ResetPasswordAPISerializer,
     ChangePasswordVerifySerializer,
     UserAutocompleteSerializer,
     TournamentRegistrationSerializer,
@@ -50,6 +53,7 @@ from .serializers import (
     NotificationSerializer,
     UserProfileSerializer,
 )
+
 
 User = get_user_model()
 
@@ -670,11 +674,12 @@ class TeamDetailAPIView(APIView):
     GET /api/teams/<slug>/
     PATCH /api/teams/<slug>/
     PUT /api/teams/<slug>/
+    DELETE /api/teams/<slug>/
     """
 
     def get_permissions(self):
-        if self.request.method in ["PATCH", "PUT"]:
-            return [permissions.IsAuthenticated(), IsTeamManager()]
+        if self.request.method in ["PATCH", "PUT", "DELETE"]:
+            return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def get(self, request, slug):
@@ -714,6 +719,17 @@ class TeamDetailAPIView(APIView):
     def put(self, request, slug):
         return self.patch(request, slug)
 
+    def delete(self, request, slug):
+        team = get_object_or_404(Team, slug=slug, is_active=True)
+        result = delete_team(team=team, user=request.user)
+
+        if result["success"]:
+            return Response({"detail": result["message"]}, status=status.HTTP_200_OK)
+        else:
+            err_status = status.HTTP_403_FORBIDDEN if "manager" in result["message"].lower() else status.HTTP_400_BAD_REQUEST
+            return Response({"detail": result["message"]}, status=err_status)
+
+
 
 class TeamMemberRemoveAPIView(APIView):
     """
@@ -744,7 +760,7 @@ class TeamMemberRemoveAPIView(APIView):
 class ForgotPasswordAPIView(APIView):
     """
     POST /api/auth/forgot-password/
-    Sends password reset email link using Django's password reset token infrastructure.
+    Sends a 6-digit numeric verification OTP email to user.
     Always returns a generic response to prevent account enumeration.
     """
 
@@ -753,34 +769,66 @@ class ForgotPasswordAPIView(APIView):
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         email = serializer.validated_data["email"].strip().lower()
 
-        generic_message = "If an account exists for this email, a password reset link has been sent."
+        result = send_password_reset_otp(email=email)
+        if not result["success"]:
+            return Response({"detail": result["message"]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        user = User.objects.filter(email__iexact=email, is_active=True).first()
-        if user:
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            reset_path = reverse("accounts:password_reset_confirm", kwargs={"uidb64": uid, "token": token})
-            reset_url = request.build_absolute_uri(reset_path)
+        return Response({"detail": result["message"]}, status=status.HTTP_200_OK)
 
-            subject = "GameArena Password Reset"
-            message = (
-                f"Hello {user.username},\n\n"
-                f"You requested a password reset for your GameArena account.\n"
-                f"Please use the link below to set a new password:\n\n"
-                f"{reset_url}\n\n"
-                f"If you did not request this, please ignore this email.\n\n"
-                f"Best regards,\nGameArena Team"
-            )
-            from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
-            try:
-                send_mail(subject, message, from_email, [user.email], fail_silently=False)
-            except Exception as e:
-                logger.exception("Failed to send password reset email to %s: %s", user.email, e)
 
-        return Response({"detail": generic_message}, status=status.HTTP_200_OK)
+class VerifyOTPAPIView(APIView):
+    """
+    POST /api/auth/forgot-password/verify/
+    Verifies 6-digit numeric OTP code and returns single-use secure reset token on success.
+    Never exposes OTP code in API response or logs.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"].strip().lower()
+        code = serializer.validated_data["code"].strip()
+
+        result = verify_password_reset_otp(email=email, code=code)
+        if not result["success"]:
+            return Response({"detail": result["message"]}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {
+                "detail": result["message"],
+                "reset_token": result["reset_token"],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResetPasswordAPIView(APIView):
+    """
+    POST /api/auth/forgot-password/reset/
+    Resets password using single-use reset authorization token.
+    Enforces Django password validation rules.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordAPISerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        result = reset_password_with_token(
+            reset_token=serializer.validated_data["reset_token"],
+            new_password=serializer.validated_data["new_password"],
+            confirm_password=serializer.validated_data["confirm_password"],
+        )
+        if not result["success"]:
+            return Response({"detail": result["message"]}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"detail": result["message"]}, status=status.HTTP_200_OK)
+
 
 
 class ChangePasswordRequestAPIView(APIView):

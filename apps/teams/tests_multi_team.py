@@ -138,3 +138,57 @@ class MultiTeamAndGameTests(TestCase):
         dup_res = register_team(tournament=tourney_pubg, team=team_pubg, user=self.mgr)
         self.assertFalse(dup_res["success"])
         self.assertIn("already registered", dup_res["message"])
+
+    def test_manager_can_delete_team_safely(self):
+        from apps.teams.services import delete_team
+        team_pubg = create_team(manager=self.mgr, name="PUBG Deletable", game=self.game_pubg)["team"]
+        membership = TeamMember.objects.get(team=team_pubg, user=self.mgr)
+
+        res = delete_team(team=team_pubg, user=self.mgr)
+        self.assertTrue(res["success"])
+
+        team_pubg.refresh_from_db()
+        membership.refresh_from_db()
+
+        self.assertFalse(team_pubg.is_active)
+        self.assertFalse(membership.is_active)
+        self.assertIsNotNone(membership.left_at)
+
+    def test_non_manager_cannot_delete_team(self):
+        from apps.teams.services import delete_team
+        team_pubg = create_team(manager=self.mgr, name="PUBG Safe", game=self.game_pubg)["team"]
+
+        res = delete_team(team=team_pubg, user=self.player1)
+        self.assertFalse(res["success"])
+
+        team_pubg.refresh_from_db()
+        self.assertTrue(team_pubg.is_active)
+
+    def test_deleted_team_cannot_register_for_tournament(self):
+        from apps.teams.services import delete_team
+        now = timezone.now()
+        tourney_pubg = Tournament.objects.create(
+            name="PUBG Open 2",
+            slug="pubg-open-2",
+            game=self.game_pubg,
+            organizer=self.mgr,
+            description="Desc",
+            rules="Rules",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.TEAM,
+            team_size=1,
+            max_participants=8,
+            registration_start=now - timedelta(days=1),
+            registration_end=now + timedelta(days=1),
+            start_date=now + timedelta(days=2),
+            end_date=now + timedelta(days=3),
+            status=Tournament.Status.REGISTRATION_OPEN,
+        )
+
+        team_pubg = create_team(manager=self.mgr, name="PUBG Deactivated", game=self.game_pubg)["team"]
+        delete_team(team=team_pubg, user=self.mgr)
+
+        reg_res = register_team(tournament=tourney_pubg, team=team_pubg, user=self.mgr)
+        self.assertFalse(reg_res["success"])
+        self.assertIn("inactive", reg_res["message"].lower())
+

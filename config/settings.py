@@ -220,7 +220,8 @@ AUTH_USER_MODEL = 'accounts.User'
 # Authentication redirects
 LOGIN_REDIRECT_URL = "/dashboard/"
 LOGIN_URL = "/accounts/login/"
-LOGOUT_REDIRECT_URL = "/accounts/login/"
+LOGOUT_REDIRECT_URL = "/"
+
 
 # Security and Logging settings for production
 if not DEBUG:

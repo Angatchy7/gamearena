@@ -401,11 +401,62 @@
                 </div>
             </div>
 
+            <!-- Danger Zone (Manager / Admin Only) -->
+            {% if request.user == team.manager or request.user.is_staff or request.user.role == 'ADMIN' %}
+            <div class="card border-0 shadow-sm text-white mt-4 border-danger border-opacity-50" style="background: rgba(220, 38, 38, 0.05); border-radius: 16px; border: 1px solid rgba(220, 38, 38, 0.3) !important;">
+                <div class="card-header bg-transparent border-danger border-opacity-25 py-3 px-4">
+                    <h5 class="mb-0 fw-bold text-danger fs-6">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Danger Zone
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-white mb-1">Delete Team</h6>
+                    <p class="text-secondary small mb-3">
+                        This will remove the team from active GameArena use and remove all active members from the roster. Tournament history will be preserved.
+                    </p>
+                    <button type="button" class="btn btn-outline-danger btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#deleteTeamModal">
+                        <i class="bi bi-trash-fill me-1.5"></i> Delete Team
+                    </button>
+                </div>
+            </div>
+
+            <!-- Delete Team Confirmation Modal -->
+            <div class="modal fade" id="deleteTeamModal" tabindex="-1" aria-labelledby="deleteTeamModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="background: #1e293b; border: 1px solid rgba(220, 38, 38, 0.4); border-radius: 16px;">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title text-white fw-bold" id="deleteTeamModalLabel">
+                                <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Confirm Team Deletion
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body py-3">
+                            <p class="text-secondary mb-2">Are you sure you want to delete team</p>
+                            <p class="fw-bold text-white fs-5 mb-2">{{ team.name }}</p>
+                            <div class="alert alert-danger border-0 small mb-0">
+                                <i class="bi bi-shield-lock me-1"></i> Active memberships will be deactivated. Historical tournament registrations and match outcomes will be preserved intact.
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form method="post" action="{% url 'teams:delete' team.slug %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger fw-bold">
+                                    <i class="bi bi-trash-fill me-1"></i> Confirm Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
         </div>
 
     </div>
 
 </div>
+
 
 <!-- Remove Member Confirmation Modal (Manager Only) -->
 {% if request.user == team.manager %}
