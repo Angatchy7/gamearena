@@ -659,3 +659,222 @@ class SprintRegressionTests(TestCase):
         self.assertNotContains(resp, "Prize Pool Breakdown")
 
 
+class FinalPassRegressionTests(TestCase):
+    """
+    Focused regression tests for the final targeted bug + UI polish pass.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="solo_champ_player", password="Password123!")
+        self.organizer = User.objects.create_user(username="org_user", password="Password123!")
+        self.game = Game.objects.create(name="CS:GO", slug="cs-go")
+        now = timezone.now()
+
+        self.tournament = Tournament.objects.create(
+            name="Solo Masters Cup",
+            game=self.game,
+            organizer=self.organizer,
+            description="Solo tournament for regression testing",
+            rules="Standard",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=2,
+            registration_start=now - timedelta(hours=1),
+            registration_end=now + timedelta(hours=1),
+            start_date=now + timedelta(hours=2),
+            end_date=now + timedelta(days=1),
+            contact_email="org@example.com",
+            status=Tournament.Status.REGISTRATION_OPEN,
+        )
+
+    def test_solo_winner_display_shows_username(self):
+        reg = register_solo_player(tournament=self.tournament, user=self.user)
+        self.assertTrue(reg["success"])
+        solo_team = reg["registration"].team
+        self.assertIsNotNone(solo_team)
+        self.assertEqual(solo_team.display_name, "solo_champ_player")
+
+        # Set champion and verify display_name
+        self.tournament.champion = solo_team
+        self.tournament.save()
+
+        self.assertEqual(self.tournament.champion.display_name, "solo_champ_player")
+        self.assertEqual(self.tournament.champion_display, "solo_champ_player")
+
+        # Verify FIFA bracket view rendering
+        url = reverse("tournaments:bracket", kwargs={"slug": self.tournament.slug})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "solo_champ_player")
+        self.assertNotContains(resp, "__SOLO_")
+
+    def test_joined_tournaments_and_dashboard_display_names(self):
+        reg = register_solo_player(tournament=self.tournament, user=self.user)
+        self.client.login(username="solo_champ_player", password="Password123!")
+        resp = self.client.get(reverse("dashboard:home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "solo_champ_player")
+        self.assertNotContains(resp, "__SOLO_")
+
+    def test_search_excludes_internal_solo_identifiers(self):
+        register_solo_player(tournament=self.tournament, user=self.user)
+        resp = self.client.get(reverse("core:search_ajax") + "?q=SOLO")
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode("utf-8")
+        self.assertNotIn("__SOLO_", content)
+
+    def test_navbar_search_structure_in_homepage(self):
+        resp = self.client.get(reverse("core:home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'id="search-input"')
+        self.assertContains(resp, 'placeholder="Search tournaments, teams, games..."')
+
+
+class TournamentStatusAndActionTests(TestCase):
+    """
+    Focused regression tests for tournament status badges, dynamic actions, and notify me safeguards.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="player_status_user", password="Password123!")
+        self.organizer = User.objects.create_user(username="status_org_user", password="Password123!")
+        self.game = Game.objects.create(name="Valorant", slug="valorant")
+        self.now = timezone.now()
+
+    def test_upcoming_tournament_badge_and_notify_me(self):
+        upcoming_t = Tournament.objects.create(
+            name="Upcoming Valorant Clash",
+            game=self.game,
+            organizer=self.organizer,
+            description="Upcoming clash",
+            rules="Standard",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=8,
+            registration_start=self.now + timedelta(days=2),
+            registration_end=self.now + timedelta(days=4),
+            start_date=self.now + timedelta(days=5),
+            end_date=self.now + timedelta(days=6),
+            contact_email="org@example.com",
+            status=Tournament.Status.REGISTRATION_CLOSED,
+        )
+        self.assertEqual(upcoming_t.current_status, Tournament.Status.REGISTRATION_CLOSED)
+
+        resp = self.client.get(reverse("core:home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "UPCOMING")
+        self.assertContains(resp, "Notify Me")
+        self.assertNotContains(resp, "{{ tournament.get_status_display|upper }}")
+
+    def test_registration_open_badge_and_register_button(self):
+        reg_t = Tournament.objects.create(
+            name="Open Registration Cup",
+            game=self.game,
+            organizer=self.organizer,
+            description="Open tournament",
+            rules="Standard",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=8,
+            registration_start=self.now - timedelta(hours=2),
+            registration_end=self.now + timedelta(days=1),
+            start_date=self.now + timedelta(days=2),
+            end_date=self.now + timedelta(days=3),
+            contact_email="org@example.com",
+            status=Tournament.Status.REGISTRATION_OPEN,
+        )
+        self.assertEqual(reg_t.current_status, Tournament.Status.REGISTRATION_OPEN)
+
+        resp = self.client.get(reverse("tournaments:list"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "REGISTRATION OPEN")
+        self.assertContains(resp, "Register Now")
+
+    def test_live_tournament_badge_and_view_button(self):
+        live_t = Tournament.objects.create(
+            name="Live Championship",
+            game=self.game,
+            organizer=self.organizer,
+            description="Live tournament",
+            rules="Standard",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=8,
+            registration_start=self.now - timedelta(days=2),
+            registration_end=self.now - timedelta(hours=5),
+            start_date=self.now - timedelta(hours=1),
+            end_date=self.now + timedelta(days=1),
+            contact_email="org@example.com",
+            status=Tournament.Status.LIVE,
+        )
+        self.assertEqual(live_t.current_status, Tournament.Status.LIVE)
+
+        resp = self.client.get(reverse("tournaments:detail", kwargs={"slug": live_t.slug}))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "🔴 LIVE")
+        self.assertContains(resp, "View Bracket")
+
+    def test_notify_me_authenticated_user_deduplication(self):
+        upcoming_t = Tournament.objects.create(
+            name="Notify Deduplication Test",
+            game=self.game,
+            organizer=self.organizer,
+            description="Upcoming test",
+            rules="Standard",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=8,
+            registration_start=self.now + timedelta(days=2),
+            registration_end=self.now + timedelta(days=4),
+            start_date=self.now + timedelta(days=5),
+            end_date=self.now + timedelta(days=6),
+            contact_email="org@example.com",
+            status=Tournament.Status.REGISTRATION_CLOSED,
+        )
+        self.client.login(username="player_status_user", password="Password123!")
+        notify_url = reverse("tournaments:notify", kwargs={"slug": upcoming_t.slug})
+
+        resp1 = self.client.post(notify_url, follow=True)
+        self.assertEqual(resp1.status_code, 200)
+        from apps.notifications.models import Notification
+        count1 = Notification.objects.filter(recipient=self.user, notification_type=Notification.Type.TOURNAMENT).count()
+        self.assertEqual(count1, 1)
+
+        # Second click should deduplicate and not create a second notification
+        resp2 = self.client.post(notify_url, follow=True)
+        self.assertEqual(resp2.status_code, 200)
+        count2 = Notification.objects.filter(recipient=self.user, notification_type=Notification.Type.TOURNAMENT).count()
+        self.assertEqual(count2, 1)
+
+    def test_notify_me_anonymous_user_redirects_to_login(self):
+        upcoming_t = Tournament.objects.create(
+            name="Anon Notify Test",
+            game=self.game,
+            organizer=self.organizer,
+            description="Upcoming anon test",
+            rules="Standard",
+            tournament_type=Tournament.TournamentType.SINGLE_ELIMINATION,
+            participation_type=Tournament.ParticipationType.SOLO,
+            team_size=1,
+            max_participants=8,
+            registration_start=self.now + timedelta(days=2),
+            registration_end=self.now + timedelta(days=4),
+            start_date=self.now + timedelta(days=5),
+            end_date=self.now + timedelta(days=6),
+            contact_email="org@example.com",
+            status=Tournament.Status.REGISTRATION_CLOSED,
+        )
+        notify_url = reverse("tournaments:notify", kwargs={"slug": upcoming_t.slug})
+        resp = self.client.post(notify_url)
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(reverse("accounts:login"), resp.url)
+
+
+

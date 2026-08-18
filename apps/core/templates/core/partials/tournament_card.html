@@ -26,18 +26,22 @@
                 <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
             </span>
 
-            {% if tournament.status == 'LIVE' or tournament.get_effective_status == 'LIVE' %}
+            {% with eff=tournament.current_status %}
+            {% if eff == 'LIVE' %}
             <span class="badge bg-danger animate-pulse px-2 py-1 fs-8 rounded-pill fw-bold">
                 🔴 LIVE
             </span>
-            {% elif tournament.status == 'REGISTRATION_OPEN' or tournament.get_effective_status == 'REGISTRATION_OPEN'
-            %}
+            {% elif eff == 'REGISTRATION_OPEN' %}
             <span class="badge bg-success px-2 py-1 fs-8 rounded-pill fw-bold">
                 • REGISTRATION OPEN
             </span>
-            {% elif tournament.status == 'COMPLETED' or tournament.get_effective_status == 'COMPLETED' %}
+            {% elif eff == 'COMPLETED' %}
             <span class="badge bg-secondary bg-opacity-75 px-2 py-1 fs-8 rounded-pill fw-bold">
-                ENDED
+                COMPLETED
+            </span>
+            {% elif eff == 'CANCELLED' %}
+            <span class="badge bg-danger bg-opacity-75 px-2 py-1 fs-8 rounded-pill fw-bold">
+                CANCELLED
             </span>
             {% else %}
             <span class="badge px-2 py-1 fs-8 rounded-pill fw-bold text-white"
@@ -45,6 +49,7 @@
                 UPCOMING
             </span>
             {% endif %}
+            {% endwith %}
         </div>
     </div>
 
@@ -98,22 +103,36 @@
             </div>
         </div>
 
-        {% if tournament.status == 'REGISTRATION_OPEN' or tournament.get_effective_status == 'REGISTRATION_OPEN' %}
+        {% with eff=tournament.current_status %}
+        {% if eff == 'REGISTRATION_OPEN' %}
         <a href="{% url 'tournaments:detail' tournament.slug %}"
             class="btn btn-sm btn-success w-100 py-2 fw-bold shadow-sm rounded-3 ga-hover-scale">
             Register Now
         </a>
-        {% elif tournament.status == 'LIVE' or tournament.get_effective_status == 'LIVE' %}
+        {% elif eff == 'LIVE' or eff == 'COMPLETED' or eff == 'CANCELLED' %}
         <a href="{% url 'tournaments:detail' tournament.slug %}"
             class="btn btn-sm btn-primary w-100 py-2 fw-bold shadow-sm rounded-3 ga-hover-scale">
             View Tournament
         </a>
         {% else %}
-        <a href="{% url 'tournaments:detail' tournament.slug %}"
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'tournaments:notify' tournament.slug %}" class="d-grid mb-0">
+            {% csrf_token %}
+            <button type="submit"
+                class="btn btn-sm text-white w-100 py-2 fw-bold shadow-sm rounded-3 ga-hover-scale"
+                style="background: var(--ga-purple, #a855f7);">
+                <i class="bi bi-bell-fill me-1"></i> Notify Me
+            </button>
+        </form>
+        {% else %}
+        <a href="{% url 'accounts:login' %}?next={% url 'tournaments:detail' tournament.slug %}"
             class="btn btn-sm text-white w-100 py-2 fw-bold shadow-sm rounded-3 ga-hover-scale"
-            style="background: var(--ga-purple, #a855f7);">
-            Notify Me
+            style="background: var(--ga-purple, #a855f7);"
+            title="Login to receive tournament reminders">
+            <i class="bi bi-bell-fill me-1"></i> Notify Me
         </a>
         {% endif %}
+        {% endif %}
+        {% endwith %}
     </div>
 </div>

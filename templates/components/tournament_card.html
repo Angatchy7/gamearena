@@ -7,9 +7,29 @@
             <span class="badge bg-primary text-white">
                 <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
             </span>
-            <span class="badge {% if tournament.status == 'LIVE' or tournament.get_effective_status == 'LIVE' %}bg-danger{% elif tournament.status == 'REGISTRATION_OPEN' or tournament.get_effective_status == 'REGISTRATION_OPEN' %}bg-success{% else %}bg-secondary{% endif %}">
-                {{ tournament.get_status_display }}
+            {% with eff=tournament.current_status %}
+            {% if eff == 'LIVE' %}
+            <span class="badge bg-danger animate-pulse px-2 py-1 fs-8 rounded-pill fw-bold">
+                🔴 LIVE
             </span>
+            {% elif eff == 'REGISTRATION_OPEN' %}
+            <span class="badge bg-success px-2 py-1 fs-8 rounded-pill fw-bold">
+                • REGISTRATION OPEN
+            </span>
+            {% elif eff == 'COMPLETED' %}
+            <span class="badge bg-secondary px-2 py-1 fs-8 rounded-pill fw-bold">
+                COMPLETED
+            </span>
+            {% elif eff == 'CANCELLED' %}
+            <span class="badge bg-danger px-2 py-1 fs-8 rounded-pill fw-bold">
+                CANCELLED
+            </span>
+            {% else %}
+            <span class="badge px-2 py-1 fs-8 rounded-pill fw-bold text-white" style="background: var(--ga-purple, #a855f7);">
+                UPCOMING
+            </span>
+            {% endif %}
+            {% endwith %}
         </div>
     </div>
 
@@ -34,7 +54,7 @@
                 <div class="text-center">
                     <span class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem;">👥 Capacity</span>
                     <strong class="text-body fw-bold">
-                        {{ tournament.registrations.count|default:tournament.participants|default:0 }} / {{ tournament.max_participants }}
+                        {{ tournament.registered_count|default:tournament.registrations.count|default:0 }} / {{ tournament.max_participants }}
                     </strong>
                 </div>
 
@@ -48,9 +68,30 @@
         </div>
 
         <div class="pt-1">
+            {% with eff=tournament.current_status %}
+            {% if eff == 'REGISTRATION_OPEN' %}
+            <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-success w-100 py-2 fw-bold rounded-3">
+                Register Now
+            </a>
+            {% elif eff == 'LIVE' or eff == 'COMPLETED' or eff == 'CANCELLED' %}
             <a href="{% url 'tournaments:detail' tournament.slug %}" class="btn btn-primary w-100 py-2 fw-bold rounded-3">
                 View Tournament
             </a>
+            {% else %}
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'tournaments:notify' tournament.slug %}" class="d-grid mb-0">
+                {% csrf_token %}
+                <button type="submit" class="btn text-white w-100 py-2 fw-bold rounded-3" style="background: var(--ga-purple, #a855f7);">
+                    <i class="bi bi-bell-fill me-1"></i> Notify Me
+                </button>
+            </form>
+            {% else %}
+            <a href="{% url 'accounts:login' %}?next={% url 'tournaments:detail' tournament.slug %}" class="btn text-white w-100 py-2 fw-bold rounded-3" style="background: var(--ga-purple, #a855f7);" title="Login to receive tournament reminders">
+                <i class="bi bi-bell-fill me-1"></i> Notify Me
+            </a>
+            {% endif %}
+            {% endif %}
+            {% endwith %}
         </div>
     </div>
 </div>

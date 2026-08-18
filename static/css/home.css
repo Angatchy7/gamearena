@@ -1026,3 +1026,19 @@ overflow: visible !important;
         min-width: 85% !important;
     }
 }
+
+/* ==========================================
+   PUBLIC HOMEPAGE FULL-WIDTH SECTION CONTAINERS
+========================================== */
+.home-page-container,
+.hero-section .container,
+.live-tournaments-section .container,
+.why-choose-section .container,
+.popular-games-section .container,
+.ready-to-compete-section .container,
+.platform-stats-section .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}

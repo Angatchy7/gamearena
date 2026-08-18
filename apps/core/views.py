@@ -127,6 +127,7 @@ class SearchView(View):
             teams = (
                 Team.objects
                 .exclude(description="__SOLO_INTERNAL__")
+                .exclude(name__startswith="__SOLO_")
                 .filter(
                     Q(name__icontains=query)
                     | Q(description__icontains=query)
@@ -183,6 +184,7 @@ class SearchAjaxView(View):
         teams = (
             Team.objects
             .exclude(description="__SOLO_INTERNAL__")
+            .exclude(name__startswith="__SOLO_")
             .filter(name__icontains=query)
             .order_by("name")[:4]
         )
@@ -221,8 +223,8 @@ class SearchAjaxView(View):
 
             "teams": [
                 {
-                    "name": team.name,
-                    "manager": team.manager.username,
+                    "name": team.display_name,
+                    "manager": team.manager.username if team.manager else "",
                     "url": f"/teams/{team.slug}/",
                 }
                 for team in teams

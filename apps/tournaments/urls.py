@@ -19,6 +19,7 @@ from .views import (
     TournamentMatchesView,
     TournamentStatisticsView,
     TournamentLeaderboardView,
+    TournamentNotifyView,
 )   
 
 app_name = "tournaments"
@@ -41,6 +42,12 @@ urlpatterns = [
         "create/",
         TournamentCreateView.as_view(),
         name="create",
+    ),
+
+    path(
+        "<slug:slug>/notify/",
+        TournamentNotifyView.as_view(),
+        name="notify",
     ),
 
     path(

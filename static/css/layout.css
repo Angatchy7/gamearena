@@ -71,43 +71,45 @@
 }
 
 .search-wrapper {
-
     width: 520px;
     max-width: 100%;
+}
 
+.search-wrapper .input-group {
+    background: var(--ga-input-bg);
+    border: 1px solid var(--ga-input-border);
+    border-radius: 9999px !important;
+    overflow: hidden;
+    transition: var(--ga-transition-fast);
+    display: flex;
+    align-items: center;
+}
+
+.search-wrapper .input-group:focus-within {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22) !important;
 }
 
 .search-wrapper .input-group-text {
-
-    background: var(--ga-input-bg);
-    border: 1px solid var(--ga-input-border);
-    color: var(--ga-text-muted);
-
+    background: transparent !important;
+    border: none !important;
+    color: var(--ga-text-muted) !important;
+    padding-left: 1.25rem !important;
+    padding-right: 0.5rem !important;
 }
 
-.search-wrapper input {
-
-    background: var(--ga-input-bg);
-    border: 1px solid var(--ga-input-border);
-
-    color: var(--ga-input-text);
-
+.search-wrapper input.form-control {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--ga-input-text) !important;
+    padding-left: 0.25rem !important;
+    padding-right: 1.25rem !important;
+    height: 42px;
 }
 
 .search-wrapper input::placeholder {
-
     color: var(--ga-input-placeholder);
-
-}
-
-.search-wrapper input:focus {
-
-    background: var(--ga-input-bg);
-    color: var(--ga-input-text);
-
-    box-shadow: none;
-    border-color: #2563eb;
-
 }
 
 .nav-icon {
@@ -1007,4 +1009,20 @@ html.sidebar-collapsed .ga-sidebar .sidebar-link:hover::after,
 
     color: white !important;
 
+}
+
+/* ==========================================
+   PUBLIC FULL-WIDTH MAIN LAYOUT
+========================================== */
+.app-public-main {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 28px;
+}
+
+@media (max-width: 768px) {
+    .app-public-main {
+        padding: 0 16px;
+    }
 }

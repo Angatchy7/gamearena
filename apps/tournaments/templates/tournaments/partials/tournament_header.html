@@ -27,14 +27,13 @@
                         <i class="bi bi-controller me-1"></i> {{ tournament.game.name }}
                     </span>
 
+                    {% with eff=tournament.current_status %}
                     <span
-                        class="badge {% if tournament.current_status == 'LIVE' %}bg-danger animate-pulse{% elif tournament.current_status == 'REGISTRATION_OPEN' %}bg-success{% elif tournament.current_status == 'COMPLETED' %}bg-secondary{% elif tournament.current_status == 'REGISTRATION_CLOSED' %}bg-warning text-dark{% else %}bg-info{% endif %} px-3 py-1.5 fs-7 text-uppercase fw-bold shadow-sm">
-                        {% if tournament.current_status == 'LIVE' %}🔴 Live{% elif tournament.current_status ==
-                        'REGISTRATION_OPEN' %}UPCOMING{% elif tournament.current_status == 'REGISTRATION_CLOSED'
-                        %}REGISTRATION CLOSED{% elif tournament.current_status == 'COMPLETED' %}COMPLETED{% elif
-                        tournament.current_status == 'DRAFT' %}DRAFT{% else %}{{ tournament.get_status_display|upper
-                        }}{% endif %}
+                        class="badge {% if eff == 'LIVE' %}bg-danger animate-pulse{% elif eff == 'REGISTRATION_OPEN' %}bg-success{% elif eff == 'COMPLETED' %}bg-secondary{% elif eff == 'CANCELLED' %}bg-danger{% else %}text-white{% endif %} px-3 py-1.5 fs-7 text-uppercase fw-bold shadow-sm"
+                        style="{% if eff != 'LIVE' and eff != 'REGISTRATION_OPEN' and eff != 'COMPLETED' and eff != 'CANCELLED' %}background: var(--ga-purple, #a855f7);{% endif %}">
+                        {% if eff == 'LIVE' %}🔴 LIVE{% elif eff == 'REGISTRATION_OPEN' %}• REGISTRATION OPEN{% elif eff == 'COMPLETED' %}COMPLETED{% elif eff == 'CANCELLED' %}CANCELLED{% elif eff == 'DRAFT' %}DRAFT{% else %}UPCOMING{% endif %}
                     </span>
+                    {% endwith %}
 
                     <span
                         class="badge bg-dark bg-opacity-75 border border-secondary px-3 py-1.5 fs-7 fw-bold text-light shadow-sm text-uppercase">
@@ -126,20 +125,36 @@
                         class="btn btn-primary btn-lg fw-bold py-2.5 shadow-sm">
                         <i class="bi bi-speedometer2 me-1.5"></i> Organizer Dashboard
                     </a>
-                    {% elif tournament.current_status == tournament.Status.REGISTRATION_OPEN %}
+                    {% elif tournament.current_status == 'REGISTRATION_OPEN' %}
                     <a href="{% url 'tournaments:register' tournament.slug %}"
-                        class="btn btn-primary btn-lg fw-bold py-2.5 shadow-sm">
+                        class="btn btn-success btn-lg fw-bold py-2.5 shadow-sm">
                         {% if tournament.participation_type == 'SOLO' %}
                         <i class="bi bi-person-plus me-1.5"></i> Register Solo
                         {% else %}
                         <i class="bi bi-people-fill me-1.5"></i> Register Team
                         {% endif %}
                     </a>
-                    {% else %}
+                    {% elif tournament.current_status == 'LIVE' or tournament.current_status == 'COMPLETED' or tournament.current_status == 'CANCELLED' %}
                     <a href="{% url 'tournaments:bracket' tournament.slug %}"
                         class="btn btn-primary btn-lg fw-bold py-2.5 shadow-sm">
                         <i class="bi bi-diagram-3-fill me-1.5"></i> View Bracket
                     </a>
+                    {% else %}
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'tournaments:notify' tournament.slug %}" class="d-grid mb-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-lg text-white fw-bold py-2.5 shadow-sm" style="background: var(--ga-purple, #a855f7);">
+                            <i class="bi bi-bell-fill me-1.5"></i> Notify Me
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}?next={% url 'tournaments:detail' tournament.slug %}"
+                        class="btn btn-lg text-white fw-bold py-2.5 shadow-sm"
+                        style="background: var(--ga-purple, #a855f7);"
+                        title="Login to receive tournament reminders">
+                        <i class="bi bi-bell-fill me-1.5"></i> Notify Me
+                    </a>
+                    {% endif %}
                     {% endif %}
 
                     <a href="#overview-section"

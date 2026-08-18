@@ -112,6 +112,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
     game = GameSimpleSerializer(read_only=True)
     manager = serializers.CharField(source="manager.username", read_only=True)
+    display_name = serializers.CharField(read_only=True)
     logo_url = serializers.CharField(read_only=True)
     active_member_count = serializers.IntegerField(read_only=True)
 
@@ -120,6 +121,7 @@ class TeamSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "display_name",
             "slug",
             "description",
             "logo_url",
@@ -139,6 +141,7 @@ class TeamAPIDetailSerializer(serializers.ModelSerializer):
 
     game = GameSimpleSerializer(read_only=True)
     manager = serializers.CharField(source="manager.username", read_only=True)
+    display_name = serializers.CharField(read_only=True)
     logo_url = serializers.CharField(read_only=True)
     active_member_count = serializers.IntegerField(read_only=True)
 
@@ -147,6 +150,7 @@ class TeamAPIDetailSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "display_name",
             "slug",
             "description",
             "logo_url",

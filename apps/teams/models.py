@@ -87,9 +87,13 @@ class Team(models.Model):
         and team name for regular teams.
         """
         if self.description == "__SOLO_INTERNAL__" or (self.name and self.name.startswith("__SOLO_")):
-            if self.manager_id:
+            if self.manager_id and self.manager:
                 return self.manager.username
-        return self.name
+            if self.name and self.name.startswith("__SOLO_"):
+                parts = [p for p in self.name.split("_") if p and p != "SOLO"]
+                if parts:
+                    return parts[0]
+        return self.name or ""
 
     @property
     def logo_url(self):

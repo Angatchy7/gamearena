@@ -924,3 +924,36 @@ class TournamentMatchesView(View):
                 "rounds": rounds,
             },
         )
+
+
+class TournamentNotifyView(LoginRequiredMixin, View):
+    """
+    Creates a tournament reminder notification for the logged-in user if one does not already exist.
+    """
+
+    def post(self, request, slug):
+        tournament = get_object_or_404(Tournament, slug=slug)
+        user = request.user
+
+        from apps.notifications.models import Notification
+        from apps.notifications.services import send_notification
+
+        already_notified = Notification.objects.filter(
+            recipient=user,
+            notification_type=Notification.Type.TOURNAMENT,
+            message__icontains=tournament.name,
+        ).exists()
+
+        if not already_notified:
+            reg_time = tournament.registration_start.strftime("%d %b %Y, %H:%M") if tournament.registration_start else "soon"
+            send_notification(
+                recipient=user,
+                title=f"Reminder Set: {tournament.name}",
+                message=f"You will be notified when registration opens for {tournament.name} on {reg_time}.",
+                notification_type=Notification.Type.TOURNAMENT,
+            )
+            messages.success(request, f"Reminder set for {tournament.name}! We'll notify you when registration opens.")
+        else:
+            messages.info(request, f"You have already set a reminder for {tournament.name}.")
+
+        return redirect("tournaments:detail", slug=tournament.slug)

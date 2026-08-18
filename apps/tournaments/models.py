@@ -437,6 +437,15 @@ class Tournament(models.Model):
             return self.annotated_registered_count
         return self.registrations.count()
 
+    @property
+    def champion_display(self):
+        """
+        Returns display_name of champion team/user.
+        """
+        if self.champion_id and self.champion:
+            return self.champion.display_name
+        return None
+
 
 
 

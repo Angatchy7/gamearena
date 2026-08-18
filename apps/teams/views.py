@@ -77,6 +77,7 @@ class MyTeamsView(LoginRequiredMixin, ListView):
                 is_active=True,
             )
             .exclude(description="__SOLO_INTERNAL__")
+            .exclude(name__startswith="__SOLO_")
             .annotate(
                 _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
             )
@@ -117,6 +118,7 @@ class JoinedTeamsView(LoginRequiredMixin, ListView):
             )
             .exclude(manager=self.request.user)
             .exclude(description="__SOLO_INTERNAL__")
+            .exclude(name__startswith="__SOLO_")
             .annotate(
                 _active_member_count=Count("members", filter=Q(members__is_active=True), distinct=True)
             )
