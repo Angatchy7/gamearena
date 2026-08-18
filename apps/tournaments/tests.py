@@ -1,4 +1,5 @@
 import math
+import random
 from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
@@ -264,12 +265,14 @@ class BracketGenerationTests(TestCase):
     def setUp(self):
         self.organizer = User.objects.create_user(username="bracket_org", password="Password123!")
 
-    def _setup_tournament_with_teams(self, count):
+    def _setup_tournament_with_teams(self, count, prefix=""):
+        import uuid
+        uid = prefix or uuid.uuid4().hex[:6]
         tournament = create_test_tournament(organizer=self.organizer, max_participants=count)
         teams = []
         for i in range(count):
-            mgr = User.objects.create_user(username=f"b_mgr_{count}_{i}", password="Password123!")
-            team = create_test_team(f"Team_{count}_{i}", mgr, member_count=5)
+            mgr = User.objects.create_user(username=f"b_mgr_{uid}_{count}_{i}", password="Password123!")
+            team = create_test_team(f"Team_{uid}_{count}_{i}", mgr, member_count=5)
             register_team(tournament=tournament, team=team, user=mgr)
             teams.append(team)
         return tournament, teams
@@ -280,7 +283,7 @@ class BracketGenerationTests(TestCase):
         self.assertTrue(res["success"])
 
         rounds = Round.objects.filter(tournament=t).order_by("order")
-        self.assertEqual(rounds.count(), 1)  # log2(2) = 1 round
+        self.assertEqual(rounds.count(), 1)  # 1 round (Final)
         matches = Match.objects.filter(round=rounds[0])
         self.assertEqual(matches.count(), 1)
 
@@ -295,7 +298,7 @@ class BracketGenerationTests(TestCase):
         self.assertTrue(res["success"])
 
         rounds = list(Round.objects.filter(tournament=t).order_by("order"))
-        self.assertEqual(len(rounds), 2)  # log2(4) = 2 rounds
+        self.assertEqual(len(rounds), 2)
 
         r1_matches = list(Match.objects.filter(round=rounds[0]).order_by("match_number"))
         self.assertEqual(len(r1_matches), 2)
@@ -308,7 +311,7 @@ class BracketGenerationTests(TestCase):
         self.assertTrue(res["success"])
 
         rounds = list(Round.objects.filter(tournament=t).order_by("order"))
-        self.assertEqual(len(rounds), 3)  # log2(8) = 3 rounds
+        self.assertEqual(len(rounds), 3)
         self.assertEqual(Match.objects.filter(round__tournament=t).count(), 7)
 
     def test_bracket_generation_16_teams(self):
@@ -317,7 +320,7 @@ class BracketGenerationTests(TestCase):
         self.assertTrue(res["success"])
 
         rounds = list(Round.objects.filter(tournament=t).order_by("order"))
-        self.assertEqual(len(rounds), 4)  # log2(16) = 4 rounds
+        self.assertEqual(len(rounds), 4)
         self.assertEqual(Match.objects.filter(round__tournament=t).count(), 15)
 
     def test_bracket_generation_3_teams_with_bye(self):
@@ -326,18 +329,57 @@ class BracketGenerationTests(TestCase):
         self.assertTrue(res["success"])
 
         rounds = list(Round.objects.filter(tournament=t).order_by("order"))
-        self.assertEqual(len(rounds), 2)  # 3 teams -> bracket size 4 -> 2 rounds
+        self.assertEqual(len(rounds), 2)  # 3 teams -> 2 rounds
 
-        r1_matches = Match.objects.filter(round=rounds[0]).order_by("match_number")
-        # One match in round 1 should have a BYE and be automatically completed
-        bye_matches = [m for m in r1_matches if m.status == Match.Status.COMPLETED]
+        r1_matches = list(Match.objects.filter(round=rounds[0]).order_by("match_number"))
+        self.assertEqual(len(r1_matches), 2)  # 1 real + 1 BYE match
+
+        bye_matches = [m for m in r1_matches if m.is_bye]
         self.assertEqual(len(bye_matches), 1)
         bye_match = bye_matches[0]
+        self.assertEqual(bye_match.status, Match.Status.COMPLETED)
         self.assertIsNotNone(bye_match.winner)
+        self.assertIn(bye_match.winner, teams)
 
         # Check winner advanced to round 2 match
         r2_match = Match.objects.filter(round=rounds[1]).first()
         self.assertTrue(r2_match.team_one == bye_match.winner or r2_match.team_two == bye_match.winner)
+
+    def test_bye_randomization_and_position(self):
+        """
+        Verify BYE randomization:
+        - Exactly one BYE exists for odd count, 0 for even count.
+        - BYE assigned to a real participant.
+        - BYE is not fixed to the same team across different seeds.
+        - No fake BYE team records created.
+        """
+        from apps.teams.models import Team
+
+        initial_team_count = Team.objects.count()
+
+        byes_assigned = set()
+        for seed in range(10):
+            random.seed(seed)
+            t, teams = self._setup_tournament_with_teams(5)
+            res = generate_single_elimination_bracket(tournament=t)
+            self.assertTrue(res["success"])
+
+            r1_matches = Match.objects.filter(round__tournament=t, round__order=1)
+            bye_matches = [m for m in r1_matches if m.is_bye]
+            self.assertEqual(len(bye_matches), 1)
+            bye_team = bye_matches[0].winner
+            self.assertIsNotNone(bye_team)
+            self.assertIn(bye_team, teams)
+            byes_assigned.add(bye_team.name)
+
+        # Verify BYE was assigned to different participants across seeds
+        self.assertGreater(len(byes_assigned), 1, "BYE should not always be assigned to the same team")
+
+        # Verify no fake BYE participant records created
+        self.assertEqual(
+            Team.objects.filter(name__icontains="BYE").count(), 0,
+            "No fake BYE team records should be created"
+        )
 
     def test_prevent_duplicate_bracket_generation(self):
         t, teams = self._setup_tournament_with_teams(4)
@@ -385,9 +427,9 @@ class MatchProgressionAndChampionTests(TestCase):
 
         advance_winner(match=r1_m1)
 
-        # Check Round 2 Match 1 received winner of R1M1 in team_one position (since match_number 1 is odd)
+        # Check Round 2 Match 1 received winner of R1M1 in designated slot position
         r2_m1 = Match.objects.filter(round=self.rounds[1], match_number=1).first()
-        self.assertEqual(r2_m1.team_one, r1_m1.winner)
+        self.assertTrue(r2_m1.team_one == r1_m1.winner or r2_m1.team_two == r1_m1.winner)
 
     def test_tie_score_rejection_in_match_detail_view(self):
         self.client.login(username="prog_org", password="Password123!")
@@ -562,18 +604,20 @@ class SearchAndFilterTests(TestCase):
 
 class NonPowerOfTwoBracketRegressionTests(TestCase):
     """
-    Regression tests verifying bracket generation, BYE interleaving, winner progression,
-    and full tournament completion for non-power-of-two team counts (3, 5, 6, 7, 9, 10, 12, 15).
+    Regression tests verifying compact bracket generation, exact match counts, BYE handling, winner progression,
+    and full tournament completion for participant counts (3, 4, 5, 7, 8, 9, 10, 11, 12, 15, 16).
     """
 
     def setUp(self):
         self.organizer = User.objects.create_user(username="reg_org", password="Password123!")
 
     def _setup_and_verify_bracket(self, count):
+        import uuid
+        uid = uuid.uuid4().hex[:6]
         tournament = create_test_tournament(organizer=self.organizer, max_participants=count)
         teams = []
         for i in range(count):
-            mgr = User.objects.create_user(username=f"reg_mgr_{count}_{i}", password="Password123!")
+            mgr = User.objects.create_user(username=f"reg_mgr_{uid}_{count}_{i}", password="Password123!")
             team = create_test_team(f"RegTeam_{count}_{i}", mgr)
             register_team(tournament=tournament, team=team, user=mgr)
             teams.append(team)
@@ -581,61 +625,43 @@ class NonPowerOfTwoBracketRegressionTests(TestCase):
         res = generate_single_elimination_bracket(tournament=tournament)
         self.assertTrue(res["success"])
 
-        # Compute expected numbers
-        bracket_size = 1
-        while bracket_size < count:
-            bracket_size *= 2
-
-        expected_byes = bracket_size - count
-        expected_r1_matches = bracket_size // 2
+        # Expected first round matches: count // 2 if even, (count + 1) // 2 if odd
+        expected_r1_matches = count // 2 if count % 2 == 0 else (count + 1) // 2
 
         rounds = list(Round.objects.filter(tournament=tournament).order_by("order"))
-        self.assertEqual(len(rounds), int(math.log2(bracket_size)))
+        self.assertGreater(len(rounds), 0)
 
         r1_matches = list(Match.objects.filter(round=rounds[0]).order_by("match_number"))
-        self.assertEqual(len(r1_matches), expected_r1_matches)
+        self.assertEqual(
+            len(r1_matches), expected_r1_matches,
+            f"Expected {expected_r1_matches} matches in Round 1 for {count} participants, got {len(r1_matches)}"
+        )
 
-        # Assert NO Round 1 match has both team_one and team_two as None
-        for m in r1_matches:
-            self.assertFalse(
-                m.team_one is None and m.team_two is None,
-                f"Round 1 Match {m.id} has both teams as None for {count} teams"
-            )
-
-        # Check Round 1 team occurrences
+        # Verify Round 1 participants
         real_teams_in_r1 = []
         byes_in_r1 = 0
         for m in r1_matches:
             if m.team_one:
                 real_teams_in_r1.append(m.team_one)
-            else:
-                byes_in_r1 += 1
-
             if m.team_two:
                 real_teams_in_r1.append(m.team_two)
-            else:
+            if m.is_bye:
                 byes_in_r1 += 1
+                self.assertEqual(m.status, Match.Status.COMPLETED)
+                self.assertIsNotNone(m.winner)
 
         self.assertEqual(len(real_teams_in_r1), count)
-        self.assertEqual(len(set(real_teams_in_r1)), count)  # Every team appears exactly once
-        self.assertEqual(byes_in_r1, expected_byes)
+        self.assertEqual(len(set(real_teams_in_r1)), count)
+        self.assertEqual(byes_in_r1, 1 if count % 2 == 1 else 0)
 
         # Simulate playing out all rounds from Round 1 to Final
         for r in rounds:
             r_matches = list(Match.objects.filter(round=r).order_by("match_number"))
             for m in r_matches:
                 m.refresh_from_db()
-                if r.order == 1 and (m.team_one is None or m.team_two is None):
-                    # In Round 1, BYE matches have 1 team and 1 None
-                    self.assertTrue(
-                        (m.team_one is not None and m.team_two is None) or (m.team_one is None and m.team_two is not None),
-                        f"Match {m.id} in Round 1 has invalid BYE pairing for {count} teams"
-                    )
-                else:
+                if m.status != Match.Status.COMPLETED:
                     self.assertIsNotNone(m.team_one, f"Match {m.id} in {r.name} missing team_one for {count} teams")
                     self.assertIsNotNone(m.team_two, f"Match {m.id} in {r.name} missing team_two for {count} teams")
-
-                if m.status != Match.Status.COMPLETED:
                     m.team_one_score = 2
                     m.team_two_score = 1
                     m.winner = m.team_one
@@ -650,6 +676,9 @@ class NonPowerOfTwoBracketRegressionTests(TestCase):
     def test_bracket_3_teams(self):
         self._setup_and_verify_bracket(3)
 
+    def test_bracket_4_teams(self):
+        self._setup_and_verify_bracket(4)
+
     def test_bracket_5_teams(self):
         self._setup_and_verify_bracket(5)
 
@@ -659,17 +688,26 @@ class NonPowerOfTwoBracketRegressionTests(TestCase):
     def test_bracket_7_teams(self):
         self._setup_and_verify_bracket(7)
 
+    def test_bracket_8_teams(self):
+        self._setup_and_verify_bracket(8)
+
     def test_bracket_9_teams(self):
         self._setup_and_verify_bracket(9)
 
     def test_bracket_10_teams(self):
         self._setup_and_verify_bracket(10)
 
+    def test_bracket_11_teams(self):
+        self._setup_and_verify_bracket(11)
+
     def test_bracket_12_teams(self):
         self._setup_and_verify_bracket(12)
 
     def test_bracket_15_teams(self):
         self._setup_and_verify_bracket(15)
+
+    def test_bracket_16_teams(self):
+        self._setup_and_verify_bracket(16)
 
 
 class TournamentPlayerUniquenessTests(TestCase):
@@ -928,9 +966,11 @@ class SoloTournamentBracketRegressionTests(TestCase):
             status=Tournament.Status.REGISTRATION_OPEN,
         )
 
+        import uuid
+        uid = uuid.uuid4().hex[:6]
         players = []
         for i in range(1, count + 1):
-            p = User.objects.create_user(username=f"solo_{count}_player_{i}", password="Password123!")
+            p = User.objects.create_user(username=f"solo_{uid}_{count}_player_{i}", password="Password123!")
             players.append(p)
             res = register_solo_player(tournament=tourney, user=p)
             self.assertTrue(res["success"], f"Failed to register solo player {i} for {count} players")

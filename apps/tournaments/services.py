@@ -310,7 +310,8 @@ def register_solo_player(
 @transaction.atomic
 def generate_single_elimination_bracket(*, tournament):
     """
-    Generates the complete single elimination bracket.
+    Generates a compact smart single elimination bracket based on participant count.
+    Supports odd counts with randomized single-BYE per round, without power-of-two padding.
     """
 
     registrations = list(
@@ -333,100 +334,123 @@ def generate_single_elimination_bracket(*, tournament):
         }
 
     random.shuffle(registrations)
-
     real_teams = [r.team for r in registrations]
 
-    total_teams = len(real_teams)
+    # Calculate compact round structure from Round 1 to Final
+    current_count = len(real_teams)
+    round_structures = []
 
-    bracket_size = 1
-    while bracket_size < total_teams:
-        bracket_size *= 2
+    while current_count > 1:
+        if current_count % 2 == 0:
+            num_real = current_count // 2
+            has_bye = False
+            total_matches = num_real
+            next_count = num_real
+        else:
+            num_real = (current_count - 1) // 2
+            has_bye = True
+            total_matches = num_real + 1
+            next_count = num_real + 1
 
-    byes = bracket_size - total_teams
-    num_matches = bracket_size // 2
-    two_team_matches = num_matches - byes
+        round_structures.append({
+            "in_count": current_count,
+            "real_matches": num_real,
+            "has_bye": has_bye,
+            "total_matches": total_matches,
+            "next_count": next_count,
+        })
+        current_count = next_count
 
-    teams = []
-    team_idx = 0
-
-    # Fill matches with 2 real teams first
-    for _ in range(two_team_matches):
-        teams.append(real_teams[team_idx])
-        teams.append(real_teams[team_idx + 1])
-        team_idx += 2
-
-    # Fill remaining matches with 1 real team and 1 BYE (None)
-    for _ in range(byes):
-        teams.append(real_teams[team_idx])
-        teams.append(None)
-        team_idx += 1
-
-    total_rounds = int(math.log2(bracket_size))
-
-    rounds = []
-
-    # -------------------------
-    # Create every round
-    # -------------------------
-
-    for r in range(total_rounds):
-
+    # Create Round and Match objects in database
+    for r_idx, struct in enumerate(round_structures):
         round_obj = Round.objects.create(
             tournament=tournament,
-            name=f"Round {r + 1}",
-            order=r + 1,
+            name=f"Round {r_idx + 1}",
+            order=r_idx + 1,
         )
-
-        rounds.append(round_obj)
-
-        matches = bracket_size // (2 ** (r + 1))
-
-        for m in range(matches):
-
-            Match.objects.create(
+        struct["round_obj"] = round_obj
+        struct["matches"] = []
+        for m_idx in range(struct["total_matches"]):
+            match_obj = Match.objects.create(
                 round=round_obj,
-                match_number=m + 1,
+                match_number=m_idx + 1,
             )
+            struct["matches"].append(match_obj)
 
-    # -------------------------
-    # Fill first round
-    # -------------------------
+    # Populate Round 1 pairings
+    round1_struct = round_structures[0]
+    teams = list(real_teams)
+    bye_team = None
 
-    first_round = rounds[0]
+    if round1_struct["has_bye"]:
+        bye_idx = random.randrange(len(teams))
+        bye_team = teams.pop(bye_idx)
 
-    matches = Match.objects.filter(
-        round=first_round,
-    ).order_by("match_number")
+    # Real matches in Round 1
+    for m_idx in range(round1_struct["real_matches"]):
+        match_obj = round1_struct["matches"][m_idx]
+        match_obj.team_one = teams[2 * m_idx]
+        match_obj.team_two = teams[2 * m_idx + 1]
+        match_obj.save()
 
-    index = 0
+    # BYE match in Round 1
+    bye_match_r1 = None
+    if bye_team is not None:
+        bye_match_r1 = round1_struct["matches"][-1]
+        bye_match_r1.team_one = bye_team
+        bye_match_r1.team_two = None
+        bye_match_r1.is_bye = True
+        bye_match_r1.winner = bye_team
+        bye_match_r1.status = Match.Status.COMPLETED
+        bye_match_r1.save()
 
-    for match in matches:
+    # Connect matches across consecutive rounds
+    for r_idx in range(len(round_structures) - 1):
+        curr_struct = round_structures[r_idx]
+        next_struct = round_structures[r_idx + 1]
 
-        match.team_one = teams[index]
-        match.team_two = teams[index + 1]
+        curr_matches = curr_struct["matches"]
+        next_matches = next_struct["matches"]
 
-        # -------- AUTO BYE --------
+        path_indices = list(range(len(curr_matches)))
 
-        if match.team_one and match.team_two is None:
+        if next_struct["has_bye"]:
+            # Pick one path randomly to receive BYE in next round
+            bye_pos = random.randrange(len(path_indices))
+            bye_path_idx = path_indices.pop(bye_pos)
 
-            match.winner = match.team_one
-            match.status = Match.Status.COMPLETED
+            next_bye_match = next_matches[-1]
+            next_bye_match.is_bye = True
+            next_bye_match.save(update_fields=["is_bye"])
 
-        elif match.team_two and match.team_one is None:
+            src_match = curr_matches[bye_path_idx]
+            src_match.next_match = next_bye_match
+            src_match.next_match_slot = 1
+            src_match.save(update_fields=["next_match", "next_match_slot"])
 
-            match.winner = match.team_two
-            match.status = Match.Status.COMPLETED
+        # Shuffle remaining path indices before pairing into next round's real matches
+        random.shuffle(path_indices)
+        for p_idx in range(next_struct["real_matches"]):
+            src1 = curr_matches[path_indices[2 * p_idx]]
+            src2 = curr_matches[path_indices[2 * p_idx + 1]]
+            target_match = next_matches[p_idx]
 
-        match.save()
+            src1.next_match = target_match
+            src1.next_match_slot = 1
+            src1.save(update_fields=["next_match", "next_match_slot"])
 
-        if match.winner:
-            advance_winner(match=match)
+            src2.next_match = target_match
+            src2.next_match_slot = 2
+            src2.save(update_fields=["next_match", "next_match_slot"])
 
-        index += 2
+    # Auto-advance Round 1 BYE participant
+    if bye_match_r1:
+        advance_winner(match=bye_match_r1)
 
     return {
         "success": True,
     }
+
 
 @transaction.atomic
 def advance_winner(*, match):
@@ -446,7 +470,7 @@ def advance_winner(*, match):
         order=current_round.order + 1,
     ).first()
 
-    # Final round
+    # Final round completion
     if next_round is None:
 
         tournament.champion = match.winner
@@ -461,26 +485,44 @@ def advance_winner(*, match):
 
         return
 
-    next_match_number = math.ceil(
-        match.match_number / 2
-    )
-
-    next_match = Match.objects.get(
-        round=next_round,
-        match_number=next_match_number,
-    )
-
-    if match.match_number % 2 == 1:
-        next_match.team_one = match.winner
+    if match.next_match_id:
+        next_match = match.next_match
+        if match.next_match_slot == 1:
+            next_match.team_one = match.winner
+        else:
+            next_match.team_two = match.winner
+        next_match.save(update_fields=["team_one", "team_two"])
     else:
-        next_match.team_two = match.winner
+        # Fallback for historical tournaments created before next_match field was populated
+        next_match_number = math.ceil(
+            match.match_number / 2
+        )
+        try:
+            next_match = Match.objects.get(
+                round=next_round,
+                match_number=next_match_number,
+            )
+            if match.match_number % 2 == 1:
+                next_match.team_one = match.winner
+            else:
+                next_match.team_two = match.winner
 
-    next_match.save(
-        update_fields=[
-            "team_one",
-            "team_two",
-        ]
-    )
+            next_match.save(
+                update_fields=[
+                    "team_one",
+                    "team_two",
+                ]
+            )
+        except Match.DoesNotExist:
+            return
+
+    # Auto-complete if next_match is a designated BYE match
+    if next_match.is_bye and (next_match.team_one or next_match.team_two) and next_match.status != Match.Status.COMPLETED:
+        bye_winner = next_match.team_one or next_match.team_two
+        next_match.winner = bye_winner
+        next_match.status = Match.Status.COMPLETED
+        next_match.save(update_fields=["winner", "status"])
+        advance_winner(match=next_match)
 
 
 def get_tournament_statistics(*, tournament):

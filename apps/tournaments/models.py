@@ -648,6 +648,23 @@ class Match(models.Model):
         default=Status.PENDING,
     )
 
+    next_match = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="previous_matches",
+    )
+
+    next_match_slot = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    is_bye = models.BooleanField(
+        default=False,
+    )
+
     class Meta:
         ordering = [
             "round",
