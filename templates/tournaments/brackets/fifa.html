@@ -52,6 +52,7 @@
     <!-- Main Bracket Tree -->
     <div class="bracket-scroll-container">
         <div class="tournament-tree">
+            <svg class="bracket-connector-layer" aria-hidden="true"></svg>
             {% for round_obj in rounds %}
             <div class="tree-round">
                 
@@ -61,7 +62,7 @@
 
                 <div class="tree-matches">
                     {% for match in round_obj.matches.all %}
-                    <div class="tree-match-wrapper">
+                    <div class="tree-match-wrapper" data-match-id="{{ match.pk }}" data-next-match-id="{{ match.next_match_id|default:'' }}" data-next-slot="{{ match.next_match_slot|default:'' }}">
                         <a href="{% url 'tournaments:match_detail' match.pk %}" 
                            class="tree-match-card {% if match.status == 'COMPLETED' %}status-completed{% elif match.status == 'LIVE' %}status-live{% else %}status-pending{% endif %}">
                             
@@ -130,7 +131,7 @@
                     <h3 class="round-title champion-round-title">🏆 Champion</h3>
                 </div>
                 <div class="tree-matches">
-                    <div class="champion-card-wrapper">
+                    <div class="champion-card-wrapper" id="champion-card">
                         {% if tournament.champion %}
                         <div class="champion-card">
                             <div class="champion-crown">👑</div>
@@ -153,4 +154,64 @@
     </div>
 
 </div>
+
+<script>
+(function () {
+    function drawBracketConnectors() {
+        const tree = document.querySelector('.bracket-page-container .tournament-tree');
+        const svg = tree?.querySelector('.bracket-connector-layer');
+        if (!tree || !svg) return;
+
+        const wrappers = Array.from(tree.querySelectorAll('.tree-match-wrapper[data-match-id]'));
+        const byId = new Map(wrappers.map(el => [el.dataset.matchId, el]));
+        const rect = tree.getBoundingClientRect();
+        const width = Math.max(tree.scrollWidth, tree.clientWidth);
+        const height = Math.max(tree.scrollHeight, tree.clientHeight);
+
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', height);
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        svg.innerHTML = '';
+
+        const addPath = (d, cls = '') => {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', d);
+            path.setAttribute('class', `bracket-connector ${cls}`.trim());
+            path.setAttribute('fill', 'none');
+            svg.appendChild(path);
+        };
+
+        wrappers.forEach(source => {
+            const target = byId.get(source.dataset.nextMatchId);
+            if (!target) return;
+            const a = source.getBoundingClientRect();
+            const b = target.getBoundingClientRect();
+            const sx = a.right - rect.left;
+            const sy = a.top + a.height / 2 - rect.top;
+            const ex = b.left - rect.left;
+            const ey = b.top + b.height / 2 - rect.top;
+            const midX = sx + Math.max(24, (ex - sx) / 2);
+            addPath(`M ${sx} ${sy} H ${midX} V ${ey} H ${ex}`);
+        });
+
+        const finalMatch = wrappers.find(w => !w.dataset.nextMatchId);
+        const champion = document.getElementById('champion-card');
+        if (finalMatch && champion) {
+            const a = finalMatch.getBoundingClientRect();
+            const b = champion.getBoundingClientRect();
+            const sx = a.right - rect.left;
+            const sy = a.top + a.height / 2 - rect.top;
+            const ex = b.left - rect.left;
+            const ey = b.top + b.height / 2 - rect.top;
+            const midX = sx + Math.max(24, (ex - sx) / 2);
+            addPath(`M ${sx} ${sy} H ${midX} V ${ey} H ${ex}`, 'champion-connector');
+        }
+    }
+
+    window.addEventListener('load', drawBracketConnectors);
+    window.addEventListener('resize', () => window.requestAnimationFrame(drawBracketConnectors));
+    if (document.fonts?.ready) document.fonts.ready.then(drawBracketConnectors);
+    setTimeout(drawBracketConnectors, 100);
+})();
+</script>
 {% endblock %}

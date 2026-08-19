@@ -625,8 +625,8 @@ class NonPowerOfTwoBracketRegressionTests(TestCase):
         res = generate_single_elimination_bracket(tournament=tournament)
         self.assertTrue(res["success"])
 
-        # Expected first round matches: count // 2 if even, (count + 1) // 2 if odd
-        expected_r1_matches = count // 2 if count % 2 == 0 else (count + 1) // 2
+        # Compact bracket: only the matches needed for this participant count.
+        expected_r1_matches = (count + 1) // 2
 
         rounds = list(Round.objects.filter(tournament=tournament).order_by("order"))
         self.assertGreater(len(rounds), 0)
@@ -635,6 +635,24 @@ class NonPowerOfTwoBracketRegressionTests(TestCase):
         self.assertEqual(
             len(r1_matches), expected_r1_matches,
             f"Expected {expected_r1_matches} matches in Round 1 for {count} participants, got {len(r1_matches)}"
+        )
+
+        expected_round_sizes = []
+        current = expected_r1_matches
+        while True:
+            expected_round_sizes.append(current)
+            if current == 1:
+                break
+            current = (current + 1) // 2
+
+        actual_round_sizes = [
+            Match.objects.filter(round=round_obj).count()
+            for round_obj in rounds
+        ]
+        self.assertEqual(
+            actual_round_sizes,
+            expected_round_sizes,
+            f"Expected compact round sizes {expected_round_sizes} for {count} participants, got {actual_round_sizes}"
         )
 
         # Verify Round 1 participants

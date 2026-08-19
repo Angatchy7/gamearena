@@ -174,6 +174,30 @@
     gap: 80px;
     min-width: max-content;
     padding: 10px 40px;
+    position: relative;
+}
+
+.bracket-page-container .bracket-connector-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.bracket-page-container .bracket-connector {
+    stroke: var(--connector-color);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.9;
+}
+
+.bracket-page-container .bracket-connector.champion-connector {
+    stroke: var(--gold-accent);
+    stroke-width: 3;
 }
 
 /* --- Tree Round Column --- */
@@ -362,57 +386,10 @@
     color: #ffffff;
 }
 
-/* --- Connecting Lines via CSS --- */
-
-/* Left horizontal line into match card (rounds 2+) */
-.bracket-page-container .tree-round:not(:first-child) .tree-match-wrapper::before {
-    content: "";
-    position: absolute;
-    left: -40px;
-    top: 50%;
-    width: 40px;
-    height: 2px;
-    background: var(--connector-color);
-    z-index: 1;
-}
-
-/* Right connector for Odd matches (Top of pair) */
-.bracket-page-container .tree-round:not(.champion-column) .tree-match-wrapper:nth-child(odd)::after {
-    content: "";
-    position: absolute;
-    right: -40px;
-    top: 50%;
-    width: 40px;
-    height: 50%;
-    border-right: 2px solid var(--connector-color);
-    border-top: 2px solid var(--connector-color);
-    border-top-right-radius: 6px;
-    z-index: 1;
-}
-
-/* Right connector for Even matches (Bottom of pair) */
-.bracket-page-container .tree-round:not(.champion-column) .tree-match-wrapper:nth-child(even)::after {
-    content: "";
-    position: absolute;
-    right: -40px;
-    bottom: 50%;
-    width: 40px;
-    height: 50%;
-    border-right: 2px solid var(--connector-color);
-    border-bottom: 2px solid var(--connector-color);
-    border-bottom-right-radius: 6px;
-    z-index: 1;
-}
-
-/* Single match in round (e.g., Final round before Champion) */
-.bracket-page-container .tree-round:not(.champion-column) .tree-match-wrapper:only-child::after {
-    height: 2px;
-    border: none;
-    background: var(--connector-color);
-    border-radius: 0;
-    bottom: auto;
-    top: 50%;
-}
+/* --- Connecting Lines --- */
+/* Connectors are rendered from actual next_match relationships by the
+   bracket SVG layer in fifa.html. This keeps lines correct even when a
+   randomly placed BYE changes the target slot. */
 
 /* --- Champion Column --- */
 .bracket-page-container .champion-round-title {
