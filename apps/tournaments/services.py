@@ -310,10 +310,13 @@ def register_solo_player(
 @transaction.atomic
 def generate_single_elimination_bracket(*, tournament):
     """
-    Generates a compact smart single elimination bracket based on participant count.
-    Supports odd counts with randomized single-BYE per round, without power-of-two padding.
-    """
+    Generate a compact single-elimination bracket.
 
+    Participants are shuffled before each round. For an odd number of
+    advancing participants, exactly one random participant receives a bye.
+    Only the number of matches that are actually needed for that round are
+    created; the bracket is never padded to the next power of two.
+    """
     registrations = list(
         TournamentRegistration.objects.filter(
             tournament=tournament,
@@ -326,7 +329,6 @@ def generate_single_elimination_bracket(*, tournament):
             "message": "At least two teams are required.",
         }
 
-    # Prevent generating twice
     if Round.objects.filter(tournament=tournament).exists():
         return {
             "success": False,
@@ -334,118 +336,91 @@ def generate_single_elimination_bracket(*, tournament):
         }
 
     random.shuffle(registrations)
-    real_teams = [r.team for r in registrations]
+    participants = [registration.team for registration in registrations]
 
-    # Calculate compact round structure from Round 1 to Final
-    current_count = len(real_teams)
-    round_structures = []
+    # Build the compact round sizes first. Each match produces exactly one
+    # advancing participant (including a BYE match), so the next round needs
+    # ceil(current_matches / 2) match slots.
+    round_sizes = []
+    current_match_count = (len(participants) + 1) // 2
+    while current_match_count >= 1:
+        round_sizes.append(current_match_count)
+        if current_match_count == 1:
+            break
+        current_match_count = (current_match_count + 1) // 2
 
-    while current_count > 1:
-        if current_count % 2 == 0:
-            num_real = current_count // 2
-            has_bye = False
-            total_matches = num_real
-            next_count = num_real
-        else:
-            num_real = (current_count - 1) // 2
-            has_bye = True
-            total_matches = num_real + 1
-            next_count = num_real + 1
-
-        round_structures.append({
-            "in_count": current_count,
-            "real_matches": num_real,
-            "has_bye": has_bye,
-            "total_matches": total_matches,
-            "next_count": next_count,
-        })
-        current_count = next_count
-
-    # Create Round and Match objects in database
-    for r_idx, struct in enumerate(round_structures):
+    rounds = []
+    matches_by_round = []
+    for round_order, match_count in enumerate(round_sizes, start=1):
         round_obj = Round.objects.create(
             tournament=tournament,
-            name=f"Round {r_idx + 1}",
-            order=r_idx + 1,
+            name=f"Round {round_order}",
+            order=round_order,
         )
-        struct["round_obj"] = round_obj
-        struct["matches"] = []
-        for m_idx in range(struct["total_matches"]):
-            match_obj = Match.objects.create(
-                round=round_obj,
-                match_number=m_idx + 1,
-            )
-            struct["matches"].append(match_obj)
+        match_list = [
+            Match.objects.create(round=round_obj, match_number=index + 1)
+            for index in range(match_count)
+        ]
+        rounds.append(round_obj)
+        matches_by_round.append(match_list)
 
-    # Populate Round 1 pairings
-    round1_struct = round_structures[0]
-    teams = list(real_teams)
-    bye_team = None
+    # Link current-round matches to the next round in monotonic order. If the
+    # current round has an odd number of matches, one random next-round slot
+    # receives a single feeder and therefore becomes a BYE when its feeder
+    # produces a winner. This keeps the bracket compact while allowing the BYE
+    # to appear in different positions.
+    for round_index in range(len(matches_by_round) - 1):
+        current_matches = matches_by_round[round_index]
+        next_matches = matches_by_round[round_index + 1]
+        source_index = 0
+        bye_target_index = None
+        if len(current_matches) % 2 == 1:
+            bye_target_index = random.randrange(len(next_matches))
 
-    if round1_struct["has_bye"]:
-        bye_idx = random.randrange(len(teams))
-        bye_team = teams.pop(bye_idx)
+        for target_index, next_match in enumerate(next_matches):
+            feeder_count = 1 if target_index == bye_target_index else 2
+            for slot in range(1, feeder_count + 1):
+                source_match = current_matches[source_index]
+                source_match.next_match = next_match
+                source_match.next_match_slot = slot
+                source_match.save(update_fields=["next_match", "next_match_slot"])
+                source_index += 1
 
-    # Real matches in Round 1
-    for m_idx in range(round1_struct["real_matches"]):
-        match_obj = round1_struct["matches"][m_idx]
-        match_obj.team_one = teams[2 * m_idx]
-        match_obj.team_two = teams[2 * m_idx + 1]
+        if source_index != len(current_matches):
+            raise RuntimeError("Bracket linking failed: not all source matches were linked.")
+
+    # Create the actual first-round pairings from the shuffled participants.
+    # When the participant count is odd, randomly choose one participant for
+    # the single BYE and shuffle the resulting fixture entries so the BYE may
+    # appear anywhere in the first-round fixture list.
+    first_round_matches = matches_by_round[0]
+    pairing_entries = []
+    remaining = list(participants)
+
+    if len(remaining) % 2 == 1:
+        bye_index = random.randrange(len(remaining))
+        bye_participant = remaining.pop(bye_index)
+        pairing_entries.append((bye_participant, None, True))
+
+    for index in range(0, len(remaining), 2):
+        pairing_entries.append((remaining[index], remaining[index + 1], False))
+
+    random.shuffle(pairing_entries)
+
+    bye_matches = []
+    for match_obj, (team_one, team_two, is_bye) in zip(first_round_matches, pairing_entries):
+        match_obj.team_one = team_one
+        match_obj.team_two = team_two
+        match_obj.is_bye = is_bye
+        if is_bye:
+            match_obj.winner = team_one
+            match_obj.status = Match.Status.COMPLETED
+            bye_matches.append(match_obj)
         match_obj.save()
 
-    # BYE match in Round 1
-    bye_match_r1 = None
-    if bye_team is not None:
-        bye_match_r1 = round1_struct["matches"][-1]
-        bye_match_r1.team_one = bye_team
-        bye_match_r1.team_two = None
-        bye_match_r1.is_bye = True
-        bye_match_r1.winner = bye_team
-        bye_match_r1.status = Match.Status.COMPLETED
-        bye_match_r1.save()
-
-    # Connect matches across consecutive rounds
-    for r_idx in range(len(round_structures) - 1):
-        curr_struct = round_structures[r_idx]
-        next_struct = round_structures[r_idx + 1]
-
-        curr_matches = curr_struct["matches"]
-        next_matches = next_struct["matches"]
-
-        path_indices = list(range(len(curr_matches)))
-
-        if next_struct["has_bye"]:
-            # Pick one path randomly to receive BYE in next round
-            bye_pos = random.randrange(len(path_indices))
-            bye_path_idx = path_indices.pop(bye_pos)
-
-            next_bye_match = next_matches[-1]
-            next_bye_match.is_bye = True
-            next_bye_match.save(update_fields=["is_bye"])
-
-            src_match = curr_matches[bye_path_idx]
-            src_match.next_match = next_bye_match
-            src_match.next_match_slot = 1
-            src_match.save(update_fields=["next_match", "next_match_slot"])
-
-        # Shuffle remaining path indices before pairing into next round's real matches
-        random.shuffle(path_indices)
-        for p_idx in range(next_struct["real_matches"]):
-            src1 = curr_matches[path_indices[2 * p_idx]]
-            src2 = curr_matches[path_indices[2 * p_idx + 1]]
-            target_match = next_matches[p_idx]
-
-            src1.next_match = target_match
-            src1.next_match_slot = 1
-            src1.save(update_fields=["next_match", "next_match_slot"])
-
-            src2.next_match = target_match
-            src2.next_match_slot = 2
-            src2.save(update_fields=["next_match", "next_match_slot"])
-
-    # Auto-advance Round 1 BYE participant
-    if bye_match_r1:
-        advance_winner(match=bye_match_r1)
+    # BYE winners immediately advance into their linked next-round slot.
+    for bye_match in bye_matches:
+        advance_winner(match=bye_match)
 
     return {
         "success": True,
@@ -457,6 +432,7 @@ def advance_winner(*, match):
     """
     Advances the winner to the next round.
     Declares champion when the final match is completed.
+    Auto-advances if next match faces a BYE.
     """
 
     if match.winner is None:
@@ -517,12 +493,53 @@ def advance_winner(*, match):
             return
 
     # Auto-complete if next_match is a designated BYE match
-    if next_match.is_bye and (next_match.team_one or next_match.team_two) and next_match.status != Match.Status.COMPLETED:
-        bye_winner = next_match.team_one or next_match.team_two
-        next_match.winner = bye_winner
-        next_match.status = Match.Status.COMPLETED
-        next_match.save(update_fields=["winner", "status"])
-        advance_winner(match=next_match)
+    _check_and_auto_advance_bye(next_match)
+
+
+def _check_and_auto_advance_bye(match):
+    """
+    If match is marked as BYE or facing an empty BYE feeder, auto-complete and advance the winner.
+    """
+    if match.status == Match.Status.COMPLETED:
+        return
+
+    if match.is_bye and (match.team_one or match.team_two):
+        match.winner = match.team_one or match.team_two
+        match.status = Match.Status.COMPLETED
+        match.save(update_fields=["winner", "status"])
+        advance_winner(match=match)
+        return
+
+    # Compact-bracket BYE: if this match has only one feeder, the first
+    # participant to arrive advances automatically. This is the key behavior
+    # that prevents the old power-of-two padding from creating many BYE slots.
+    feeder_count = match.previous_matches.count()
+    if feeder_count == 1 and (match.team_one or match.team_two):
+        match.is_bye = True
+        match.winner = match.team_one or match.team_two
+        match.status = Match.Status.COMPLETED
+        match.save(update_fields=["is_bye", "winner", "status"])
+        advance_winner(match=match)
+        return
+
+    # Historical compatibility: a pre-existing match may have two feeders but
+    # one feeder can finish without a winner. Preserve that legacy behavior.
+    if match.team_one and not match.team_two:
+        feeder2 = Match.objects.filter(next_match=match, next_match_slot=2).first()
+        if feeder2 and feeder2.status == Match.Status.COMPLETED and feeder2.winner is None:
+            match.is_bye = True
+            match.winner = match.team_one
+            match.status = Match.Status.COMPLETED
+            match.save(update_fields=["is_bye", "winner", "status"])
+            advance_winner(match=match)
+    elif match.team_two and not match.team_one:
+        feeder1 = Match.objects.filter(next_match=match, next_match_slot=1).first()
+        if feeder1 and feeder1.status == Match.Status.COMPLETED and feeder1.winner is None:
+            match.is_bye = True
+            match.winner = match.team_two
+            match.status = Match.Status.COMPLETED
+            match.save(update_fields=["is_bye", "winner", "status"])
+            advance_winner(match=match)
 
 
 def get_tournament_statistics(*, tournament):
@@ -678,4 +695,4 @@ def get_tournament_statistics(*, tournament):
         "team_rankings": team_rankings,
         "recent_matches": recent_matches,
     }
-
+
